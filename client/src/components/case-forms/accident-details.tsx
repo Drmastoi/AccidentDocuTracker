@@ -43,10 +43,24 @@ export function AccidentDetailsForm({ caseId, initialData, onSaved }: AccidentDe
     defaultValues: initialData || {
       accidentDate: "",
       accidentTime: "",
+      timeOfDay: "Morning",
       accidentLocation: "",
+      vehicleLocation: "Main Road",
       weatherConditions: "clear",
       accidentType: "",
+      vehicleType: "Car",
+      claimantPosition: "Driver",
+      speed: "Medium",
+      thirdPartyVehicle: "Car",
+      impactLocation: "Rear",
+      vehicleMovement: "Moving",
+      damageSeverity: "Mild",
+      seatBeltWorn: true,
+      headRestFitted: true,
+      airBagDeployed: false,
+      collisionImpact: "Forward/Backward",
       accidentDescription: "",
+      accidentSummary: "",
       policeReportFiled: false,
       reportNumber: "",
       reportingOfficer: "",
@@ -109,7 +123,8 @@ export function AccidentDetailsForm({ caseId, initialData, onSaved }: AccidentDe
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <SubSection>
+          {/* Time and Location Section */}
+          <SubSection title="Time and Location">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
@@ -141,13 +156,68 @@ export function AccidentDetailsForm({ caseId, initialData, onSaved }: AccidentDe
               
               <FormField
                 control={form.control}
+                name="timeOfDay"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Time of Day</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select time of day" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Morning">Morning</SelectItem>
+                        <SelectItem value="Afternoon">Afternoon</SelectItem>
+                        <SelectItem value="Evening">Evening</SelectItem>
+                        <SelectItem value="Night">Night</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
                 name="accidentLocation"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Location</FormLabel>
+                    <FormLabel>Accident Location</FormLabel>
                     <FormControl>
                       <Input placeholder="Intersection of Main St & Park Ave" {...field} />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="vehicleLocation"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Vehicle Location</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select vehicle location" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Main Road">Main Road</SelectItem>
+                        <SelectItem value="Minor Road">Minor Road</SelectItem>
+                        <SelectItem value="Motorway">Motorway</SelectItem>
+                        <SelectItem value="Roundabout">Roundabout</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -183,8 +253,125 @@ export function AccidentDetailsForm({ caseId, initialData, onSaved }: AccidentDe
             </div>
           </SubSection>
           
-          <SubSection title="Incident Details">
-            <div className="mb-4">
+          {/* Vehicle Details Section */}
+          <SubSection title="Vehicle Details">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField
+                control={form.control}
+                name="vehicleType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Vehicle Type</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select vehicle type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Car">Car</SelectItem>
+                        <SelectItem value="Bus">Bus</SelectItem>
+                        <SelectItem value="Van">Van</SelectItem>
+                        <SelectItem value="Motorcycle">Motorcycle</SelectItem>
+                        <SelectItem value="Truck">Truck</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="claimantPosition"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Claimant's Position</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select claimant position" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Driver">Driver</SelectItem>
+                        <SelectItem value="Front Passenger">Front Passenger</SelectItem>
+                        <SelectItem value="Rear Passenger">Rear Passenger</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="speed"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Speed</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select speed" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Slow">Slow</SelectItem>
+                        <SelectItem value="Medium">Medium</SelectItem>
+                        <SelectItem value="High">High</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="thirdPartyVehicle"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Third Party Vehicle</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select third party vehicle" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Car">Car</SelectItem>
+                        <SelectItem value="Van">Van</SelectItem>
+                        <SelectItem value="Bus">Bus</SelectItem>
+                        <SelectItem value="Truck">Truck</SelectItem>
+                        <SelectItem value="Motorcycle">Motorcycle</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </SubSection>
+          
+          {/* Collision Details Section */}
+          <SubSection title="Collision Details">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <FormField
                 control={form.control}
                 name="accidentType"
@@ -212,9 +399,189 @@ export function AccidentDetailsForm({ caseId, initialData, onSaved }: AccidentDe
                   </FormItem>
                 )}
               />
+              
+              <FormField
+                control={form.control}
+                name="impactLocation"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Impact Location</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select impact location" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Rear">Rear</SelectItem>
+                        <SelectItem value="Front">Front</SelectItem>
+                        <SelectItem value="Left Side">Left Side</SelectItem>
+                        <SelectItem value="Right Side">Right Side</SelectItem>
+                        <SelectItem value="Multiple">Multiple</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="vehicleMovement"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Vehicle Movement</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select vehicle movement" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Stationary">Stationary</SelectItem>
+                        <SelectItem value="Moving">Moving</SelectItem>
+                        <SelectItem value="Parked">Parked</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="damageSeverity"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Damage Severity</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select damage severity" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Mild">Mild</SelectItem>
+                        <SelectItem value="Moderate">Moderate</SelectItem>
+                        <SelectItem value="Severe">Severe</SelectItem>
+                        <SelectItem value="Written Off">Written Off</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="collisionImpact"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Claimant Movement During Collision</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select impact type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Forward/Backward">Forward/Backward (Rear Collision)</SelectItem>
+                        <SelectItem value="Sideways">Sideways (Side Collision)</SelectItem>
+                        <SelectItem value="Multiple Directions">Multiple Directions</SelectItem>
+                        <SelectItem value="None">None</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
             
-            <div className="mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              <FormField
+                control={form.control}
+                name="seatBeltWorn"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                    <FormControl>
+                      <input
+                        type="checkbox"
+                        checked={field.value}
+                        onChange={field.onChange}
+                        className="h-4 w-4 rounded border-gray-300 text-[#0E7C7B] focus:ring-[#0E7C7B]"
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>Seat Belt Worn</FormLabel>
+                      <FormDescription className="text-xs">
+                        The claimant was wearing a seat belt
+                      </FormDescription>
+                    </div>
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="headRestFitted"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                    <FormControl>
+                      <input
+                        type="checkbox"
+                        checked={field.value}
+                        onChange={field.onChange}
+                        className="h-4 w-4 rounded border-gray-300 text-[#0E7C7B] focus:ring-[#0E7C7B]"
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>Head Rest Fitted</FormLabel>
+                      <FormDescription className="text-xs">
+                        The vehicle was fitted with a head rest
+                      </FormDescription>
+                    </div>
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="airBagDeployed"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                    <FormControl>
+                      <input
+                        type="checkbox"
+                        checked={field.value}
+                        onChange={field.onChange}
+                        className="h-4 w-4 rounded border-gray-300 text-[#0E7C7B] focus:ring-[#0E7C7B]"
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>Air Bags Deployed</FormLabel>
+                      <FormDescription className="text-xs">
+                        The vehicle air bags deployed during the collision
+                      </FormDescription>
+                    </div>
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            <div className="mt-4">
               <FormField
                 control={form.control}
                 name="accidentDescription"
@@ -234,22 +601,45 @@ export function AccidentDetailsForm({ caseId, initialData, onSaved }: AccidentDe
               />
             </div>
             
-            <div className="mb-4">
-              <FormLabel>Vehicle Position at Time of Impact</FormLabel>
-              <div className="border border-gray-300 rounded-md p-6 bg-gray-50">
-                {/* Placeholder for diagram - would implement with Canvas in production */}
-                <div className="flex items-center justify-center h-40 bg-white border border-dashed border-gray-400 rounded">
-                  <span className="text-sm text-gray-500">Vehicle collision diagram would be displayed here</span>
-                </div>
-                <div className="mt-2 text-right">
-                  <Button variant="link" className="text-sm text-[#0E7C7B] font-medium hover:text-teal-900 h-auto p-0">
-                    Edit Diagram
-                  </Button>
-                </div>
+            <div className="mt-6 border border-gray-200 rounded-md p-4 bg-gray-50">
+              <h4 className="text-sm font-medium mb-2 text-[#4A5568]">AI-Generated Accident Summary</h4>
+              <p className="text-sm text-gray-600 mb-3">Based on the information provided, here's a summary of the accident:</p>
+              
+              <FormField
+                control={form.control}
+                name="accidentSummary"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="The AI-generated summary will appear here after saving the form"
+                        rows={4}
+                        className="bg-white"
+                        disabled
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <div className="mt-2 text-right">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm" 
+                  className="text-sm text-[#0E7C7B]"
+                >
+                  Regenerate Summary
+                </Button>
               </div>
             </div>
-            
-            <div className="mb-4 border-t border-gray-200 pt-4">
+          </SubSection>
+          
+          {/* Police Report Section */}
+          <SubSection title="Police Report">
+            <div className="mb-4">
               <FormField
                 control={form.control}
                 name="policeReportFiled"
@@ -315,6 +705,7 @@ export function AccidentDetailsForm({ caseId, initialData, onSaved }: AccidentDe
             )}
           </SubSection>
           
+          {/* Witness Information Section */}
           <SubSection title="Witness Information">
             {fields.map((field, index) => (
               <div key={field.id} className="border-b border-gray-200 pb-4 mb-4">
