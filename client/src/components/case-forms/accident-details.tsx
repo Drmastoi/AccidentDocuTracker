@@ -55,14 +55,14 @@ export function AccidentDetailsForm({ caseId, initialData, onSaved }: AccidentDe
       accidentLocation: "",
       vehicleLocation: "Main Road",
       weatherConditions: "clear",
-      accidentType: "",
+      accidentType: "vehicleCollision",
       vehicleType: "Car",
       claimantPosition: "Driver",
       speed: "Medium",
       thirdPartyVehicle: "Car",
       impactLocation: "Rear",
       vehicleMovement: "Moving",
-      damageSeverity: "Mild Damage",
+      damageSeverity: "Mildly Damaged",
       seatBeltWorn: true,
       headRestFitted: true,
       airBagDeployed: false,
@@ -468,9 +468,9 @@ export function AccidentDetailsForm({ caseId, initialData, onSaved }: AccidentDe
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="Mild Damage">Mild Damage</SelectItem>
-                        <SelectItem value="Moderate Damage">Moderate Damage</SelectItem>
-                        <SelectItem value="Severe Damage">Severe Damage</SelectItem>
+                        <SelectItem value="Mildly Damaged">Mildly Damaged</SelectItem>
+                        <SelectItem value="Moderately Damaged">Moderately Damaged</SelectItem>
+                        <SelectItem value="Severely Damaged">Severely Damaged</SelectItem>
                         <SelectItem value="Written Off">Written Off</SelectItem>
                       </SelectContent>
                     </Select>

@@ -114,7 +114,7 @@ export const accidentDetailsSchema = z.object({
   thirdPartyVehicle: z.enum(["Car", "Van", "Bus", "Truck", "Motorcycle", "Other"]).optional(),
   impactLocation: z.enum(["Rear", "Front", "Left Side", "Right Side", "Multiple"]).optional(),
   vehicleMovement: z.enum(["Stationary", "Moving", "Parked", "Other"]).optional(),
-  damageSeverity: z.enum(["Mild", "Moderate", "Severe", "Written Off"]).optional(),
+  damageSeverity: z.enum(["Mildly Damaged", "Moderately Damaged", "Severely Damaged", "Written Off"]).optional(),
   seatBeltWorn: z.boolean().default(true),
   headRestFitted: z.boolean().default(true),
   airBagDeployed: z.boolean().default(false),
