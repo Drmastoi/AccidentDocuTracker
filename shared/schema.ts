@@ -123,18 +123,19 @@ export const accidentDetailsSchema = z.object({
 });
 
 export const physicalInjurySchema = z.object({
-  initialComplaints: z.string().optional(),
-  initialTreatment: z.string().optional(),
-  diagnoses: z.array(
+  injuries: z.array(
     z.object({
-      diagnosis: z.string().optional(),
-      diagnosisDate: z.string().optional(),
-      diagnosingPhysician: z.string().optional(),
+      type: z.enum(["Neck", "Upper Back / Shoulders", "Lower Back", "Bruising", "Headaches", "Other"]),
+      description: z.string().optional(), // For "Other" injuries
+      onsetTime: z.enum(["Same Day", "Next Day", "Few Days Later"]),
+      initialSeverity: z.enum(["Mild", "Moderate", "Severe"]),
+      currentSeverity: z.enum(["Mild", "Moderate", "Severe", "Resolved"]),
+      resolutionDays: z.string().optional(), // If resolved, how many days it took
+      mechanism: z.string(), // Auto-populated based on injury type
+      classification: z.string() // Auto-populated based on injury type
     })
   ).optional(),
-  injuryLocations: z.array(z.string()).optional(),
-  painScale: z.number().min(0).max(10).optional(),
-  symptoms: z.array(z.string()).optional(),
+  otherInjuriesDescription: z.string().optional(),
   additionalNotes: z.string().optional(),
 });
 
