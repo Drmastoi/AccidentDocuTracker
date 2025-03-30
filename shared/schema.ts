@@ -120,17 +120,6 @@ export const accidentDetailsSchema = z.object({
   airBagDeployed: z.boolean().default(false),
   collisionImpact: z.enum(["Forward/Backward", "Sideways", "Multiple Directions", "None"]).optional(),
   accidentDescription: z.string().optional(),
-  accidentSummary: z.string().optional(),
-  policeReportFiled: z.boolean().optional(),
-  reportNumber: z.string().optional(),
-  reportingOfficer: z.string().optional(),
-  witnesses: z.array(
-    z.object({
-      name: z.string().optional(),
-      phone: z.string().optional(),
-      statement: z.string().optional(),
-    })
-  ).optional(),
 });
 
 export const physicalInjurySchema = z.object({

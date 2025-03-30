@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useFieldArray, useForm } from "react-hook-form";
+import React from "react";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { accidentDetailsSchema, type AccidentDetails } from "@shared/schema";
 import { 
@@ -22,8 +22,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { FormSection, SubSection } from "@/components/ui/form-section";
 import { Button } from "@/components/ui/button";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Plus, X } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
@@ -60,18 +58,7 @@ export function AccidentDetailsForm({ caseId, initialData, onSaved }: AccidentDe
       airBagDeployed: false,
       collisionImpact: "Forward/Backward",
       accidentDescription: "",
-      accidentSummary: "",
-      policeReportFiled: false,
-      reportNumber: "",
-      reportingOfficer: "",
-      witnesses: [{ name: "", phone: "", statement: "" }],
     },
-  });
-  
-  // Setup field array for witnesses
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: "witnesses",
   });
   
   // Check if required fields are filled
@@ -601,189 +588,10 @@ export function AccidentDetailsForm({ caseId, initialData, onSaved }: AccidentDe
               />
             </div>
             
-            <div className="mt-6 border border-gray-200 rounded-md p-4 bg-gray-50">
-              <h4 className="text-sm font-medium mb-2 text-[#4A5568]">AI-Generated Accident Summary</h4>
-              <p className="text-sm text-gray-600 mb-3">Based on the information provided, here's a summary of the accident:</p>
-              
-              <FormField
-                control={form.control}
-                name="accidentSummary"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="The AI-generated summary will appear here after saving the form"
-                        rows={4}
-                        className="bg-white"
-                        disabled
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <div className="mt-2 text-right">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  size="sm" 
-                  className="text-sm text-[#0E7C7B]"
-                >
-                  Regenerate Summary
-                </Button>
-              </div>
-            </div>
+
           </SubSection>
           
-          {/* Police Report Section */}
-          <SubSection title="Police Report">
-            <div className="mb-4">
-              <FormField
-                control={form.control}
-                name="policeReportFiled"
-                render={({ field }) => (
-                  <FormItem className="space-y-3">
-                    <FormLabel>Police Report Filed?</FormLabel>
-                    <FormControl>
-                      <RadioGroup
-                        onValueChange={(value) => field.onChange(value === "yes")}
-                        defaultValue={field.value ? "yes" : "no"}
-                        className="flex items-center space-x-4"
-                      >
-                        <FormItem className="flex items-center space-x-2">
-                          <FormControl>
-                            <RadioGroupItem value="yes" />
-                          </FormControl>
-                          <FormLabel className="font-normal">Yes</FormLabel>
-                        </FormItem>
-                        <FormItem className="flex items-center space-x-2">
-                          <FormControl>
-                            <RadioGroupItem value="no" />
-                          </FormControl>
-                          <FormLabel className="font-normal">No</FormLabel>
-                        </FormItem>
-                      </RadioGroup>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            
-            {form.watch("policeReportFiled") && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                  control={form.control}
-                  name="reportNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Police Report Number</FormLabel>
-                      <FormControl>
-                        <Input placeholder="BPD-2023-45678" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="reportingOfficer"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Reporting Officer</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Officer J. Martinez" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            )}
-          </SubSection>
-          
-          {/* Witness Information Section */}
-          <SubSection title="Witness Information">
-            {fields.map((field, index) => (
-              <div key={field.id} className="border-b border-gray-200 pb-4 mb-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-base font-medium text-[#4A5568]">Witness #{index + 1}</h4>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => remove(index)}
-                    className="text-sm text-red-600 hover:text-red-800 h-auto p-0"
-                  >
-                    Remove
-                  </Button>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name={`witnesses.${index}.name`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Full Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Sarah Johnson" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name={`witnesses.${index}.phone`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Phone Number</FormLabel>
-                        <FormControl>
-                          <Input type="tel" placeholder="(555) 123-4567" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <div className="md:col-span-2">
-                    <FormField
-                      control={form.control}
-                      name={`witnesses.${index}.statement`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Statement</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              placeholder="Witness statement"
-                              rows={2}
-                              {...field} 
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
-            
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => append({ name: "", phone: "", statement: "" })}
-              className="flex items-center text-sm font-medium text-[#0E7C7B] hover:text-teal-900"
-            >
-              <Plus className="h-4 w-4 mr-1" />
-              Add Another Witness
-            </Button>
-          </SubSection>
+
           
           <div className="flex justify-end mt-6">
             <Button type="submit" disabled={saving}>
