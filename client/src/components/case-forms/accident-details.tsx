@@ -588,6 +588,22 @@ export function AccidentDetailsForm({ caseId, initialData, onSaved }: AccidentDe
               />
             </div>
             
+            {/* Accident Summary */}
+            <div className="mt-6 border border-gray-200 rounded-md p-4 bg-gray-50">
+              <h4 className="text-sm font-medium mb-2 text-[#4A5568]">Auto-Generated Accident Summary</h4>
+              <p className="text-sm text-gray-600 mb-3">
+                {form.watch("accidentDate") ? `On ${form.watch("accidentDate")}, ` : "On [DATE], "}
+                claimant was {form.watch("claimantPosition")?.toLowerCase() || "[POSITION]"} of the {form.watch("vehicleType")?.toLowerCase() || "[VEHICLE TYPE]"} when 
+                {form.watch("thirdPartyVehicle") ? ` an other ${form.watch("thirdPartyVehicle")?.toLowerCase()}` : " another vehicle"} hit 
+                claimant's {form.watch("vehicleType")?.toLowerCase() || "vehicle"} in the {form.watch("impactLocation")?.toLowerCase() || "[LOCATION]"} when it was 
+                {form.watch("vehicleMovement")?.toLowerCase() === "stationary" ? " stationary" : form.watch("vehicleMovement")?.toLowerCase() === "moving" ? " moving" : form.watch("vehicleMovement")?.toLowerCase() === "parked" ? " parked" : " [MOVEMENT]"}, 
+                as a result of this claimant was jolted {form.watch("collisionImpact")?.toLowerCase() || "forward and backwards"}. 
+                Due to the accident claimant's vehicle was {form.watch("damageSeverity")?.toLowerCase() || "[DAMAGE]"}. 
+                Claimant was {form.watch("seatBeltWorn") ? "wearing seat belt" : "not wearing seat belt"}, 
+                head rest were {form.watch("headRestFitted") ? "fitted" : "not fitted"}, 
+                air bags did {form.watch("airBagDeployed") ? "" : "not"} deploy.
+              </p>
+            </div>
 
           </SubSection>
           
