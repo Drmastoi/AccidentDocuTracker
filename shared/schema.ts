@@ -85,7 +85,6 @@ export const claimantDetailsSchema = z.object({
   accidentDate: z.string().optional(),
   identification: z.object({
     type: z.enum(["Passport", "Driving Licence", "Other"]).default("Passport"),
-    number: z.string().optional()
   }).optional(),
   accompaniedBy: z.enum(["Alone", "Spouse", "Father", "Mother", "Other"]).default("Alone"),
   dateOfReport: z.string().optional(),
@@ -99,8 +98,6 @@ export const claimantDetailsSchema = z.object({
   phone: z.string().optional(),
   email: z.string().email("Invalid email address").optional(),
   occupation: z.string().optional(),
-  employer: z.string().optional(),
-  additionalNotes: z.string().optional(),
 });
 
 export const accidentDetailsSchema = z.object({

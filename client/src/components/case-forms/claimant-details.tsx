@@ -1,23 +1,22 @@
-import React from "react";
-import { z } from "zod";
+import * as React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { claimantDetailsSchema, type ClaimantDetails } from "@shared/schema";
+import { ClaimantDetails, claimantDetailsSchema } from "@shared/schema";
 import { 
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
+  Form, 
+  FormControl, 
+  FormDescription, 
+  FormField, 
+  FormItem, 
   FormLabel,
-  FormMessage,
-  FormDescription
+  FormMessage
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { FormSection, SubSection } from "@/components/ui/form-section";
 import { Button } from "@/components/ui/button";
-import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
+import { FormSection, SubSection } from "@/components/ui/form-section";
+import { Textarea } from "@/components/ui/textarea";
 import { 
   Select,
   SelectContent,
@@ -26,14 +25,17 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { format } from "date-fns";
 
+// Define the props for the form component
 interface ClaimantDetailsFormProps {
   caseId: number;
   initialData?: ClaimantDetails;
   onSaved?: () => void;
 }
 
+/**
+ * Form component for editing claimant details
+ */
 export function ClaimantDetailsForm({ caseId, initialData, onSaved }: ClaimantDetailsFormProps) {
   const { toast } = useToast();
   const [saving, setSaving] = React.useState(false);
@@ -50,7 +52,6 @@ export function ClaimantDetailsForm({ caseId, initialData, onSaved }: ClaimantDe
       accidentDate: "",
       identification: {
         type: "Passport",
-        number: ""
       },
       accompaniedBy: "Alone",
       dateOfReport: "",
@@ -61,8 +62,6 @@ export function ClaimantDetailsForm({ caseId, initialData, onSaved }: ClaimantDe
       phone: "",
       email: "",
       occupation: "",
-      employer: "",
-      additionalNotes: "",
     },
   });
   
@@ -253,20 +252,6 @@ export function ClaimantDetailsForm({ caseId, initialData, onSaved }: ClaimantDe
                   </FormItem>
                 )}
               />
-              
-              <FormField
-                control={form.control}
-                name="employer"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Current Employer</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Tech Solutions Ltd." {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </div>
           </SubSection>
           
@@ -293,20 +278,6 @@ export function ClaimantDetailsForm({ caseId, initialData, onSaved }: ClaimantDe
                         <SelectItem value="Other">Other</SelectItem>
                       </SelectContent>
                     </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="identification.number"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Identification Number</FormLabel>
-                    <FormControl>
-                      <Input placeholder="123456789" {...field} />
-                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -430,28 +401,6 @@ export function ClaimantDetailsForm({ caseId, initialData, onSaved }: ClaimantDe
                         </SelectItem>
                       </SelectContent>
                     </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          </SubSection>
-            
-          <SubSection title="Additional Notes">
-            <div className="mt-6">
-              <FormField
-                control={form.control}
-                name="additionalNotes"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Additional Notes</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Enter any additional information about the claimant"
-                        rows={3}
-                        {...field} 
-                      />
-                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
