@@ -25,6 +25,16 @@ import { Button } from "@/components/ui/button";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
+// Helper function to format date from YYYY-MM-DD to DD/MM/YYYY
+const formatDateToUK = (dateString: string): string => {
+  if (!dateString) return dateString;
+  
+  const [year, month, day] = dateString.split('-');
+  if (!year || !month || !day) return dateString;
+  
+  return `${day}/${month}/${year}`;
+};
+
 interface AccidentDetailsFormProps {
   caseId: number;
   initialData?: AccidentDetails;
@@ -52,7 +62,7 @@ export function AccidentDetailsForm({ caseId, initialData, onSaved }: AccidentDe
       thirdPartyVehicle: "Car",
       impactLocation: "Rear",
       vehicleMovement: "Moving",
-      damageSeverity: "Mild",
+      damageSeverity: "Mild Damage",
       seatBeltWorn: true,
       headRestFitted: true,
       airBagDeployed: false,
@@ -458,9 +468,9 @@ export function AccidentDetailsForm({ caseId, initialData, onSaved }: AccidentDe
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="Mild">Mild</SelectItem>
-                        <SelectItem value="Moderate">Moderate</SelectItem>
-                        <SelectItem value="Severe">Severe</SelectItem>
+                        <SelectItem value="Mild Damage">Mild Damage</SelectItem>
+                        <SelectItem value="Moderate Damage">Moderate Damage</SelectItem>
+                        <SelectItem value="Severe Damage">Severe Damage</SelectItem>
                         <SelectItem value="Written Off">Written Off</SelectItem>
                       </SelectContent>
                     </Select>
@@ -592,7 +602,7 @@ export function AccidentDetailsForm({ caseId, initialData, onSaved }: AccidentDe
             <div className="mt-6 border border-gray-200 rounded-md p-4 bg-gray-50">
               <h4 className="text-sm font-medium mb-2 text-[#4A5568]">Auto-Generated Accident Summary</h4>
               <p className="text-sm text-gray-600 mb-3">
-                {form.watch("accidentDate") ? `On ${form.watch("accidentDate")}, ` : "On [DATE], "}
+                {form.watch("accidentDate") ? `On ${formatDateToUK(form.watch("accidentDate"))}, ` : "On [DATE], "}
                 claimant was {form.watch("claimantPosition")?.toLowerCase() || "[POSITION]"} of the {form.watch("vehicleType")?.toLowerCase() || "[VEHICLE TYPE]"} when 
                 {form.watch("thirdPartyVehicle") ? ` an other ${form.watch("thirdPartyVehicle")?.toLowerCase()}` : " another vehicle"} hit 
                 claimant's {form.watch("vehicleType")?.toLowerCase() || "vehicle"} in the {form.watch("impactLocation")?.toLowerCase() || "[LOCATION]"} when it was 
