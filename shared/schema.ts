@@ -77,18 +77,29 @@ export const updateCaseSchema = createInsertSchema(cases).omit({
 
 // Define the nested schemas for each section
 export const claimantDetailsSchema = z.object({
-  fullName: z.string().min(1, "Full name is required"),
+  fullName: z.string().min(1, "Name is required"),
   dateOfBirth: z.string().min(1, "Date of birth is required"),
+  age: z.number().optional(),
   address: z.string().optional(),
-  city: z.string().optional(),
-  state: z.string().optional(),
-  zipCode: z.string().optional(),
+  postCode: z.string().optional(),
+  accidentDate: z.string().optional(),
+  identification: z.object({
+    type: z.enum(["Passport", "Driving Licence", "Other"]).default("Passport"),
+    number: z.string().optional()
+  }).optional(),
+  accompaniedBy: z.enum(["Alone", "Spouse", "Father", "Mother", "Other"]).default("Alone"),
+  dateOfReport: z.string().optional(),
+  dateOfExamination: z.string().optional(),
+  timeSpent: z.string().default("15 min"),
+  helpWithCommunication: z.boolean().default(false),
+  placeOfExamination: z.enum([
+    "Face to Face at Meeting Room, North, Ibis, Garstang Rd, Preston PR3 5JE",
+    "Regus Office, Centenary Way, Salford M50 1RF"
+  ]).default("Face to Face at Meeting Room, North, Ibis, Garstang Rd, Preston PR3 5JE"),
   phone: z.string().optional(),
   email: z.string().email("Invalid email address").optional(),
   occupation: z.string().optional(),
   employer: z.string().optional(),
-  insurance: z.string().optional(),
-  policyNumber: z.string().optional(),
   additionalNotes: z.string().optional(),
 });
 

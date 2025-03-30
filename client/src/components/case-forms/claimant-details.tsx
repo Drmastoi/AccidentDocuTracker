@@ -9,7 +9,8 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage
+  FormMessage,
+  FormDescription
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -17,6 +18,15 @@ import { FormSection, SubSection } from "@/components/ui/form-section";
 import { Button } from "@/components/ui/button";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { format } from "date-fns";
 
 interface ClaimantDetailsFormProps {
   caseId: number;
@@ -34,16 +44,24 @@ export function ClaimantDetailsForm({ caseId, initialData, onSaved }: ClaimantDe
     defaultValues: initialData || {
       fullName: "",
       dateOfBirth: "",
+      age: undefined,
       address: "",
-      city: "",
-      state: "",
-      zipCode: "",
+      postCode: "",
+      accidentDate: "",
+      identification: {
+        type: "Passport",
+        number: ""
+      },
+      accompaniedBy: "Alone",
+      dateOfReport: "",
+      dateOfExamination: "",
+      timeSpent: "15 min",
+      helpWithCommunication: false,
+      placeOfExamination: "Face to Face at Meeting Room, North, Ibis, Garstang Rd, Preston PR3 5JE",
       phone: "",
       email: "",
       occupation: "",
       employer: "",
-      insurance: "",
-      policyNumber: "",
       additionalNotes: "",
     },
   });
@@ -94,7 +112,7 @@ export function ClaimantDetailsForm({ caseId, initialData, onSaved }: ClaimantDe
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <SubSection>
+          <SubSection title="Basic Information">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
@@ -126,54 +144,68 @@ export function ClaimantDetailsForm({ caseId, initialData, onSaved }: ClaimantDe
               
               <FormField
                 control={form.control}
+                name="age"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Age</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        placeholder="35" 
+                        {...field}
+                        value={field.value === undefined ? '' : field.value}
+                        onChange={(e) => field.onChange(e.target.value === '' ? undefined : parseInt(e.target.value))}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="accidentDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Accident Date</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 mt-6">
+              <FormField
+                control={form.control}
                 name="address"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Address</FormLabel>
                     <FormControl>
-                      <Input placeholder="123 Main Street, Apt 4B" {...field} />
+                      <Textarea 
+                        placeholder="123 High Street"
+                        rows={2}
+                        {...field} 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
               <FormField
                 control={form.control}
-                name="city"
+                name="postCode"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>City</FormLabel>
+                    <FormLabel>Post Code</FormLabel>
                     <FormControl>
-                      <Input placeholder="Boston" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="state"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>State</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Massachusetts" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="zipCode"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Zip Code</FormLabel>
-                    <FormControl>
-                      <Input placeholder="02115" {...field} />
+                      <Input placeholder="PR3 5JE" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -187,7 +219,7 @@ export function ClaimantDetailsForm({ caseId, initialData, onSaved }: ClaimantDe
                   <FormItem>
                     <FormLabel>Phone Number</FormLabel>
                     <FormControl>
-                      <Input type="tel" placeholder="(617) 555-1234" {...field} />
+                      <Input type="tel" placeholder="07700 900000" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -207,11 +239,7 @@ export function ClaimantDetailsForm({ caseId, initialData, onSaved }: ClaimantDe
                   </FormItem>
                 )}
               />
-            </div>
-          </SubSection>
-          
-          <SubSection title="Additional Information">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
               <FormField
                 control={form.control}
                 name="occupation"
@@ -233,42 +261,183 @@ export function ClaimantDetailsForm({ caseId, initialData, onSaved }: ClaimantDe
                   <FormItem>
                     <FormLabel>Current Employer</FormLabel>
                     <FormControl>
-                      <Input placeholder="Tech Solutions Inc." {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="insurance"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Insurance Provider</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Blue Cross Blue Shield" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="policyNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Policy Number</FormLabel>
-                    <FormControl>
-                      <Input placeholder="BCBS-12345678" {...field} />
+                      <Input placeholder="Tech Solutions Ltd." {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
+          </SubSection>
+          
+          <SubSection title="Identification">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField
+                control={form.control}
+                name="identification.type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Identification Type</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select ID type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Passport">Passport</SelectItem>
+                        <SelectItem value="Driving Licence">Driving Licence</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="identification.number"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Identification Number</FormLabel>
+                    <FormControl>
+                      <Input placeholder="123456789" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </SubSection>
+
+          <SubSection title="Examination Details">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField
+                control={form.control}
+                name="dateOfExamination"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Date of Examination</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="dateOfReport"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Date of Report</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="accompaniedBy"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Accompanied By</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select who accompanied" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Alone">Alone</SelectItem>
+                        <SelectItem value="Spouse">Spouse</SelectItem>
+                        <SelectItem value="Father">Father</SelectItem>
+                        <SelectItem value="Mother">Mother</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="timeSpent"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Time Spent</FormLabel>
+                    <FormControl>
+                      <Input placeholder="15 min" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    <FormDescription>Default: 15 min</FormDescription>
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="helpWithCommunication"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-base">Help with Communication</FormLabel>
+                      <FormDescription>Does the claimant need help with communication?</FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="placeOfExamination"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Place of Examination</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="h-20">
+                          <SelectValue placeholder="Select examination location" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Face to Face at Meeting Room, North, Ibis, Garstang Rd, Preston PR3 5JE">
+                          Face to Face at Meeting Room, North, Ibis, Garstang Rd, Preston PR3 5JE
+                        </SelectItem>
+                        <SelectItem value="Regus Office, Centenary Way, Salford M50 1RF">
+                          Regus Office, Centenary Way, Salford M50 1RF
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </SubSection>
             
+          <SubSection title="Additional Notes">
             <div className="mt-6">
               <FormField
                 control={form.control}
