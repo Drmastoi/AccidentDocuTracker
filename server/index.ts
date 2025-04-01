@@ -1,6 +1,34 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { storage } from "./storage";
+import { db } from "./db";
+import { users } from "@shared/schema";
+import { eq } from "drizzle-orm";
+
+// Function to ensure default user exists
+async function ensureDefaultUser() {
+  try {
+    // Check if the default user already exists
+    const existingUser = await storage.getUserByUsername("doctor");
+    
+    if (!existingUser) {
+      log("Creating default user");
+      // Create default user if it doesn't exist
+      await storage.createUser({
+        username: "doctor",
+        password: "password123",
+        fullName: "Dr. Sarah Johnson",
+        role: "doctor"
+      });
+      log("Default user created successfully");
+    } else {
+      log("Default user already exists");
+    }
+  } catch (error) {
+    console.error("Error ensuring default user:", error);
+  }
+}
 
 const app = express();
 app.use(express.json());
@@ -37,6 +65,9 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Ensure default user exists in database
+  await ensureDefaultUser();
+  
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

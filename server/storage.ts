@@ -7,6 +7,8 @@ import {
   type InsertCase,
   type UpdateCase
 } from "@shared/schema";
+import { db } from './db';
+import { eq, desc, like, sql, and } from 'drizzle-orm';
 
 export interface IStorage {
   // User operations
@@ -26,6 +28,113 @@ export interface IStorage {
   generateCaseNumber(): Promise<string>;
 }
 
+// PostgreSQL database implementation
+export class DatabaseStorage implements IStorage {
+  // User operations
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+  
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
+  }
+  
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db.insert(users).values(insertUser).returning();
+    return user;
+  }
+  
+  // Case operations
+  async getCase(id: number): Promise<Case | undefined> {
+    const [foundCase] = await db.select().from(cases).where(eq(cases.id, id));
+    return foundCase;
+  }
+  
+  async getCaseByNumber(caseNumber: string): Promise<Case | undefined> {
+    const [foundCase] = await db.select().from(cases).where(eq(cases.caseNumber, caseNumber));
+    return foundCase;
+  }
+  
+  async getCases(userId?: number): Promise<Case[]> {
+    if (userId) {
+      return await db.select().from(cases).where(eq(cases.userId, userId));
+    }
+    return await db.select().from(cases).orderBy(desc(cases.updatedAt));
+  }
+  
+  async createCase(caseData: InsertCase): Promise<Case> {
+    const now = new Date();
+    
+    const newCaseData = {
+      ...caseData,
+      createdAt: now,
+      updatedAt: now,
+    };
+    
+    const [newCase] = await db.insert(cases).values(newCaseData).returning();
+    return newCase;
+  }
+  
+  async updateCase(id: number, caseData: Partial<UpdateCase>): Promise<Case> {
+    const [updatedCase] = await db
+      .update(cases)
+      .set({
+        ...caseData,
+        updatedAt: new Date(),
+      })
+      .where(eq(cases.id, id))
+      .returning();
+    
+    if (!updatedCase) {
+      throw new Error(`Case with ID ${id} not found`);
+    }
+    
+    return updatedCase;
+  }
+  
+  async deleteCase(id: number): Promise<boolean> {
+    const result = await db.delete(cases).where(eq(cases.id, id)).returning({ id: cases.id });
+    return result.length > 0;
+  }
+  
+  // Generate a unique case number in the format MED-YYYY-XXX
+  async generateCaseNumber(): Promise<string> {
+    const year = new Date().getFullYear();
+    const yearStr = year.toString();
+    
+    // Get the cases with the current year prefix
+    const existingCases = await db
+      .select()
+      .from(cases)
+      .where(like(cases.caseNumber, `MED-${yearStr}-%`));
+    
+    let highestNumber = 0;
+    
+    if (existingCases.length > 0) {
+      existingCases.forEach(c => {
+        const parts = c.caseNumber.split('-');
+        if (parts.length === 3) {
+          const num = parseInt(parts[2], 10);
+          if (!isNaN(num) && num > highestNumber) {
+            highestNumber = num;
+          }
+        }
+      });
+    }
+    
+    const nextNumber = highestNumber + 1;
+    const formattedNumber = nextNumber.toString().padStart(3, '0');
+    
+    return `MED-${yearStr}-${formattedNumber}`;
+  }
+}
+
+// Create an instance of the database storage
+export const storage = new DatabaseStorage();
+
+// Memory storage implementation for fallback or testing
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private cases: Map<number, Case>;
@@ -147,5 +256,3 @@ export class MemStorage implements IStorage {
     return `MED-${year}-${formattedNumber}`;
   }
 }
-
-export const storage = new MemStorage();
