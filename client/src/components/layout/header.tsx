@@ -52,7 +52,10 @@ export function Header({ caseNumber, onSave, onGeneratePdf }: HeaderProps) {
           <Save className="h-4 w-4 mr-1" />
           Save Case
         </Button>
-        <Button onClick={onGeneratePdf}>
+        <Button onClick={(e: React.MouseEvent) => {
+            e.preventDefault();
+            onGeneratePdf();
+          }}>
           <FileText className="h-4 w-4 mr-1" />
           Generate PDF
         </Button>

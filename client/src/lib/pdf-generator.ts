@@ -197,130 +197,142 @@ export const generatePDF = (caseData: Case, options?: PDFCustomizationOptions): 
   
   // ==================== PAGE 1: COVER PAGE ====================
   
-  // Add header with background
-  doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-  doc.rect(0, 0, 210, 30, "F");
+  // Set up page margins
+  const margin = 50;
+  const pageWidth = doc.internal.pageSize.width;
+  let yPosition = 40;
   
-  // Title
-  doc.setFontSize(18);
-  doc.setTextColor(255, 255, 255); // White
-  doc.setFont("helvetica", "bold");
-  doc.text("MEDICAL REPORT", 105, 18, { align: "center" });
+  // TITLE
+  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  doc.setFontSize(pdfOptions.fontSize?.title || 18);
+  doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
+  doc.text("MEDICAL REPORT", margin, yPosition);
   
-  // Subtitle
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "normal");
-  doc.text("Road Traffic Accident Assessment", 105, 25, { align: "center" });
+  // Subtitle - Prepared for the Court
+  yPosition += 15;
+  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(pdfOptions.fontSize?.subtitle || 14);
+  doc.text("Prepared for the Court on:", margin, yPosition);
   
-  let yPosition = 45;
+  // Draw table
+  yPosition += 15;
+  const tableStartY = yPosition;
+  const tableWidth = pageWidth - (margin * 2);
+  const leftColWidth = tableWidth / 2;
+  const rowHeight = 22;
+  const claimant = caseData.claimantDetails;
   
-  // Claimant Details
-  if (caseData.claimantDetails && hasClaimantDetails(caseData.claimantDetails)) {
-    const claimant = caseData.claimantDetails;
+  // Function to draw a table row
+  const drawTableRow = (label: string, value: string, y: number) => {
+    // Draw borders
+    doc.setLineWidth(0.5);
+    doc.line(margin, y, margin + tableWidth, y); // Top line
+    doc.line(margin, y + rowHeight, margin + tableWidth, y + rowHeight); // Bottom line
+    doc.line(margin, y, margin, y + rowHeight); // Left line
+    doc.line(margin + leftColWidth, y, margin + leftColWidth, y + rowHeight); // Middle line
+    doc.line(margin + tableWidth, y, margin + tableWidth, y + rowHeight); // Right line
     
-    // Claimant Box
-    doc.setFillColor(245, 247, 250); // Light gray background
-    doc.roundedRect(20, yPosition, 170, 55, 3, 3, "F");
-    
-    doc.setFontSize(12);
-    doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    doc.setFont("helvetica", "bold");
-    doc.text("CLAIMANT DETAILS", 25, yPosition + 10);
-    
+    // Add text
     doc.setFontSize(10);
-    doc.setTextColor(60, 60, 60);
-    doc.setFont("helvetica", "normal");
-    
-    // Left column
-    let yDetail = yPosition + 20;
-    doc.text(`Name: ${claimant.fullName || "N/A"}`, 25, yDetail);
-    yDetail += 8;
-    doc.text(`Date of Birth: ${formatDate(claimant.dateOfBirth)} (${calculateAge(claimant.dateOfBirth)} years)`, 25, yDetail);
-    yDetail += 8;
-    doc.text(`Address: ${claimant.address || "N/A"}`, 25, yDetail);
-    yDetail += 8;
-    doc.text(`Post Code: ${claimant.postCode || "N/A"}`, 25, yDetail);
-    
-    // Right column
-    yDetail = yPosition + 20;
-    doc.text(`Accident Date: ${formatDate(claimant.accidentDate)}`, 115, yDetail);
-    yDetail += 8;
-    doc.text(`Report Date: ${formatDate(claimant.dateOfReport)}`, 115, yDetail);
-    yDetail += 8;
-    doc.text(`Examination Date: ${formatDate(claimant.dateOfExamination)}`, 115, yDetail);
-    yDetail += 8;
-    doc.text(`Place of Examination: ${claimant.placeOfExamination || "N/A"}`, 115, yDetail);
-    
-    yPosition += 65;
-  }
+    doc.setFont(pdfOptions.fontFamily || "helvetica", "normal");
+    doc.text(label, margin + 5, y + 15);
+    doc.text(value, margin + leftColWidth + 5, y + 15);
+  };
   
-  // Referral Agency and Solicitor Box
-  doc.setFillColor(245, 247, 250); // Light gray background
-  doc.roundedRect(20, yPosition, 170, 50, 3, 3, "F");
+  // Table rows
+  drawTableRow("Claimant's Full Name", claimant?.fullName ? `${claimant.fullName}` : "{{Full Name}}", yPosition);
+  yPosition += rowHeight;
   
+  drawTableRow("Date Of Birth:", claimant?.dateOfBirth ? `${formatDate(claimant.dateOfBirth)}` : "{{Date of birth}}", yPosition);
+  yPosition += rowHeight;
+  
+  drawTableRow("Address:", claimant?.address ? `${claimant.address}` : "{{Full Address}}", yPosition);
+  yPosition += rowHeight;
+  
+  drawTableRow("ID Checked:", "{{Type of ID}}", yPosition);
+  yPosition += rowHeight;
+  
+  drawTableRow("Occupation:", claimant?.occupation ? `${claimant.occupation}` : "{{Occupation at the time of accident}}", yPosition);
+  yPosition += rowHeight;
+  
+  drawTableRow("Accompanied By:", claimant?.accompaniedBy || "", yPosition);
+  yPosition += rowHeight;
+  
+  drawTableRow("Date Of Accident:", claimant?.accidentDate ? `${formatDate(claimant.accidentDate)}` : "{{Date of Accident}}", yPosition);
+  yPosition += rowHeight;
+  
+  // Multi-row cells - Solicitor and reference details
+  const multiRowStartY = yPosition;
+  doc.setLineWidth(0.5);
+  
+  // Left column for labels - 3 rows
+  doc.line(margin, multiRowStartY, margin + leftColWidth, multiRowStartY); // Top line
+  doc.line(margin, multiRowStartY, margin, multiRowStartY + (rowHeight * 3)); // Left line
+  doc.line(margin, multiRowStartY + (rowHeight * 3), margin + leftColWidth, multiRowStartY + (rowHeight * 3)); // Bottom line
+  doc.line(margin + leftColWidth, multiRowStartY, margin + leftColWidth, multiRowStartY + (rowHeight * 3)); // Middle line
+  
+  // Right column for values - 3 rows
+  doc.line(margin + leftColWidth, multiRowStartY, margin + tableWidth, multiRowStartY); // Top line
+  doc.line(margin + tableWidth, multiRowStartY, margin + tableWidth, multiRowStartY + (rowHeight * 3)); // Right line
+  doc.line(margin + leftColWidth, multiRowStartY + (rowHeight * 3), margin + tableWidth, multiRowStartY + (rowHeight * 3)); // Bottom line
+  
+  // Add text for multi-row cells
+  doc.text("Name Of Referring Party:", margin + 5, multiRowStartY + 15);
+  doc.text("Reference Number:", margin + 5, multiRowStartY + 35);
+  doc.text("Name Of Solicitor:", margin + 5, multiRowStartY + 55);
+  doc.text("Reference Number:", margin + 5, multiRowStartY + 75);
+  doc.text("Time Spent With Claimant:", margin + 5, multiRowStartY + 95);
+  
+  // Add horizontal lines between rows in the multi-row section
+  doc.line(margin, multiRowStartY + rowHeight, margin + tableWidth, multiRowStartY + rowHeight); // Line after row 1
+  doc.line(margin, multiRowStartY + (rowHeight * 2), margin + tableWidth, multiRowStartY + (rowHeight * 2)); // Line after row 2
+  
+  yPosition += (rowHeight * 3);
+  
+  // Continue with single rows
+  drawTableRow("Medco Ref:", "", yPosition);
+  yPosition += rowHeight;
+  
+  drawTableRow("Examination Location:", claimant?.placeOfExamination || "", yPosition);
+  yPosition += rowHeight;
+  
+  drawTableRow("Date Of Examination:", claimant?.dateOfExamination ? `${formatDate(claimant.dateOfExamination)}` : "", yPosition);
+  yPosition += rowHeight;
+  
+  drawTableRow("Date Of Report:", claimant?.dateOfReport ? `${formatDate(claimant.dateOfReport)}` : "", yPosition);
+  yPosition += rowHeight;
+  
+  // Expert details section
+  yPosition += 20;
   doc.setFontSize(12);
   doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-  doc.setFont("helvetica", "bold");
-  doc.text("AGENCY & SOLICITOR INFORMATION", 25, yPosition + 10);
+  doc.text("Prepared by:", margin, yPosition);
   
+  // Expert name, larger size
+  yPosition += 5;
+  doc.setFontSize(14);
+  doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
+  
+  const expertName = caseData.expertDetails?.examiner || "Dr Awais Iqbal";
+  const expertTitle = caseData.expertDetails?.credentials || "MBBS, Direct Medical Expert";
+  doc.text(`${expertName}, ${expertTitle}`, margin + 100, yPosition);
+  
+  // Expert statement
+  yPosition += 15;
   doc.setFontSize(10);
-  doc.setTextColor(60, 60, 60);
-  doc.setFont("helvetica", "normal");
+  doc.setFont(pdfOptions.fontFamily || "helvetica", "normal");
+  doc.setTextColor(0, 0, 0);
   
-  let yDetail = yPosition + 25;
-  doc.text("Referring Agency: [Agency Name]", 25, yDetail);
-  yDetail += 8;
-  doc.text("Agency Reference: [Reference Number]", 25, yDetail);
+  const expertStatement = `The Writer: I, ${expertName}, am a medico-legal practitioner. Full details of my qualifications and experience entitling me to provide an expert opinion can be found on the last page of this medical report.`;
+  const statementLines = doc.splitTextToSize(expertStatement, tableWidth);
+  doc.text(statementLines, margin, yPosition);
   
-  yDetail = yPosition + 25;
-  doc.text("Solicitor Name: [Solicitor Name]", 115, yDetail);
-  yDetail += 8;
-  doc.text("Solicitor Reference: [Reference Number]", 115, yDetail);
+  yPosition += statementLines.length * 7;
   
-  yPosition += 60;
-  
-  // MedCo and Expert Box
-  doc.setFillColor(245, 247, 250); // Light gray background
-  doc.roundedRect(20, yPosition, 170, 50, 3, 3, "F");
-  
-  doc.setFontSize(12);
-  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-  doc.setFont("helvetica", "bold");
-  doc.text("MEDCO & EXPERT INFORMATION", 25, yPosition + 10);
-  
-  doc.setFontSize(10);
-  doc.setTextColor(60, 60, 60);
-  doc.setFont("helvetica", "normal");
-  
-  if (caseData.expertDetails && hasExpertDetails(caseData.expertDetails)) {
-    const expert = caseData.expertDetails;
-    
-    yDetail = yPosition + 25;
-    doc.text("MedCo Number: [MedCo Number]", 25, yDetail);
-    
-    yDetail = yPosition + 25;
-    doc.text(`Medical Expert: ${expert.examiner || "N/A"}`, 115, yDetail);
-    yDetail += 8;
-    doc.text(`Credentials: ${expert.credentials || "N/A"}`, 115, yDetail);
-  } else {
-    yDetail = yPosition + 25;
-    doc.text("MedCo Number: [MedCo Number]", 25, yDetail);
-    
-    yDetail = yPosition + 25;
-    doc.text("Medical Expert: [Expert Name]", 115, yDetail);
-    yDetail += 8;
-    doc.text("Credentials: [Credentials]", 115, yDetail);
-  }
-  
-  yPosition += 60;
-  
-  // Case information
-  doc.setFontSize(12);
-  doc.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
-  doc.setFont("helvetica", "bold");
-  doc.text(`Case Number: ${caseData.caseNumber}`, 105, yPosition, { align: "center" });
-  yPosition += 8;
-  doc.text(`Report Generated: ${formatDate(new Date().toISOString())}`, 105, yPosition, { align: "center" });
+  // Methodology statement
+  const methodologyStatement = "Methodology: I have been instructed to prepare this medical report for The Court in connection with the personal injuries sustained by the claimant. I interviewed and examined the claimant.";
+  const methodologyLines = doc.splitTextToSize(methodologyStatement, tableWidth);
+  doc.text(methodologyLines, margin, yPosition);
   
   // ==================== PAGE 2: INJURY TABLE & DETAILS ====================
   doc.addPage();
