@@ -12,10 +12,18 @@ import {
   FormDescription
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { FormSection, SubSection } from "@/components/ui/form-section";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
@@ -88,6 +96,11 @@ export function LifestyleImpactForm({ caseId, initialData, onSaved }: LifestyleI
   const form = useForm<LifestyleImpact>({
     resolver: zodResolver(lifestyleImpactSchema),
     defaultValues: initialData || {
+      // Job details
+      currentJobTitle: "",
+      workStatus: undefined,
+      secondJob: "",
+      
       // Work impact
       daysOffWork: "",
       daysLightDuties: "",
@@ -274,6 +287,73 @@ export function LifestyleImpactForm({ caseId, initialData, onSaved }: LifestyleI
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
+          {/* Job Details */}
+          <SubSection title="Job Details">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+              <FormField
+                control={form.control}
+                name="currentJobTitle"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Current Job Title</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="Enter job title"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="secondJob"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Second Job (if any)</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="Enter second job details"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            <FormField
+              control={form.control}
+              name="workStatus"
+              render={({ field }) => (
+                <FormItem className="mb-4">
+                  <FormLabel>Work Status</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select work status" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="Full-time">Full-time</SelectItem>
+                      <SelectItem value="Part-time">Part-time</SelectItem>
+                      <SelectItem value="Retired">Retired</SelectItem>
+                      <SelectItem value="Student">Student</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </SubSection>
+          
           {/* Work Impact */}
           <SubSection title="Work Impact">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

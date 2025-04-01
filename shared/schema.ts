@@ -187,6 +187,11 @@ export const treatmentsSchema = z.object({
 });
 
 export const lifestyleImpactSchema = z.object({
+  // Job details
+  currentJobTitle: z.string().optional(),
+  workStatus: z.enum(["Full-time", "Part-time", "Retired", "Student", "Other"]).optional(),
+  secondJob: z.string().optional(),
+  
   // Work impact
   daysOffWork: z.string().optional(),
   daysLightDuties: z.string().optional(),

@@ -19,7 +19,6 @@ export type SectionId =
   | "treatments" 
   | "lifestyle" 
   | "family" 
-  | "work" 
   | "prognosis" 
   | "expert";
 
@@ -85,19 +84,11 @@ export const sections: Section[] = [
   },
   {
     id: "family",
-    name: "Family History",
+    name: "Past History of Accidents or Illness",
     icon: Users,
     apiPath: "family-history",
     getCompletionStatus: (caseData) => 
       !!caseData?.familyHistory
-  },
-  {
-    id: "work",
-    name: "Work History",
-    icon: Briefcase,
-    apiPath: "work-history",
-    getCompletionStatus: (caseData) => 
-      !!caseData?.workHistory
   },
   {
     id: "prognosis",
