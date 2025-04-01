@@ -192,222 +192,241 @@ export const generatePDF = (caseData: Case, options?: PDFCustomizationOptions): 
   
   // Define the brand colors
   const primaryColor = pdfOptions.primaryColor || [14, 124, 123]; // RGB for #0E7C7B dark teal
-  const secondaryColor = pdfOptions.secondaryColor || [74, 85, 104]; // RGB for #4A5568 slate grey
+  // We'll use primaryColor instead of secondaryColor
   
-  // ==================== PAGE 1: COVER PAGE ====================
+  // ==================== PAGE 1: COMPLETELY REVAMPED COVER PAGE ====================
   
-  // Set up page margins
-  const margin = 50;
+  // Set page width and margin
   const pageWidth = doc.internal.pageSize.width;
-  let yPosition = 40;
+  const margin = 15; // Reduced margin for modern look
+  const claimant = caseData.claimantDetails || {};
   
-  // TITLE
-  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-  doc.setFontSize(pdfOptions.fontSize?.title || 18);
-  doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
-  doc.text("MEDICAL REPORT", margin, yPosition);
-  
-  // Subtitle - Prepared for the Court
-  yPosition += 15;
-  doc.setTextColor(0, 0, 0);
-  doc.setFontSize(pdfOptions.fontSize?.subtitle || 14);
-  doc.text("Prepared for the Court on:", margin, yPosition);
-  
-  // Create a modern card-based layout for patient details
-  yPosition += 15;
-  const claimant = caseData.claimantDetails;
-  
-  // Define card dimensions and styling
-  const cardWidth = pageWidth - (margin * 2);
-  const tableWidth = cardWidth; // Define tableWidth for use in other sections
-  const cardMargin = 5;
-  
-  // Patient Information Card - Sleeker Design with visual elements
-  // Draw a gradient background for the card with fixed height - even larger to contain everything
-  const grdX = margin;
-  const grdY = yPosition;
-  const grdW = cardWidth;
-  const grdH = 110; // Further increased fixed height to ensure all content fits
-  
-  // Create gradient from light to slightly darker
-  doc.setDrawColor(0);
-  doc.setFillColor(248, 250, 252);
-  doc.roundedRect(grdX, grdY, grdW, grdH, 5, 5, 'F');
-  
-  // Draw a border to contain content
-  doc.setDrawColor(230, 230, 230);
-  doc.setLineWidth(0.2);
-  doc.roundedRect(grdX, grdY, grdW, grdH, 5, 5, 'S');
-  
-  // Add a colored accent bar on the left side
+  // Modern header with full-width banner and subtle dot pattern
   doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-  doc.rect(grdX, grdY, 4, grdH, 'F');
+  doc.rect(0, 0, pageWidth, 45, "F");
   
-  // Card Title with proper padding
-  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-  doc.setFontSize(13);
-  doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
-  doc.text("PATIENT INFORMATION", margin + 10, yPosition + 12);
-  
-  // Add a horizontal rule under the title that doesn't extend beyond the card
-  doc.setDrawColor(230, 230, 230);
-  doc.setLineWidth(0.3);
-  const titleLineLength = 150; // Constrained line length
-  doc.line(margin + 10, yPosition + 16, margin + 10 + titleLineLength, yPosition + 16);
-  
-  // Reset for content
-  doc.setTextColor(80, 80, 80);
-  doc.setFontSize(9.5);
-  
-  // Create two-column layout with fixed widths to prevent bleeding
-  const fieldLabelWidth = 40; // Increased width for labels
-  const col1X = margin + 15; // Left margin
-  const col2X = margin + (cardWidth / 2) + 5; // Start of right column
-  let detailsY = yPosition + 30; // Top margin for first row
-  
-  // Column 1: Personal Information - with visual emphasis
-  doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
-  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-  doc.text("Personal Details", col1X, detailsY);
-  detailsY += 10; // Spacing after section header
-  
-  // Create a consistent layout function for fields with strict width constraints
-  const addField = (label: string, value: string, x: number, y: number) => {
-    // Create shortened value if too long - with stricter max length
-    const maxValueLength = 20; // Reduced maximum characters in value
-    let displayValue = value;
-    if (value.length > maxValueLength) {
-      displayValue = value.substring(0, maxValueLength) + "...";
+  // Add subtle pattern overlay for depth (small dots)
+  doc.setDrawColor(255, 255, 255, 0.1);
+  doc.setLineWidth(0.1);
+  const patternSpacing = 5;
+  for (let x = 0; x < pageWidth; x += patternSpacing) {
+    for (let y = 0; y < 45; y += patternSpacing) {
+      doc.circle(x, y, 0.2, 'S');
     }
-    
-    // Calculate available space for value (half of card width minus label width minus padding)
-    const availableWidth = (cardWidth / 2) - fieldLabelWidth - 15;
-    
-    doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
-    doc.setTextColor(60, 60, 60);
-    doc.text(label, x, y);
-    doc.setFont(pdfOptions.fontFamily || "helvetica", "normal");
-    
-    // Split value to fit in available width if needed
-    const valueLines = doc.splitTextToSize(displayValue, availableWidth);
-    doc.text(valueLines, x + fieldLabelWidth, y);
-    
-    // Return increased Y position based on number of lines
-    return y + (valueLines.length > 1 ? 10 * valueLines.length : 9);
-  };
+  }
   
-  // First column fields with constrained values
-  detailsY = addField("Full Name:", `${claimant?.fullName || "Not provided"}`, col1X, detailsY);
-  detailsY = addField("Date of Birth:", `${claimant?.dateOfBirth ? formatDate(claimant.dateOfBirth) : "Not provided"}`, col1X, detailsY);
-  detailsY = addField("Address:", `${claimant?.address || "Not provided"}`, col1X, detailsY);
-  detailsY = addField("Accompanied By:", `${claimant?.accompaniedBy || "None"}`, col1X, detailsY);
-  
-  // Column 2: Legal Information - with visual emphasis
-  let legalY = yPosition + 30;
-  
+  // Add large title with professional font settings
+  doc.setFontSize(22);
+  doc.setTextColor(255, 255, 255);
   doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
-  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-  doc.text("Legal Information", col2X, legalY);
-  legalY += 10; // Spacing after header
+  doc.text("MEDICO-LEGAL EXPERT REPORT", pageWidth/2, 20, { align: "center" });
   
-  // Second column fields with constrained values
-  legalY = addField("Instructing Party:", `${claimant?.instructingParty || "Not provided"}`, col2X, legalY);
-  legalY = addField("IP Reference:", `${claimant?.instructingPartyRef || "Not provided"}`, col2X, legalY);
-  legalY = addField("Solicitor:", `${claimant?.solicitorName || "Not provided"}`, col2X, legalY);
-  legalY = addField("Reference:", `${claimant?.referenceNumber || "Not provided"}`, col2X, legalY);
-  legalY = addField("MedCo Ref:", `${claimant?.medcoRefNumber || "Not provided"}`, col2X, legalY);
-  
-  // Update Y position after the card to match the larger card height
-  yPosition += 115;
-  
-  // Examination Details Card - Sleek Design matching the patient card
-  // Draw a gradient background for the card with fixed height and border to prevent overflow
-  const examGrdX = margin;
-  const examGrdY = yPosition;
-  const examGrdW = cardWidth;
-  const examGrdH = 80; // Further increased fixed height to ensure all content fits
-  
-  // Create gradient from light to slightly darker
-  doc.setDrawColor(0);
-  doc.setFillColor(245, 252, 255); // Slightly different shade than the patient card
-  doc.roundedRect(examGrdX, examGrdY, examGrdW, examGrdH, 5, 5, 'F');
-  
-  // Draw a border to contain content
-  doc.setDrawColor(230, 230, 230);
-  doc.setLineWidth(0.2);
-  doc.roundedRect(examGrdX, examGrdY, examGrdW, examGrdH, 5, 5, 'S');
-  
-  // Add a colored accent bar on the left side with a different color
-  doc.setFillColor(primaryColor[0], primaryColor[1]-20, primaryColor[2]+20); // Slightly different accent color
-  doc.rect(examGrdX, examGrdY, 4, examGrdH, 'F');
-  
-  // Card Title with proper padding
-  doc.setTextColor(primaryColor[0], primaryColor[1]-10, primaryColor[2]+10);
-  doc.setFontSize(13);
-  doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
-  doc.text("EXAMINATION DETAILS", margin + 10, yPosition + 12);
-  
-  // Add a horizontal rule under the title that doesn't extend beyond the card
-  doc.setDrawColor(230, 230, 230);
-  doc.setLineWidth(0.3);
-  const examTitleLineLength = 150; // Constrained line length
-  doc.line(margin + 10, yPosition + 16, margin + 10 + examTitleLineLength, yPosition + 16);
-  
-  // Reset for content
-  doc.setTextColor(80, 80, 80);
-  doc.setFontSize(9.5);
-  
-  detailsY = yPosition + 28;
-  
-  // Add the information with the same consistent layout as the first card
-  // Use the same addField function created earlier for consistent alignment
-  const examCol1 = margin + 15;
-  const examCol2 = margin + (cardWidth / 2) + 5;
-  
-  // First column
-  let examY = detailsY;
-  examY = addField("Location:", `${claimant?.placeOfExamination || "Not provided"}`, examCol1, examY);
-  examY = addField("Date of Report:", `${claimant?.dateOfReport ? formatDate(claimant.dateOfReport) : "Not provided"}`, examCol1, examY);
-  
-  // Second column
-  let examColY = detailsY;
-  examColY = addField("Date of Examination:", `${claimant?.dateOfExamination ? formatDate(claimant.dateOfExamination) : "Not provided"}`, examCol2, examColY);
-  examColY = addField("Time with Claimant:", `${claimant?.timeSpentWithClaimant || "Not recorded"}`, examCol2, examColY);
-  
-  // Update Y position after the card - matching the actual card height
-  yPosition += 85; // Increased to match the larger card height
-  
-  // Expert details section
-  yPosition += 20;
+  // Add case number in header area
   doc.setFontSize(12);
-  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-  doc.text("Prepared by:", margin, yPosition);
+  doc.text(`Reference: ${caseData.caseNumber || "Unknown"}`, pageWidth/2, 32, { align: "center" });
   
-  // Expert name, larger size
-  yPosition += 5;
-  doc.setFontSize(14);
-  doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
-  
-  const coverExpertName = caseData.expertDetails?.examiner || "Dr Awais Iqbal";
-  const expertTitle = caseData.expertDetails?.credentials || "MBBS, Direct Medical Expert";
-  doc.text(`${coverExpertName}, ${expertTitle}`, margin + 100, yPosition);
-  
-  // Expert statement
-  yPosition += 15;
+  // Add date (below header)
+  doc.setTextColor(60, 60, 60);
   doc.setFontSize(10);
   doc.setFont(pdfOptions.fontFamily || "helvetica", "normal");
-  doc.setTextColor(0, 0, 0);
+  const reportDate = claimant?.dateOfReport ? formatDate(claimant.dateOfReport) : formatDate(new Date().toISOString());
+  doc.text(`Date of Report: ${reportDate}`, pageWidth/2, 52, { align: "center" });
   
-  const expertStatement = `The Writer: I, ${coverExpertName}, am a medico-legal practitioner. Full details of my qualifications and experience entitling me to provide an expert opinion can be found on the last page of this medical report.`;
-  const statementLines = doc.splitTextToSize(expertStatement, tableWidth);
-  doc.text(statementLines, margin, yPosition);
+  // Add organization logo area (medical symbol with circle background)
+  doc.setFillColor(255, 255, 255);
+  doc.circle(pageWidth/2, 75, 20, 'F');
+  doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2], 0.5);
+  doc.setLineWidth(0.5);
+  doc.circle(pageWidth/2, 75, 20, 'S');
   
-  yPosition += statementLines.length * 7;
+  // Add medical symbol and company name
+  doc.setFontSize(22);
+  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  doc.text("⚕", pageWidth/2, 80, { align: "center" }); // Medical symbol
   
-  // Methodology statement
-  const methodologyStatement = "Methodology: I have been instructed to prepare this medical report for The Court in connection with the personal injuries sustained by the claimant. I interviewed and examined the claimant.";
-  const methodologyLines = doc.splitTextToSize(methodologyStatement, tableWidth);
-  doc.text(methodologyLines, margin, yPosition);
+  doc.setFontSize(10);
+  doc.setTextColor(80, 80, 80);
+  doc.text("Direct Medical Expert", pageWidth/2, 100, { align: "center" });
+  
+  // Content layout - Use modern cards with shadow effects
+  let yPosition = 110;
+  
+  // Define card dimensions for a wider content area
+  const cardWidth = pageWidth - (margin * 2);
+  const tableWidth = cardWidth; // For consistent table widths elsewhere
+  
+  // === PATIENT INFORMATION CARD ===
+  // Create modern shadow effect for card
+  const boxStartX = margin;
+  const boxStartY = yPosition;
+  
+  // White background for card
+  doc.setFillColor(255, 255, 255);
+  doc.roundedRect(boxStartX, boxStartY, cardWidth, 75, 3, 3, 'F');
+  
+  // Shadow effect (subtle gray edge)
+  doc.setDrawColor(220, 220, 220, 0.5);
+  doc.setLineWidth(0.8);
+  doc.roundedRect(boxStartX, boxStartY, cardWidth, 75, 3, 3, 'S');
+  
+  // Colored header bar for patient info section
+  doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2], 0.9);
+  doc.roundedRect(boxStartX, boxStartY, cardWidth, 10, 3, 3, 'F');
+  
+  // Title for patient info section
+  doc.setFontSize(11);
+  doc.setTextColor(255, 255, 255);
+  doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
+  doc.text("PATIENT & CLAIM INFORMATION", pageWidth/2, boxStartY + 6.5, { align: "center" });
+  
+  // Layout grid for information fields
+  const col1X = boxStartX + 8;
+  const col2X = boxStartX + (cardWidth/2) + 5;
+  let infoY = boxStartY + 20;
+  const rowSpacing = 13;
+  
+  // Helper function for adding fields with improved formatting
+  const addInfoField = (label: string, value: string, x: number, y: number) => {
+    const labelWidth = 45;
+    const availableWidth = (cardWidth/2) - labelWidth - 15;
+    
+    // Label with brand color
+    doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
+    doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.setFontSize(9);
+    doc.text(label, x, y);
+    
+    // Value with neutral color
+    doc.setFont(pdfOptions.fontFamily || "helvetica", "normal");
+    doc.setTextColor(60, 60, 60);
+    
+    // Handle long values with wrapping/truncation
+    let displayValue = value;
+    if (value.length > 30) {
+      const valueLines = doc.splitTextToSize(value, availableWidth);
+      if (valueLines.length > 2) {
+        // If more than 2 lines, truncate and add ellipsis
+        valueLines.length = 2;
+        valueLines[1] = valueLines[1].substring(0, valueLines[1].length - 3) + "...";
+      }
+      doc.text(valueLines, x + labelWidth, y);
+      return valueLines.length > 1 ? y + 5 : y;
+    } else {
+      doc.text(displayValue, x + labelWidth, y);
+      return y;
+    }
+  };
+  
+  // Add left column fields
+  addInfoField("Full Name:", `${claimant?.fullName || "Not provided"}`, col1X, infoY);
+  infoY += rowSpacing;
+  addInfoField("Date of Birth:", `${claimant?.dateOfBirth ? formatDate(claimant.dateOfBirth) : "Not provided"}`, col1X, infoY);
+  infoY += rowSpacing;
+  addInfoField("Address:", `${claimant?.address || "Not provided"}`, col1X, infoY);
+  infoY += rowSpacing;
+  addInfoField("Accompanied By:", `${claimant?.accompaniedBy || "None"}`, col1X, infoY);
+  
+  // Reset Y position for right column
+  infoY = boxStartY + 20;
+  
+  // Add right column fields
+  addInfoField("Accident Date:", `${claimant?.accidentDate ? formatDate(claimant.accidentDate) : "Not provided"}`, col2X, infoY);
+  infoY += rowSpacing;
+  addInfoField("Instructing Party:", `${claimant?.instructingParty || "Not provided"}`, col2X, infoY);
+  infoY += rowSpacing;
+  addInfoField("Solicitor:", `${claimant?.solicitorName || "Not provided"}`, col2X, infoY);
+  infoY += rowSpacing;
+  addInfoField("MedCo Ref:", `${claimant?.medcoRefNumber || "Not provided"}`, col2X, infoY);
+  
+  // === EXAMINATION DETAILS CARD ===
+  yPosition = boxStartY + 85;
+  const examBoxY = yPosition;
+  
+  // White background for examination details card
+  doc.setFillColor(255, 255, 255);
+  doc.roundedRect(boxStartX, examBoxY, cardWidth, 60, 3, 3, 'F');
+  
+  // Shadow effect
+  doc.setDrawColor(220, 220, 220, 0.5);
+  doc.setLineWidth(0.8);
+  doc.roundedRect(boxStartX, examBoxY, cardWidth, 60, 3, 3, 'S');
+  
+  // Accent header bar - different shade for visual distinction
+  const examSecondaryColor = [primaryColor[0], primaryColor[1]-10, primaryColor[2]+10];
+  doc.setFillColor(examSecondaryColor[0], examSecondaryColor[1], examSecondaryColor[2], 0.9);
+  doc.roundedRect(boxStartX, examBoxY, cardWidth, 10, 3, 3, 'F');
+  
+  // Header text
+  doc.setFontSize(11);
+  doc.setTextColor(255, 255, 255);
+  doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
+  doc.text("EXAMINATION DETAILS", pageWidth/2, examBoxY + 6.5, { align: "center" });
+  
+  // Set up position for examination details
+  let examInfoY = examBoxY + 20;
+  
+  // First column of examination details
+  addInfoField("Date of Examination:", `${claimant?.dateOfExamination ? formatDate(claimant.dateOfExamination) : "Not provided"}`, col1X, examInfoY);
+  examInfoY += rowSpacing;
+  addInfoField("Location:", `${claimant?.placeOfExamination || "Not provided"}`, col1X, examInfoY);
+  
+  // Reset Y for second column
+  examInfoY = examBoxY + 20;
+  
+  // Second column of examination details
+  addInfoField("Date of Report:", `${claimant?.dateOfReport ? formatDate(claimant.dateOfReport) : "Not provided"}`, col2X, examInfoY);
+  examInfoY += rowSpacing;
+  addInfoField("Time with Patient:", `${claimant?.timeSpentWithClaimant || "Not recorded"}`, col2X, examInfoY);
+  
+  // === EXPERT INFORMATION CARD ===
+  yPosition = examBoxY + 70;
+  const expertBoxY = yPosition;
+  const expertBoxHeight = 60;
+  
+  // Prepare expert information
+  const expertName = caseData.expertDetails?.examiner || "Dr Awais Iqbal";
+  const expertTitle = caseData.expertDetails?.credentials || "MBBS, Direct Medical Expert";
+  
+  // Expert box with subtle background
+  doc.setFillColor(248, 250, 252);
+  doc.roundedRect(boxStartX, expertBoxY, cardWidth, expertBoxHeight, 3, 3, 'F');
+  
+  // Border for expert box
+  doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2], 0.3);
+  doc.setLineWidth(0.5);
+  doc.roundedRect(boxStartX, expertBoxY, cardWidth, expertBoxHeight, 3, 3, 'S');
+  
+  // Add left accent bar for visual interest
+  doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  doc.rect(boxStartX, expertBoxY, 4, expertBoxHeight, 'F');
+  
+  // Expert section title
+  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  doc.setFontSize(12);
+  doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
+  doc.text("PREPARED BY", boxStartX + 10, expertBoxY + 12);
+  
+  // Expert name with emphasis
+  doc.setFontSize(14);
+  doc.text(`${expertName}`, boxStartX + 10, expertBoxY + 25);
+  
+  // Expert credentials in italic
+  doc.setFontSize(10);
+  doc.setFont(pdfOptions.fontFamily || "helvetica", "italic");
+  doc.text(`${expertTitle}`, boxStartX + 10, expertBoxY + 35);
+  
+  // Expert statement
+  doc.setFontSize(9);
+  doc.setFont(pdfOptions.fontFamily || "helvetica", "normal");
+  doc.setTextColor(80, 80, 80);
+  const expertStatement = `I, ${expertName}, am a medico-legal practitioner. Full details of my qualifications and experience entitling me to provide an expert opinion can be found on the last page of this medical report.`;
+  const expertLines = doc.splitTextToSize(expertStatement, cardWidth - 20);
+  doc.text(expertLines, boxStartX + 10, expertBoxY + 45);
+  
+  // Add footer with page number
+  doc.setFontSize(8);
+  doc.setTextColor(150, 150, 150);
+  doc.text(`Page 1 | ${caseData.caseNumber || "Medico-Legal Report"}`, pageWidth/2, 285, { align: "center" });
   
   // ==================== PAGE 2: INJURY TABLE & DETAILS ====================
   doc.addPage();
