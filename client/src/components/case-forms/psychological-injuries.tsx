@@ -306,7 +306,7 @@ export function PsychologicalInjuriesForm({ caseId, initialData, onSaved }: Psyc
                   <p className="leading-relaxed">
                     The claimant reports {symptoms.length === 1 ? 'a symptom of' : 'symptoms of'} travel anxiety 
                     {symptoms.length > 0 && ' including '} 
-                    {symptoms.map((symptom, index) => {
+                    {symptoms && symptoms.map((symptom, index) => {
                       if (index === 0) {
                         return symptom.toLowerCase();
                       } else if (index === symptoms.length - 1) {
@@ -315,10 +315,25 @@ export function PsychologicalInjuriesForm({ caseId, initialData, onSaved }: Psyc
                         return `, ${symptom.toLowerCase()}`;
                       }
                     })}
-                    {form.watch("travelAnxietyOnset") && `. These symptoms began ${form.watch("travelAnxietyOnset").toLowerCase()}`}
-                    {form.watch("travelAnxietyInitialSeverity") && ` with an initial severity described as ${form.watch("travelAnxietyInitialSeverity").toLowerCase()}`}
-                    {form.watch("travelAnxietyCurrentSeverity") && ` and current severity assessed as ${form.watch("travelAnxietyCurrentSeverity").toLowerCase()}`}
-                    {form.watch("travelAnxietyCurrentSeverity") === "Resolved" && form.watch("travelAnxietyResolutionDays") && `, resolving after approximately ${form.watch("travelAnxietyResolutionDays")} days`}.
+                    {(() => {
+                      const onset = form.watch("travelAnxietyOnset");
+                      return onset ? `. These symptoms began ${onset.toLowerCase()}` : '';
+                    })()}
+                    {(() => {
+                      const initialSeverity = form.watch("travelAnxietyInitialSeverity");
+                      return initialSeverity ? ` with an initial severity described as ${initialSeverity.toLowerCase()}` : '';
+                    })()}
+                    {(() => {
+                      const currentSeverity = form.watch("travelAnxietyCurrentSeverity");
+                      return currentSeverity ? ` and current severity assessed as ${currentSeverity.toLowerCase()}` : '';
+                    })()}
+                    {(() => {
+                      const currentSeverity = form.watch("travelAnxietyCurrentSeverity");
+                      const resolutionDays = form.watch("travelAnxietyResolutionDays");
+                      return currentSeverity === "Resolved" && resolutionDays 
+                        ? `, resolving after approximately ${resolutionDays} days` 
+                        : '';
+                    })()}.
                   </p>
                 ) : (
                   <div className="text-muted-foreground">No symptoms of travel anxiety reported.</div>

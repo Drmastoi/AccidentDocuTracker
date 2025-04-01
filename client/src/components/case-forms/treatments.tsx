@@ -1,5 +1,5 @@
 import React from "react";
-import { useFieldArray, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { treatmentsSchema, type Treatments } from "@shared/schema";
 import { 
@@ -8,13 +8,14 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage
+  FormMessage,
+  FormDescription
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { FormSection, SubSection } from "@/components/ui/form-section";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
@@ -32,35 +33,109 @@ export function TreatmentsForm({ caseId, initialData, onSaved }: TreatmentsFormP
   const form = useForm<Treatments>({
     resolver: zodResolver(treatmentsSchema),
     defaultValues: initialData || {
-      emergencyTreatment: "",
-      hospitalizations: [],
-      ongoingTreatments: [],
-      medications: [],
-      additionalNotes: "",
+      // Accident scene treatment
+      receivedTreatmentAtScene: false,
+      sceneFirstAid: false,
+      sceneNeckCollar: false,
+      sceneAmbulanceArrived: false,
+      scenePoliceArrived: false,
+      sceneOtherTreatment: false,
+      sceneOtherTreatmentDetails: "",
+      
+      // A&E (Hospital) treatment
+      wentToHospital: false,
+      hospitalName: "",
+      hospitalNoTreatment: false,
+      hospitalXRay: false,
+      hospitalCTScan: false,
+      hospitalBandage: false,
+      hospitalNeckCollar: false,
+      hospitalOtherTreatment: false,
+      hospitalOtherTreatmentDetails: "",
+      
+      // GP/Walk-in center
+      wentToGPWalkIn: false,
+      daysToGPWalkIn: "",
+      
+      // Current medications
+      takingParacetamol: false,
+      takingIbuprofen: false,
+      takingCodeine: false,
+      takingOtherMedication: false,
+      otherMedicationDetails: "",
+      
+      // Physiotherapy
+      physiotherapySessions: "",
+      
+      // Summary
+      treatmentSummary: "The claimant received treatment at the scene of the accident. The claimant attended A&E at the hospital. The claimant visited their GP/Walk-in center some days after the accident. The claimant has not attended any physiotherapy sessions."
     },
   });
   
-  // Setup field arrays
-  const hospitalizations = useFieldArray({
-    control: form.control,
-    name: "hospitalizations",
-  });
+  // Watch values for conditional fields
+  const receivedTreatmentAtScene = form.watch("receivedTreatmentAtScene");
+  const wentToHospital = form.watch("wentToHospital");
+  const wentToGPWalkIn = form.watch("wentToGPWalkIn");
+  const takingOtherMedication = form.watch("takingOtherMedication");
+  const sceneOtherTreatment = form.watch("sceneOtherTreatment");
+  const hospitalOtherTreatment = form.watch("hospitalOtherTreatment");
   
-  const ongoingTreatments = useFieldArray({
-    control: form.control,
-    name: "ongoingTreatments",
-  });
-  
-  const medications = useFieldArray({
-    control: form.control,
-    name: "medications",
-  });
+  // Generate treatment summary
+  React.useEffect(() => {
+    let summary = "";
+    
+    // Scene treatment summary
+    if (receivedTreatmentAtScene) {
+      summary += "The claimant received treatment at the scene of the accident. ";
+    } else {
+      summary += "The claimant did not receive any treatment at the scene of the accident. ";
+    }
+    
+    // Hospital summary
+    if (wentToHospital) {
+      const hospitalName = form.watch("hospitalName");
+      if (hospitalName) {
+        summary += `The claimant attended A&E at ${hospitalName}. `;
+      } else {
+        summary += "The claimant attended A&E at the hospital. ";
+      }
+    } else {
+      summary += "The claimant did not attend A&E after the accident. ";
+    }
+    
+    // GP/Walk-in summary
+    if (wentToGPWalkIn) {
+      const days = form.watch("daysToGPWalkIn");
+      if (days) {
+        summary += `The claimant visited their GP/Walk-in center ${days} days after the accident. `;
+      } else {
+        summary += "The claimant visited their GP/Walk-in center after the accident. ";
+      }
+    } else {
+      summary += "The claimant did not visit their GP/Walk-in center after the accident. ";
+    }
+    
+    // Physiotherapy summary
+    const physioSessions = form.watch("physiotherapySessions");
+    if (physioSessions && parseInt(physioSessions) > 0) {
+      summary += `The claimant has attended ${physioSessions} physiotherapy sessions.`;
+    } else {
+      summary += "The claimant has not attended any physiotherapy sessions.";
+    }
+    
+    form.setValue("treatmentSummary", summary);
+  }, [
+    receivedTreatmentAtScene, 
+    wentToHospital, 
+    wentToGPWalkIn, 
+    form.watch("hospitalName"), 
+    form.watch("daysToGPWalkIn"), 
+    form.watch("physiotherapySessions"),
+    form
+  ]);
   
   // Check if form has been modified
-  const isComplete = !!form.watch("emergencyTreatment") || 
-                     form.watch("hospitalizations")?.length > 0 || 
-                     form.watch("ongoingTreatments")?.length > 0 ||
-                     form.watch("medications")?.length > 0;
+  const isComplete = receivedTreatmentAtScene || wentToHospital || wentToGPWalkIn;
   
   const onSubmit = async (data: Treatments) => {
     try {
@@ -91,23 +166,491 @@ export function TreatmentsForm({ caseId, initialData, onSaved }: TreatmentsFormP
   
   return (
     <FormSection 
-      title="Treatments" 
+      title="Treatment Information" 
       isComplete={isComplete}
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <SubSection>
+          {/* Scene of Accident Treatment */}
+          <SubSection title="Treatment at the Scene">
             <FormField
               control={form.control}
-              name="emergencyTreatment"
+              name="receivedTreatmentAtScene"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Emergency Treatment</FormLabel>
+                <FormItem className="mb-4">
+                  <FormLabel>Did you receive any treatment at the scene of accident?</FormLabel>
+                  <div className="flex items-center space-x-2 mt-2">
+                    <FormControl>
+                      <RadioGroup 
+                        onValueChange={(value) => field.onChange(value === "true")} 
+                        value={field.value ? "true" : "false"}
+                        className="flex space-x-4"
+                      >
+                        <FormItem className="flex items-center space-x-2">
+                          <FormControl>
+                            <RadioGroupItem value="true" />
+                          </FormControl>
+                          <FormLabel className="font-normal">Yes</FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-2">
+                          <FormControl>
+                            <RadioGroupItem value="false" />
+                          </FormControl>
+                          <FormLabel className="font-normal">No</FormLabel>
+                        </FormItem>
+                      </RadioGroup>
+                    </FormControl>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            {receivedTreatmentAtScene && (
+              <div className="ml-6 border-l-2 border-gray-200 pl-4 pb-2">
+                <FormLabel className="block mb-3">What treatment did you receive?</FormLabel>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <FormField
+                    control={form.control}
+                    name="sceneFirstAid"
+                    render={({ field }) => (
+                      <FormItem className="flex items-start space-x-2">
+                        <FormControl>
+                          <Checkbox 
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel className="font-normal">First Aid</FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="sceneNeckCollar"
+                    render={({ field }) => (
+                      <FormItem className="flex items-start space-x-2">
+                        <FormControl>
+                          <Checkbox 
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel className="font-normal">Neck Collar</FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="sceneAmbulanceArrived"
+                    render={({ field }) => (
+                      <FormItem className="flex items-start space-x-2">
+                        <FormControl>
+                          <Checkbox 
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel className="font-normal">Ambulance Arrived</FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="scenePoliceArrived"
+                    render={({ field }) => (
+                      <FormItem className="flex items-start space-x-2">
+                        <FormControl>
+                          <Checkbox 
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel className="font-normal">Police Arrived</FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="sceneOtherTreatment"
+                    render={({ field }) => (
+                      <FormItem className="flex items-start space-x-2">
+                        <FormControl>
+                          <Checkbox 
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel className="font-normal">Other</FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                {sceneOtherTreatment && (
+                  <div className="mt-2">
+                    <FormField
+                      control={form.control}
+                      name="sceneOtherTreatmentDetails"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input 
+                              placeholder="Please specify other treatment received"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+          </SubSection>
+          
+          {/* Hospital (A&E) Treatment */}
+          <SubSection title="Hospital (A&E) Treatment">
+            <FormField
+              control={form.control}
+              name="wentToHospital"
+              render={({ field }) => (
+                <FormItem className="mb-4">
+                  <FormLabel>Did you go to A&E after accident?</FormLabel>
+                  <div className="flex items-center space-x-2 mt-2">
+                    <FormControl>
+                      <RadioGroup 
+                        onValueChange={(value) => field.onChange(value === "true")} 
+                        value={field.value ? "true" : "false"}
+                        className="flex space-x-4"
+                      >
+                        <FormItem className="flex items-center space-x-2">
+                          <FormControl>
+                            <RadioGroupItem value="true" />
+                          </FormControl>
+                          <FormLabel className="font-normal">Yes</FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-2">
+                          <FormControl>
+                            <RadioGroupItem value="false" />
+                          </FormControl>
+                          <FormLabel className="font-normal">No</FormLabel>
+                        </FormItem>
+                      </RadioGroup>
+                    </FormControl>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            {wentToHospital && (
+              <div className="ml-6 border-l-2 border-gray-200 pl-4 pb-2">
+                <FormField
+                  control={form.control}
+                  name="hospitalName"
+                  render={({ field }) => (
+                    <FormItem className="mb-4">
+                      <FormLabel>Which hospital A&E did you go to?</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Enter hospital name"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormLabel className="block mb-3">What treatment did you receive at the hospital?</FormLabel>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <FormField
+                    control={form.control}
+                    name="hospitalNoTreatment"
+                    render={({ field }) => (
+                      <FormItem className="flex items-start space-x-2">
+                        <FormControl>
+                          <Checkbox 
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel className="font-normal">None</FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="hospitalXRay"
+                    render={({ field }) => (
+                      <FormItem className="flex items-start space-x-2">
+                        <FormControl>
+                          <Checkbox 
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel className="font-normal">X-ray</FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="hospitalCTScan"
+                    render={({ field }) => (
+                      <FormItem className="flex items-start space-x-2">
+                        <FormControl>
+                          <Checkbox 
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel className="font-normal">CT Scan</FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="hospitalBandage"
+                    render={({ field }) => (
+                      <FormItem className="flex items-start space-x-2">
+                        <FormControl>
+                          <Checkbox 
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel className="font-normal">Bandage</FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="hospitalNeckCollar"
+                    render={({ field }) => (
+                      <FormItem className="flex items-start space-x-2">
+                        <FormControl>
+                          <Checkbox 
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel className="font-normal">Neck Collar</FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="hospitalOtherTreatment"
+                    render={({ field }) => (
+                      <FormItem className="flex items-start space-x-2">
+                        <FormControl>
+                          <Checkbox 
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel className="font-normal">Other</FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                {hospitalOtherTreatment && (
+                  <div className="mt-2">
+                    <FormField
+                      control={form.control}
+                      name="hospitalOtherTreatmentDetails"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input 
+                              placeholder="Please specify other hospital treatment received"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+          </SubSection>
+          
+          {/* GP/Walk-in Centre */}
+          <SubSection title="GP/Walk-in Centre">
+            <FormField
+              control={form.control}
+              name="wentToGPWalkIn"
+              render={({ field }) => (
+                <FormItem className="mb-4">
+                  <FormLabel>Did you go to Walk-in centre/GP after accident?</FormLabel>
+                  <div className="flex items-center space-x-2 mt-2">
+                    <FormControl>
+                      <RadioGroup 
+                        onValueChange={(value) => field.onChange(value === "true")} 
+                        value={field.value ? "true" : "false"}
+                        className="flex space-x-4"
+                      >
+                        <FormItem className="flex items-center space-x-2">
+                          <FormControl>
+                            <RadioGroupItem value="true" />
+                          </FormControl>
+                          <FormLabel className="font-normal">Yes</FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-2">
+                          <FormControl>
+                            <RadioGroupItem value="false" />
+                          </FormControl>
+                          <FormLabel className="font-normal">No</FormLabel>
+                        </FormItem>
+                      </RadioGroup>
+                    </FormControl>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            {wentToGPWalkIn && (
+              <div className="ml-6 border-l-2 border-gray-200 pl-4 pb-2">
+                <FormField
+                  control={form.control}
+                  name="daysToGPWalkIn"
+                  render={({ field }) => (
+                    <FormItem className="mb-4">
+                      <FormLabel>How many days after the accident did you consult Walk-in/centre/GP?</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number"
+                          placeholder="Enter number of days"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+          </SubSection>
+          
+          {/* Current Medications */}
+          <SubSection title="Current Medications">
+            <FormLabel className="block mb-3">What is your Current Treatment (Pain killers)?</FormLabel>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <FormField
+                control={form.control}
+                name="takingParacetamol"
+                render={({ field }) => (
+                  <FormItem className="flex items-start space-x-2">
+                    <FormControl>
+                      <Checkbox 
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormLabel className="font-normal">Paracetamol</FormLabel>
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="takingIbuprofen"
+                render={({ field }) => (
+                  <FormItem className="flex items-start space-x-2">
+                    <FormControl>
+                      <Checkbox 
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormLabel className="font-normal">Ibuprofen, Naproxen</FormLabel>
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="takingCodeine"
+                render={({ field }) => (
+                  <FormItem className="flex items-start space-x-2">
+                    <FormControl>
+                      <Checkbox 
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormLabel className="font-normal">Codeine</FormLabel>
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="takingOtherMedication"
+                render={({ field }) => (
+                  <FormItem className="flex items-start space-x-2">
+                    <FormControl>
+                      <Checkbox 
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormLabel className="font-normal">Others prescribed medicines</FormLabel>
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            {takingOtherMedication && (
+              <div className="mt-2">
+                <FormField
+                  control={form.control}
+                  name="otherMedicationDetails"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input 
+                          placeholder="Please specify other medications"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+          </SubSection>
+          
+          {/* Physiotherapy */}
+          <SubSection title="Physiotherapy">
+            <FormField
+              control={form.control}
+              name="physiotherapySessions"
+              render={({ field }) => (
+                <FormItem className="mb-4">
+                  <FormLabel>How many sessions of Physiotherapy have you had so far?</FormLabel>
                   <FormControl>
-                    <Textarea 
-                      placeholder="Describe any emergency treatment received immediately after the accident"
-                      rows={3}
-                      {...field} 
+                    <Input 
+                      type="number"
+                      placeholder="Enter number of sessions"
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
@@ -116,329 +659,19 @@ export function TreatmentsForm({ caseId, initialData, onSaved }: TreatmentsFormP
             />
           </SubSection>
           
-          <SubSection title="Hospitalizations">
-            {hospitalizations.fields.length === 0 ? (
-              <div className="text-center p-4 border border-dashed border-gray-300 rounded-md mb-4">
-                <p className="text-sm text-gray-500">No hospitalizations recorded. Add hospitalizations using the button below.</p>
-              </div>
-            ) : (
-              hospitalizations.fields.map((field, index) => (
-                <div key={field.id} className="border-b border-gray-200 pb-4 mb-4 last:border-0 last:pb-0 last:mb-0">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-base font-medium text-[#4A5568]">Hospitalization #{index + 1}</h4>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => hospitalizations.remove(index)}
-                      className="text-sm text-red-600 hover:text-red-800 h-auto p-0"
-                    >
-                      Remove
-                    </Button>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name={`hospitalizations.${index}.facility`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Facility</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Boston Medical Center" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name={`hospitalizations.${index}.reason`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Reason</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Head injury assessment" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name={`hospitalizations.${index}.admissionDate`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Admission Date</FormLabel>
-                          <FormControl>
-                            <Input type="date" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name={`hospitalizations.${index}.dischargeDate`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Discharge Date</FormLabel>
-                          <FormControl>
-                            <Input type="date" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-              ))
-            )}
-            
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => hospitalizations.append({ 
-                facility: "", 
-                admissionDate: "", 
-                dischargeDate: "", 
-                reason: "" 
-              })}
-              className="flex items-center text-sm font-medium text-[#0E7C7B] hover:text-teal-900"
-            >
-              <Plus className="h-4 w-4 mr-1" />
-              Add Hospitalization
-            </Button>
-          </SubSection>
-          
-          <SubSection title="Ongoing Treatments">
-            {ongoingTreatments.fields.length === 0 ? (
-              <div className="text-center p-4 border border-dashed border-gray-300 rounded-md mb-4">
-                <p className="text-sm text-gray-500">No ongoing treatments recorded. Add treatments using the button below.</p>
-              </div>
-            ) : (
-              ongoingTreatments.fields.map((field, index) => (
-                <div key={field.id} className="border-b border-gray-200 pb-4 mb-4 last:border-0 last:pb-0 last:mb-0">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-base font-medium text-[#4A5568]">Treatment #{index + 1}</h4>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => ongoingTreatments.remove(index)}
-                      className="text-sm text-red-600 hover:text-red-800 h-auto p-0"
-                    >
-                      Remove
-                    </Button>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name={`ongoingTreatments.${index}.treatmentType`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Treatment Type</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Physical Therapy" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name={`ongoingTreatments.${index}.provider`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Provider</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Boston Rehab Center" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name={`ongoingTreatments.${index}.frequency`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Frequency</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Twice weekly" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name={`ongoingTreatments.${index}.startDate`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Start Date</FormLabel>
-                          <FormControl>
-                            <Input type="date" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name={`ongoingTreatments.${index}.endDate`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>End Date (if applicable)</FormLabel>
-                          <FormControl>
-                            <Input type="date" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-              ))
-            )}
-            
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => ongoingTreatments.append({ 
-                treatmentType: "", 
-                provider: "", 
-                frequency: "", 
-                startDate: "", 
-                endDate: "" 
-              })}
-              className="flex items-center text-sm font-medium text-[#0E7C7B] hover:text-teal-900"
-            >
-              <Plus className="h-4 w-4 mr-1" />
-              Add Treatment
-            </Button>
-          </SubSection>
-          
-          <SubSection title="Medications">
-            {medications.fields.length === 0 ? (
-              <div className="text-center p-4 border border-dashed border-gray-300 rounded-md mb-4">
-                <p className="text-sm text-gray-500">No medications recorded. Add medications using the button below.</p>
-              </div>
-            ) : (
-              medications.fields.map((field, index) => (
-                <div key={field.id} className="border-b border-gray-200 pb-4 mb-4 last:border-0 last:pb-0 last:mb-0">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-base font-medium text-[#4A5568]">Medication #{index + 1}</h4>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => medications.remove(index)}
-                      className="text-sm text-red-600 hover:text-red-800 h-auto p-0"
-                    >
-                      Remove
-                    </Button>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name={`medications.${index}.name`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Medication Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Ibuprofen" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name={`medications.${index}.dosage`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Dosage</FormLabel>
-                          <FormControl>
-                            <Input placeholder="800mg" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name={`medications.${index}.frequency`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Frequency</FormLabel>
-                          <FormControl>
-                            <Input placeholder="3 times daily" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name={`medications.${index}.prescribedBy`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Prescribed By</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Dr. Michael Johnson" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-              ))
-            )}
-            
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => medications.append({ 
-                name: "", 
-                dosage: "", 
-                frequency: "", 
-                prescribedBy: "" 
-              })}
-              className="flex items-center text-sm font-medium text-[#0E7C7B] hover:text-teal-900"
-            >
-              <Plus className="h-4 w-4 mr-1" />
-              Add Medication
-            </Button>
-          </SubSection>
-          
-          <SubSection>
+          {/* Treatment Summary */}
+          <SubSection title="Treatment Summary">
             <FormField
               control={form.control}
-              name="additionalNotes"
+              name="treatmentSummary"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Additional Notes</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Any additional notes regarding treatment"
-                      rows={3}
-                      {...field} 
-                    />
-                  </FormControl>
+                  <div className="p-4 border rounded-md bg-muted/30">
+                    <p className="text-sm leading-relaxed">{field.value}</p>
+                  </div>
+                  <FormDescription className="text-xs mt-2">
+                    This summary is generated automatically based on your responses.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

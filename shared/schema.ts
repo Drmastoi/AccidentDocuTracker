@@ -148,33 +148,42 @@ export const psychologicalInjuriesSchema = z.object({
 });
 
 export const treatmentsSchema = z.object({
-  emergencyTreatment: z.string().optional(),
-  hospitalizations: z.array(
-    z.object({
-      facility: z.string().optional(),
-      admissionDate: z.string().optional(),
-      dischargeDate: z.string().optional(),
-      reason: z.string().optional(),
-    })
-  ).optional(),
-  ongoingTreatments: z.array(
-    z.object({
-      treatmentType: z.string().optional(),
-      provider: z.string().optional(),
-      frequency: z.string().optional(),
-      startDate: z.string().optional(),
-      endDate: z.string().optional(),
-    })
-  ).optional(),
-  medications: z.array(
-    z.object({
-      name: z.string().optional(),
-      dosage: z.string().optional(),
-      frequency: z.string().optional(),
-      prescribedBy: z.string().optional(),
-    })
-  ).optional(),
-  additionalNotes: z.string().optional(),
+  // Accident scene treatment
+  receivedTreatmentAtScene: z.boolean().optional(),
+  sceneFirstAid: z.boolean().optional(),
+  sceneNeckCollar: z.boolean().optional(),
+  sceneAmbulanceArrived: z.boolean().optional(),
+  scenePoliceArrived: z.boolean().optional(),
+  sceneOtherTreatment: z.boolean().optional(),
+  sceneOtherTreatmentDetails: z.string().optional(),
+  
+  // A&E (Hospital) treatment
+  wentToHospital: z.boolean().optional(),
+  hospitalName: z.string().optional(),
+  hospitalNoTreatment: z.boolean().optional(),
+  hospitalXRay: z.boolean().optional(),
+  hospitalCTScan: z.boolean().optional(),
+  hospitalBandage: z.boolean().optional(),
+  hospitalNeckCollar: z.boolean().optional(),
+  hospitalOtherTreatment: z.boolean().optional(),
+  hospitalOtherTreatmentDetails: z.string().optional(),
+  
+  // GP/Walk-in center
+  wentToGPWalkIn: z.boolean().optional(),
+  daysToGPWalkIn: z.string().optional(),
+  
+  // Current medications
+  takingParacetamol: z.boolean().optional(),
+  takingIbuprofen: z.boolean().optional(),
+  takingCodeine: z.boolean().optional(),
+  takingOtherMedication: z.boolean().optional(),
+  otherMedicationDetails: z.string().optional(),
+  
+  // Physiotherapy
+  physiotherapySessions: z.string().optional(),
+  
+  // Summary
+  treatmentSummary: z.string().optional(),
 });
 
 export const lifestyleImpactSchema = z.object({
