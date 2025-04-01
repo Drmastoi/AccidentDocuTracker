@@ -137,6 +137,7 @@ export const physicalInjurySchema = z.object({
   ).optional(),
   otherInjuriesDescription: z.string().optional(),
   additionalNotes: z.string().optional(),
+  physicalInjurySummary: z.string().optional(), // Summary of all physical injuries
 });
 
 export const psychologicalInjuriesSchema = z.object({

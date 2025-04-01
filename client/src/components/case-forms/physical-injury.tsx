@@ -57,6 +57,7 @@ export function PhysicalInjuryForm({ caseId, initialData, onSaved }: PhysicalInj
       injuries: [],
       otherInjuriesDescription: "",
       additionalNotes: "",
+      physicalInjurySummary: "",
     },
   });
   
@@ -67,11 +68,11 @@ export function PhysicalInjuryForm({ caseId, initialData, onSaved }: PhysicalInj
   });
   
   // Check if at least one injury is selected
-  const isComplete = (form.watch("injuries")?.length > 0);
+  const isComplete = ((form.watch("injuries") || []).length > 0);
   
   // Get missing fields count
   const getMissingFieldsCount = () => {
-    return form.watch("injuries")?.length > 0 ? 0 : 1;
+    return (form.watch("injuries") || []).length > 0 ? 0 : 1;
   };
 
   // Handle adding a new injury when a checkbox is checked
@@ -113,8 +114,9 @@ export function PhysicalInjuryForm({ caseId, initialData, onSaved }: PhysicalInj
       }
     } else {
       // Remove the injury when unchecked
-      const indexToRemove = form.getValues().injuries?.findIndex(injury => injury.type === injuryType);
-      if (indexToRemove !== undefined && indexToRemove !== -1) {
+      const injuries = form.getValues().injuries || [];
+      const indexToRemove = injuries.findIndex(injury => injury.type === injuryType);
+      if (indexToRemove !== -1) {
         remove(indexToRemove);
       }
       
@@ -127,14 +129,13 @@ export function PhysicalInjuryForm({ caseId, initialData, onSaved }: PhysicalInj
   
   // Update mechanism field when "Other" injury description changes
   useEffect(() => {
-    const otherInjuryIndex = form.getValues().injuries?.findIndex(injury => injury.type === "Other");
-    if (otherInjuryIndex !== undefined && otherInjuryIndex !== -1) {
-      const otherDesc = form.getValues().otherInjuriesDescription;
-      if (otherDesc) {
-        const updatedInjury = {...form.getValues().injuries[otherInjuryIndex]};
-        updatedInjury.mechanism = otherDesc;
-        update(otherInjuryIndex, updatedInjury);
-      }
+    const injuries = form.getValues().injuries || [];
+    const otherInjuryIndex = injuries.findIndex(injury => injury.type === "Other");
+    if (otherInjuryIndex !== -1) {
+      const otherDesc = form.getValues().otherInjuriesDescription || "";
+      const updatedInjury = {...injuries[otherInjuryIndex]};
+      updatedInjury.mechanism = otherDesc;
+      update(otherInjuryIndex, updatedInjury);
     }
   }, [form.watch("otherInjuriesDescription")]);
   
@@ -149,6 +150,94 @@ export function PhysicalInjuryForm({ caseId, initialData, onSaved }: PhysicalInj
         }
       }, 100);
     }
+  };
+  
+  // Generate a summary of all physical injuries
+  const generateSummary = () => {
+    const injuries = form.watch("injuries") || [];
+    if (injuries.length === 0) {
+      return "No physical injuries have been recorded.";
+    }
+    
+    // Count injuries by current severity
+    const severityCounts = {
+      Mild: 0,
+      Moderate: 0,
+      Severe: 0,
+      Resolved: 0
+    };
+    
+    // Group by injury type
+    const injuryTypes: Record<string, any[]> = {};
+    
+    injuries.forEach(injury => {
+      // Add to severity counts
+      severityCounts[injury.currentSeverity as keyof typeof severityCounts]++;
+      
+      // Add to injury types
+      if (!injuryTypes[injury.type]) {
+        injuryTypes[injury.type] = [];
+      }
+      injuryTypes[injury.type].push(injury);
+    });
+    
+    // Create summary text
+    let summary = `The claimant has reported ${injuries.length} physical ${injuries.length === 1 ? 'injury' : 'injuries'} from the accident. `;
+    
+    // Add summary of injury types
+    const typesList = Object.keys(injuryTypes).map(type => {
+      const count = injuryTypes[type].length;
+      return count > 1 ? `${count} ${type.toLowerCase()} injuries` : `${type.toLowerCase()} injury`;
+    }).join(", ");
+    
+    summary += `These include ${typesList}. `;
+    
+    // Add onset timing information
+    const sameDay = injuries.filter(i => i.onsetTime === "Same Day").length;
+    const nextDay = injuries.filter(i => i.onsetTime === "Next Day").length;
+    const fewDaysLater = injuries.filter(i => i.onsetTime === "Few Days Later").length;
+    
+    if (sameDay > 0) {
+      summary += `${sameDay} ${sameDay === 1 ? 'injury' : 'injuries'} developed on the same day of the accident. `;
+    }
+    
+    if (nextDay > 0) {
+      summary += `${nextDay} ${nextDay === 1 ? 'injury' : 'injuries'} developed the day after the accident. `;
+    }
+    
+    if (fewDaysLater > 0) {
+      summary += `${fewDaysLater} ${fewDaysLater === 1 ? 'injury' : 'injuries'} developed a few days after the accident. `;
+    }
+    
+    // Add severity information
+    if (severityCounts.Resolved > 0) {
+      summary += `${severityCounts.Resolved} ${severityCounts.Resolved === 1 ? 'injury has' : 'injuries have'} completely resolved. `;
+    }
+    
+    const ongoingInjuries = severityCounts.Mild + severityCounts.Moderate + severityCounts.Severe;
+    if (ongoingInjuries > 0) {
+      summary += `The claimant continues to experience ${ongoingInjuries} ${ongoingInjuries === 1 ? 'injury' : 'injuries'} `;
+      
+      const severityDescriptions = [];
+      if (severityCounts.Mild > 0) {
+        severityDescriptions.push(`${severityCounts.Mild} mild`);
+      }
+      if (severityCounts.Moderate > 0) {
+        severityDescriptions.push(`${severityCounts.Moderate} moderate`);
+      }
+      if (severityCounts.Severe > 0) {
+        severityDescriptions.push(`${severityCounts.Severe} severe`);
+      }
+      
+      summary += `(${severityDescriptions.join(", ")}). `;
+    }
+    
+    // Update form with generated summary
+    setTimeout(() => {
+      form.setValue("physicalInjurySummary", summary);
+    }, 0);
+    
+    return summary;
   };
 
   const onSubmit = async (data: PhysicalInjury) => {
@@ -196,7 +285,7 @@ export function PhysicalInjuryForm({ caseId, initialData, onSaved }: PhysicalInj
                 <div key={injuryType} className="flex items-start space-x-2">
                   <Checkbox 
                     id={`injury-${injuryType}`}
-                    checked={form.getValues().injuries?.some(injury => injury.type === injuryType)}
+                    checked={(form.getValues().injuries || []).some(injury => injury.type === injuryType)}
                     onCheckedChange={(checked) => handleInjurySelection(injuryType, !!checked)}
                     className="mt-1"
                   />
@@ -348,22 +437,25 @@ export function PhysicalInjuryForm({ caseId, initialData, onSaved }: PhysicalInj
                       <FormField
                         control={form.control}
                         name={`injuries.${index}.mechanism`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Mechanism</FormLabel>
-                            <FormControl>
-                              <Input 
-                                readOnly={field.type !== "Other"}
-                                value={field.value}
-                                onChange={field.onChange}
-                              />
-                            </FormControl>
-                            <FormDescription className="text-xs">
-                              {field.type === "Other" ? "Please describe the mechanism of injury" : "This field is automatically generated based on the injury type"}
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+                        render={({ field }) => {
+                          const injuryType = form.getValues().injuries?.[index]?.type;
+                          return (
+                            <FormItem>
+                              <FormLabel>Mechanism</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  readOnly={injuryType !== "Other"}
+                                  value={field.value}
+                                  onChange={field.onChange}
+                                />
+                              </FormControl>
+                              <FormDescription className="text-xs">
+                                {injuryType === "Other" ? "Please describe the mechanism of injury" : "This field is automatically generated based on the injury type"}
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          );
+                        }}
                       />
                       
                       <FormField
@@ -408,6 +500,39 @@ export function PhysicalInjuryForm({ caseId, initialData, onSaved }: PhysicalInj
               )}
             />
           </SubSection>
+          
+          {fields.length > 0 && (
+            <SubSection title="Summary">
+              <FormField
+                control={form.control}
+                name="physicalInjurySummary"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex justify-end mb-2">
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          const summary = generateSummary();
+                          field.onChange(summary);
+                        }}
+                      >
+                        Regenerate Summary
+                      </Button>
+                    </div>
+                    <div className="p-4 border rounded-md bg-muted/30">
+                      <p className="text-sm leading-relaxed">{field.value || generateSummary()}</p>
+                    </div>
+                    <FormDescription className="text-xs mt-2">
+                      This physical injury summary is generated automatically based on your selections. You can click the button above to regenerate it at any time.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </SubSection>
+          )}
           
           <div className="flex justify-end mt-6">
             <Button type="submit" disabled={saving}>
