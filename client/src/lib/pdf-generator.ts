@@ -223,73 +223,75 @@ export const generatePDF = (caseData: Case, options?: PDFCustomizationOptions): 
   const cardMargin = 5;
   
   // Patient Information Card - Sleeker Design with visual elements
-  // Draw a gradient background for the card
+  // Draw a gradient background for the card with fixed height
   const grdX = margin;
   const grdY = yPosition;
   const grdW = cardWidth;
-  const grdH = 92;
+  const grdH = 100; // Increased fixed height
   
   // Create gradient from light to slightly darker
-  const grd = doc.setDrawColor(0);
+  doc.setDrawColor(0);
   doc.setFillColor(248, 250, 252);
   doc.roundedRect(grdX, grdY, grdW, grdH, 5, 5, 'F');
   
+  // Draw a border to contain content
+  doc.setDrawColor(230, 230, 230);
+  doc.setLineWidth(0.2);
+  doc.roundedRect(grdX, grdY, grdW, grdH, 5, 5, 'S');
+  
   // Add a colored accent bar on the left side
   doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-  doc.rect(grdX, grdY, 5, grdH, 'F');
+  doc.rect(grdX, grdY, 4, grdH, 'F');
   
-  // Add a subtle top shadow
-  doc.setDrawColor(220, 220, 220);
-  doc.setLineWidth(0.5);
-  doc.line(grdX + 5, grdY + 1, grdX + grdW - 5, grdY + 1);
-  
-  // Card Title with icon-like prefix
+  // Card Title with proper padding
   doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
   doc.setFontSize(13);
   doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
   doc.text("PATIENT INFORMATION", margin + 10, yPosition + 12);
   
-  // Add a horizontal rule under the title
+  // Add a horizontal rule under the title that doesn't extend beyond the card
   doc.setDrawColor(230, 230, 230);
   doc.setLineWidth(0.3);
-  doc.line(margin + 10, yPosition + 16, margin + 160, yPosition + 16);
+  const titleLineLength = 150; // Constrained line length
+  doc.line(margin + 10, yPosition + 16, margin + 10 + titleLineLength, yPosition + 16);
   
   // Reset for content
   doc.setTextColor(80, 80, 80);
   doc.setFontSize(9.5);
   
-  // Create two-column layout with consistent spacing
-  const fieldLabelWidth = 35; // Fixed width for labels for better alignment
-  const col1X = margin + 15; // Increased left margin for better spacing
-  const col2X = margin + (cardWidth / 2) + 10; // Adjusted for better balance
-  let detailsY = yPosition + 30; // Slightly increased top margin
+  // Create two-column layout with fixed widths to prevent bleeding
+  const fieldLabelWidth = 40; // Increased width for labels
+  const col1X = margin + 15; // Left margin
+  const col2X = margin + (cardWidth / 2) + 5; // Start of right column
+  let detailsY = yPosition + 30; // Top margin for first row
   
   // Column 1: Personal Information - with visual emphasis
   doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
   doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
   doc.text("Personal Details", col1X, detailsY);
-  detailsY += 10; // Slightly more spacing after section header
+  detailsY += 10; // Spacing after section header
   
-  // Create a consistent layout function to ensure alignment
+  // Create a consistent layout function for fields
   const addField = (label: string, value: string, x: number, y: number) => {
+    // Create shortened value if too long
+    const maxValueLength = 25; // Maximum characters in value
+    let displayValue = value;
+    if (value.length > maxValueLength) {
+      displayValue = value.substring(0, maxValueLength) + "...";
+    }
+    
     doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
     doc.setTextColor(60, 60, 60);
     doc.text(label, x, y);
     doc.setFont(pdfOptions.fontFamily || "helvetica", "normal");
-    doc.text(value, x + fieldLabelWidth, y);
-    return y + 8; // Return the next Y position
+    doc.text(displayValue, x + fieldLabelWidth, y);
+    return y + 9; // Increased line spacing
   };
   
-  // Full name with emphasized styling
+  // First column fields with constrained values
   detailsY = addField("Full Name:", `${claimant?.fullName || "Not provided"}`, col1X, detailsY);
-  
-  // Date of birth
   detailsY = addField("Date of Birth:", `${claimant?.dateOfBirth ? formatDate(claimant.dateOfBirth) : "Not provided"}`, col1X, detailsY);
-  
-  // Address
   detailsY = addField("Address:", `${claimant?.address || "Not provided"}`, col1X, detailsY);
-  
-  // Accompanied by
   detailsY = addField("Accompanied By:", `${claimant?.accompaniedBy || "None"}`, col1X, detailsY);
   
   // Column 2: Legal Information - with visual emphasis
@@ -298,57 +300,50 @@ export const generatePDF = (caseData: Case, options?: PDFCustomizationOptions): 
   doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
   doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
   doc.text("Legal Information", col2X, legalY);
-  legalY += 10; // Consistent spacing after header
+  legalY += 10; // Spacing after header
   
-  // Instructing Party
+  // Second column fields with constrained values
   legalY = addField("Instructing Party:", `${claimant?.instructingParty || "Not provided"}`, col2X, legalY);
-  
-  // IP Reference
   legalY = addField("IP Reference:", `${claimant?.instructingPartyRef || "Not provided"}`, col2X, legalY);
-  
-  // Solicitor
   legalY = addField("Solicitor:", `${claimant?.solicitorName || "Not provided"}`, col2X, legalY);
-  
-  // Reference
   legalY = addField("Reference:", `${claimant?.referenceNumber || "Not provided"}`, col2X, legalY);
-  
-  // MedCo Ref
   legalY = addField("MedCo Ref:", `${claimant?.medcoRefNumber || "Not provided"}`, col2X, legalY);
   
   // Update Y position after the card
   yPosition += 100;
   
-  // Examination Details Card - Sleek Design
-  // Draw a gradient background for the card
+  // Examination Details Card - Sleek Design matching the patient card
+  // Draw a gradient background for the card with fixed height and border
   const examGrdX = margin;
   const examGrdY = yPosition;
   const examGrdW = cardWidth;
-  const examGrdH = 60;
+  const examGrdH = 70; // Adjusted fixed height
   
   // Create gradient from light to slightly darker
   doc.setDrawColor(0);
   doc.setFillColor(245, 252, 255); // Slightly different shade than the patient card
   doc.roundedRect(examGrdX, examGrdY, examGrdW, examGrdH, 5, 5, 'F');
   
+  // Draw a border to contain content
+  doc.setDrawColor(230, 230, 230);
+  doc.setLineWidth(0.2);
+  doc.roundedRect(examGrdX, examGrdY, examGrdW, examGrdH, 5, 5, 'S');
+  
   // Add a colored accent bar on the left side with a different color
   doc.setFillColor(primaryColor[0], primaryColor[1]-20, primaryColor[2]+20); // Slightly different accent color
-  doc.rect(examGrdX, examGrdY, 5, examGrdH, 'F');
+  doc.rect(examGrdX, examGrdY, 4, examGrdH, 'F');
   
-  // Add a subtle top shadow
-  doc.setDrawColor(220, 220, 220);
-  doc.setLineWidth(0.5);
-  doc.line(examGrdX + 5, examGrdY + 1, examGrdX + examGrdW - 5, examGrdY + 1);
-  
-  // Card Title with icon-like prefix
+  // Card Title with proper padding
   doc.setTextColor(primaryColor[0], primaryColor[1]-10, primaryColor[2]+10);
   doc.setFontSize(13);
   doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
   doc.text("EXAMINATION DETAILS", margin + 10, yPosition + 12);
   
-  // Add a horizontal rule under the title
+  // Add a horizontal rule under the title that doesn't extend beyond the card
   doc.setDrawColor(230, 230, 230);
   doc.setLineWidth(0.3);
-  doc.line(margin + 10, yPosition + 16, margin + 160, yPosition + 16);
+  const examTitleLineLength = 150; // Constrained line length
+  doc.line(margin + 10, yPosition + 16, margin + 10 + examTitleLineLength, yPosition + 16);
   
   // Reset for content
   doc.setTextColor(80, 80, 80);
@@ -359,9 +354,9 @@ export const generatePDF = (caseData: Case, options?: PDFCustomizationOptions): 
   // Add the information with the same consistent layout as the first card
   // Use the same addField function created earlier for consistent alignment
   const examCol1 = margin + 15;
-  const examCol2 = margin + (cardWidth / 2) + 10;
+  const examCol2 = margin + (cardWidth / 2) + 5;
   
-  // First row
+  // First column
   let examY = detailsY;
   examY = addField("Location:", `${claimant?.placeOfExamination || "Not provided"}`, examCol1, examY);
   examY = addField("Date of Report:", `${claimant?.dateOfReport ? formatDate(claimant.dateOfReport) : "Not provided"}`, examCol1, examY);
@@ -371,8 +366,8 @@ export const generatePDF = (caseData: Case, options?: PDFCustomizationOptions): 
   examColY = addField("Date of Examination:", `${claimant?.dateOfExamination ? formatDate(claimant.dateOfExamination) : "Not provided"}`, examCol2, examColY);
   examColY = addField("Time with Claimant:", `${claimant?.timeSpentWithClaimant || "Not recorded"}`, examCol2, examColY);
   
-  // Update Y position after the card
-  yPosition += 65;
+  // Update Y position after the card - matching the actual card height
+  yPosition += 75; // Increased to match the card height
   
   // Expert details section
   yPosition += 20;
