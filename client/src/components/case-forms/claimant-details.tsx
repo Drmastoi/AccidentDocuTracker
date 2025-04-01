@@ -49,19 +49,24 @@ export function ClaimantDetailsForm({ caseId, initialData, onSaved }: ClaimantDe
       age: undefined,
       address: "",
       postCode: "",
-      accidentDate: "",
       identification: {
         type: "Passport",
       },
       accompaniedBy: "Alone",
-      dateOfReport: "",
+      // Default date of report to today's date as requested
+      dateOfReport: new Date().toISOString().split('T')[0],
       dateOfExamination: "",
       timeSpent: "15 min",
       helpWithCommunication: false,
       placeOfExamination: "Face to Face at Meeting Room, North, Ibis, Garstang Rd, Preston PR3 5JE",
       phone: "",
       email: "",
-      occupation: "",
+      // New fields added
+      instructingParty: "",
+      instructingPartyRef: "",
+      solicitorName: "",
+      referenceNumber: "",
+      medcoRefNumber: "",
     },
   });
   
@@ -227,14 +232,106 @@ export function ClaimantDetailsForm({ caseId, initialData, onSaved }: ClaimantDe
                 )}
               />
 
+              {/* Occupation field removed as requested */}
+            </div>
+          </SubSection>
+          
+          <SubSection title="Identification">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
-                name="occupation"
+                name="identification.type"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Occupation</FormLabel>
+                    <FormLabel>Identification Type</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select ID type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Passport">Passport</SelectItem>
+                        <SelectItem value="Driving Licence">Driving Licence</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </SubSection>
+
+          <SubSection title="Legal Information">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField
+                control={form.control}
+                name="instructingParty"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name of Instructing Party</FormLabel>
                     <FormControl>
-                      <Input placeholder="Software Engineer" {...field} />
+                      <Input placeholder="Acme Legal Services" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="instructingPartyRef"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Reference of IP</FormLabel>
+                    <FormControl>
+                      <Input placeholder="IP123456" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="solicitorName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name of Solicitor</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Jane Smith" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="referenceNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Reference Number</FormLabel>
+                    <FormControl>
+                      <Input placeholder="REF123456" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="medcoRefNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>MedCo Ref Number</FormLabel>
+                    <FormControl>
+                      <Input placeholder="MEDCO123456" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -242,8 +339,6 @@ export function ClaimantDetailsForm({ caseId, initialData, onSaved }: ClaimantDe
               />
             </div>
           </SubSection>
-          
-          {/* Identification section removed as requested */}
 
           <SubSection title="Examination Details">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

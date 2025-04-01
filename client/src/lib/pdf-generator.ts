@@ -252,7 +252,19 @@ export const generatePDF = (caseData: Case, options?: PDFCustomizationOptions): 
   drawTableRow("ID Checked:", "{{Type of ID}}", yPosition);
   yPosition += rowHeight;
   
-  drawTableRow("Occupation:", claimant?.occupation ? `${claimant.occupation}` : "{{Occupation at the time of accident}}", yPosition);
+  drawTableRow("Instructing Party:", claimant?.instructingParty ? `${claimant.instructingParty}` : "", yPosition);
+  yPosition += rowHeight;
+  
+  drawTableRow("IP Reference:", claimant?.instructingPartyRef ? `${claimant.instructingPartyRef}` : "", yPosition);
+  yPosition += rowHeight;
+  
+  drawTableRow("Solicitor:", claimant?.solicitorName ? `${claimant.solicitorName}` : "", yPosition);
+  yPosition += rowHeight;
+  
+  drawTableRow("Reference Number:", claimant?.referenceNumber ? `${claimant.referenceNumber}` : "", yPosition);
+  yPosition += rowHeight;
+  
+  drawTableRow("MedCo Ref Number:", claimant?.medcoRefNumber ? `${claimant.medcoRefNumber}` : "", yPosition);
   yPosition += rowHeight;
   
   drawTableRow("Accompanied By:", claimant?.accompaniedBy || "", yPosition);
@@ -287,8 +299,6 @@ export const generatePDF = (caseData: Case, options?: PDFCustomizationOptions): 
   yPosition += (rowHeight * 3);
   
   // Continue with single rows
-  drawTableRow("Medco Ref:", "", yPosition);
-  yPosition += rowHeight;
   
   drawTableRow("Examination Location:", claimant?.placeOfExamination || "", yPosition);
   yPosition += rowHeight;

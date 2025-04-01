@@ -82,12 +82,12 @@ export const claimantDetailsSchema = z.object({
   age: z.number().optional(),
   address: z.string().optional(),
   postCode: z.string().optional(),
-  accidentDate: z.string().optional(),
   identification: z.object({
     type: z.enum(["Passport", "Driving Licence", "Other"]).default("Passport"),
   }).optional(),
   accompaniedBy: z.enum(["Alone", "Spouse", "Father", "Mother", "Other"]).default("Alone"),
-  dateOfReport: z.string().optional(),
+  // Default date of report to today's date
+  dateOfReport: z.string().default(() => new Date().toISOString().split('T')[0]),
   dateOfExamination: z.string().optional(),
   timeSpent: z.string().default("15 min"),
   helpWithCommunication: z.boolean().default(false),
@@ -97,7 +97,12 @@ export const claimantDetailsSchema = z.object({
   ]).default("Face to Face at Meeting Room, North, Ibis, Garstang Rd, Preston PR3 5JE"),
   phone: z.string().optional(),
   email: z.string().email("Invalid email address").optional(),
-  occupation: z.string().optional(),
+  // Added new fields
+  instructingParty: z.string().optional(),
+  instructingPartyRef: z.string().optional(),
+  solicitorName: z.string().optional(),
+  referenceNumber: z.string().optional(),
+  medcoRefNumber: z.string().optional(),
 });
 
 export const accidentDetailsSchema = z.object({
