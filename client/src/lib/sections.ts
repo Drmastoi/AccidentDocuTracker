@@ -19,7 +19,6 @@ export type SectionId =
   | "treatments" 
   | "lifestyle" 
   | "family" 
-  | "prognosis" 
   | "expert";
 
 export interface Section {
@@ -90,14 +89,7 @@ export const sections: Section[] = [
     getCompletionStatus: (caseData) => 
       !!caseData?.familyHistory
   },
-  {
-    id: "prognosis",
-    name: "Prognosis",
-    icon: ShieldCheck,
-    apiPath: "prognosis",
-    getCompletionStatus: (caseData) => 
-      !!caseData?.prognosis
-  },
+
   {
     id: "expert",
     name: "Medical Expert Details",

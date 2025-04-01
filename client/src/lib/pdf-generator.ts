@@ -171,7 +171,6 @@ const defaultPDFOptions: PDFCustomizationOptions = {
     treatments: true,
     lifeStyleImpact: true,
     familyHistory: true,
-    prognosis: true,
     expertDetails: true
   }
 };
@@ -390,11 +389,8 @@ export const generatePDF = (caseData: Case, options?: PDFCustomizationOptions): 
     const injuries = caseData.physicalInjuryDetails.injuries;
     let rowHeight = 10;
     
-    // Get prognosis data if available
+    // Set empty treatment recommendations since prognosis section has been removed
     let treatmentRecommendations: string[] = [];
-    if (caseData.prognosis && hasPrognosisWithRecommendations(caseData.prognosis)) {
-      treatmentRecommendations = caseData.prognosis.treatmentRecommendations;
-    }
     
     doc.setTextColor(60, 60, 60);
     doc.setFontSize(8);
@@ -427,9 +423,6 @@ export const generatePDF = (caseData: Case, options?: PDFCustomizationOptions): 
         prognosisText = `Resolved after ${injury.resolutionDays || "unknown"} days`;
       } else {
         prognosisText = "Ongoing";
-        if (caseData.prognosis && hasPrognosisWithRecommendations(caseData.prognosis)) {
-          prognosisText = caseData.prognosis.overallPrognosis;
-        }
       }
       doc.text(prognosisText, currentX + 2, yPosition + 6);
       currentX += columnWidths[2];
@@ -678,7 +671,7 @@ export const generatePDF = (caseData: Case, options?: PDFCustomizationOptions): 
       doc.setFontSize(14);
       doc.setTextColor(255, 255, 255); // White
       doc.setFont("helvetica", "bold");
-      doc.text("INJURY IMPACT & PROGNOSIS (CONTINUED)", 105, 14, { align: "center" });
+      doc.text("INJURY IMPACT & LIFESTYLE (CONTINUED)", 105, 14, { align: "center" });
       
       yPosition = 30;
     }
@@ -838,77 +831,7 @@ export const generatePDF = (caseData: Case, options?: PDFCustomizationOptions): 
     addedFirstStatement = true;
   }
   
-  // Attached Statements Section - Second Statement (Prognosis)
-  if (caseData.prognosis && hasPrognosis(caseData.prognosis)) {
-    // Check if we need to start a new page
-    if (yPosition > 230) {
-      doc.addPage();
-      
-      // Add header with background
-      doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      doc.rect(0, 0, 210, 20, "F");
-      
-      // Header text
-      doc.setFontSize(14);
-      doc.setTextColor(255, 255, 255); // White
-      doc.setFont("helvetica", "bold");
-      doc.text(addedFirstStatement ? "ATTACHMENTS & STATEMENTS (CONTINUED)" : "ATTACHMENTS & STATEMENTS", 105, 14, { align: "center" });
-      
-      yPosition = 30;
-    }
-    
-    doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    doc.rect(15, yPosition, 180, 10, "F");
-    
-    doc.setFontSize(11);
-    doc.setTextColor(255, 255, 255);
-    doc.setFont("helvetica", "bold");
-    doc.text("ATTACHED STATEMENT - PROGNOSIS & RECOMMENDATIONS", 105, yPosition + 7, { align: "center" });
-    
-    yPosition += 15;
-    
-    doc.setTextColor(60, 60, 60);
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "normal");
-    
-    const prognosis = caseData.prognosis;
-    
-    let prognosisText = "";
-    
-    // Overall prognosis
-    if (hasPrognosisWithRecommendations(prognosis) && prognosis.overallPrognosis) {
-      prognosisText += `Overall Prognosis: ${prognosis.overallPrognosis}\n`;
-    }
-    
-    // Expected recovery
-    if (prognosis.expectedRecoveryTime) {
-      prognosisText += `Expected Recovery Time: ${prognosis.expectedRecoveryTime}\n`;
-    }
-    
-    // Permanent impairment
-    if (prognosis.permanentImpairment) {
-      prognosisText += `Permanent Impairment: ${prognosis.permanentImpairment}\n`;
-    }
-    
-    // Future care
-    if (prognosis.futureCarePlans) {
-      prognosisText += `Future Care Plans: ${prognosis.futureCarePlans}\n`;
-    }
-    
-    // Treatment recommendations
-    if (hasPrognosisWithRecommendations(prognosis) && prognosis.treatmentRecommendations.length > 0) {
-      prognosisText += `Treatment Recommendations: ${prognosis.treatmentRecommendations.join(", ")}\n`;
-    }
-    
-    // Additional notes
-    if (prognosis.additionalNotes) {
-      prognosisText += "\nAdditional Notes:\n" + prognosis.additionalNotes;
-    }
-    
-    const splitPrognosis = doc.splitTextToSize(prognosisText, 170);
-    doc.text(splitPrognosis, 20, yPosition);
-    yPosition += splitPrognosis.length * 5 + 10;
-  }
+  // Prognosis section has been removed as requested
   
   // Add final declaration and signature page
   doc.addPage();
@@ -932,21 +855,36 @@ export const generatePDF = (caseData: Case, options?: PDFCustomizationOptions): 
   
   // Declaration text
   let declarationText = "Declaration:";
-  const splitDeclaration = doc.splitTextToSize(declarationText, 170);
-  doc.text(splitDeclaration, 20, yPosition);
-  yPosition += splitDeclaration.length * 5 + 15;
+  doc.setFont("helvetica", "bold");
+  doc.text(declarationText, 20, yPosition);
+  doc.setFont("helvetica", "normal");
+  yPosition += 10;
+  
+  // Expert declaration
+  const expertDeclaration = "I, Dr. Awais Iqbal, am a medico-legal practitioner. Full details of my qualifications and experience entitling me to provide an expert opinion can be found on the last page of this medical report.";
+  const splitExpertDeclaration = doc.splitTextToSize(expertDeclaration, 170);
+  doc.text(splitExpertDeclaration, 20, yPosition);
+  yPosition += splitExpertDeclaration.length * 6 + 15;
   
   // Agreement text
+  doc.setFont("helvetica", "bold");
   declarationText = "Agreement of Report:";
-  const splitAgreement = doc.splitTextToSize(declarationText, 170);
-  doc.text(splitAgreement, 20, yPosition);
-  yPosition += splitAgreement.length * 5 + 15;
+  doc.text(declarationText, 20, yPosition);
+  doc.setFont("helvetica", "normal");
+  yPosition += 10;
+  
+  // Methodology
+  const methodology = "Methodology: I have been instructed to prepare this medical report for The Court in connection with the personal injuries sustained by the claimant. I interviewed and examined the claimant.";
+  const splitMethodology = doc.splitTextToSize(methodology, 170);
+  doc.text(splitMethodology, 20, yPosition);
+  yPosition += splitMethodology.length * 6 + 15;
   
   // Statement of Truth text
+  doc.setFont("helvetica", "bold");
   declarationText = "Statement of Truth:";
-  const splitTruth = doc.splitTextToSize(declarationText, 170);
-  doc.text(splitTruth, 20, yPosition);
-  yPosition += splitTruth.length * 5 + 30;
+  doc.text(declarationText, 20, yPosition);
+  doc.setFont("helvetica", "normal");
+  yPosition += 15 + 30; // Add some space after the header
   
   // Signature line
   doc.text("Signature:", 20, yPosition);
@@ -957,6 +895,49 @@ export const generatePDF = (caseData: Case, options?: PDFCustomizationOptions): 
   doc.text("Date:", 20, yPosition);
   doc.line(55, yPosition, 180, yPosition);
   yPosition += 25;
+  
+  // Add Case Classification and Declaration section
+  doc.addPage();
+  
+  // Add header with background
+  doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  doc.rect(0, 0, 210, 20, "F");
+  
+  // Header text
+  doc.setFontSize(14);
+  doc.setTextColor(255, 255, 255); // White
+  doc.setFont("helvetica", "bold");
+  doc.text("CASE CLASSIFICATION AND DECLARATION", 105, 14, { align: "center" });
+  
+  yPosition = 30;
+  
+  // Case Classification content
+  doc.setFontSize(11);
+  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  doc.setFont("helvetica", "bold");
+  doc.text("Case Classification and Declaration:", 20, yPosition);
+  yPosition += 15;
+  
+  doc.setTextColor(60, 60, 60);
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  
+  // Add the case classification text
+  const caseClassificationText = 
+    "I understand that my overriding duty is to the court, both in preparing this report and in giving oral evidence. " +
+    "I have complied and will continue to comply with that duty.\n\n" +
+    "I believe that the facts I have stated in this report are true and that the opinions I have expressed are correct.\n\n" +
+    "I understand that my duty to the court overrides any obligation to the person from whom I have received instructions or by whom I am paid.\n\n" +
+    "I have drawn the court's attention to any matter of which I am aware that might affect my opinion.\n\n" +
+    "I have indicated the sources of all information I have used.\n\n" +
+    "I have not included anything in this report that has been suggested to me by anyone, including the lawyers, without forming my own independent view of the matter.\n\n" +
+    "I will notify those instructing me immediately and confirm in writing if for any reason my existing report requires correction or qualification.\n\n" +
+    "I understand that this report will be the evidence that I give, subject to any corrections or qualifications I may make before swearing to its veracity and I may be cross-examined on my report by a cross-examiner assisted by an expert.\n\n" +
+    "I confirm that I have not entered into any arrangement in which the amount or payment of my fee is in any way dependent on the outcome of the case.";
+  
+  const splitClassification = doc.splitTextToSize(caseClassificationText, 170);
+  doc.text(splitClassification, 20, yPosition);
+  yPosition = 200;
   
   // Medical expert CV
   doc.setFontSize(11);
@@ -1040,7 +1021,7 @@ export const generatePDFPreview = (caseData: Case, options?: PDFCustomizationOpt
         <li><strong>Treatments:</strong> ${pdfOptions.sectionsToInclude?.treatments ? 'Yes' : 'No'}</li>
         <li><strong>Lifestyle Impact:</strong> ${pdfOptions.sectionsToInclude?.lifeStyleImpact ? 'Yes' : 'No'}</li>
         <li><strong>Family History:</strong> ${pdfOptions.sectionsToInclude?.familyHistory ? 'Yes' : 'No'}</li>
-        <li><strong>Prognosis:</strong> ${pdfOptions.sectionsToInclude?.prognosis ? 'Yes' : 'No'}</li>
+
         <li><strong>Expert Details:</strong> ${pdfOptions.sectionsToInclude?.expertDetails ? 'Yes' : 'No'}</li>
       </ul>
     </div>

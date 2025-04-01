@@ -282,17 +282,6 @@ export function PDFOptionsPanel({ options, onChange, onClose, onApply }: PDFOpti
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
                   <Checkbox 
-                    checked={options.sectionsToInclude?.prognosis}
-                    onCheckedChange={(checked) => updateSectionsToInclude('prognosis', !!checked)}
-                    id="include-prognosis"
-                  />
-                  <Label htmlFor="include-prognosis">Prognosis</Label>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <Checkbox 
                     checked={options.sectionsToInclude?.expertDetails}
                     onCheckedChange={(checked) => updateSectionsToInclude('expertDetails', !!checked)}
                     id="include-expert"

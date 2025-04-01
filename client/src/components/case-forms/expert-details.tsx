@@ -31,14 +31,14 @@ export function ExpertDetailsForm({ caseId, initialData, onSaved }: ExpertDetail
   const form = useForm<ExpertDetails>({
     resolver: zodResolver(expertDetailsSchema),
     defaultValues: initialData || {
-      examiner: "",
-      credentials: "",
-      licensureState: "",
+      examiner: "Dr. Awais Iqbal",
+      credentials: "MBBS, Direct Medical Expert",
+      licensureState: "UK",
       licenseNumber: "",
-      specialty: "",
+      specialty: "Medico-legal practitioner",
       experienceYears: undefined,
-      contactInformation: "",
-      signatureDate: "",
+      contactInformation: "Direct Medical Expert",
+      signatureDate: new Date().toISOString().split('T')[0],
     },
   });
   

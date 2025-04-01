@@ -13,7 +13,7 @@ import { TreatmentsForm } from "@/components/case-forms/treatments";
 import { LifestyleImpactForm } from "@/components/case-forms/lifestyle-impact";
 import { FamilyHistoryForm } from "@/components/case-forms/family-history";
 import { WorkHistoryForm } from "@/components/case-forms/work-history";
-import { PrognosisForm } from "@/components/case-forms/prognosis";
+
 import { ExpertDetailsForm } from "@/components/case-forms/expert-details";
 import { useToast } from "@/hooks/use-toast";
 import { SectionId } from "@/lib/sections";
@@ -272,13 +272,7 @@ export default function CaseEditor() {
             />
           )}
           
-          {activeSection === "prognosis" && (
-            <PrognosisForm
-              caseId={caseData?.id ?? 0}
-              initialData={caseData?.prognosis}
-              onSaved={() => queryClient.invalidateQueries({ queryKey: [`/api/cases/${caseData?.id}`] })}
-            />
-          )}
+          {/* Prognosis section removed as requested */}
           
           {activeSection === "expert" && (
             <ExpertDetailsForm
