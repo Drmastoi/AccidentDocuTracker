@@ -8,24 +8,16 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage
+  FormMessage,
+  FormDescription
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { FormSection, SubSection } from "@/components/ui/form-section";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { X, Plus } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-
-// Predefined list of common pre-existing conditions
-const commonPreExistingConditions = [
-  "Arthritis", "Back Problems", "Neck Issues", "Headaches/Migraines", "Anxiety", 
-  "Depression", "High Blood Pressure", "Diabetes", "Heart Disease", "Asthma",
-  "Previous Injuries", "Previous Surgeries", "Previous Car Accidents",
-  "Previous Workers' Compensation Claims"
-];
 
 interface FamilyHistoryFormProps {
   caseId: number;
@@ -36,39 +28,112 @@ interface FamilyHistoryFormProps {
 export function FamilyHistoryForm({ caseId, initialData, onSaved }: FamilyHistoryFormProps) {
   const { toast } = useToast();
   const [saving, setSaving] = React.useState(false);
-  const [otherCondition, setOtherCondition] = React.useState("");
   
   // Set up form with validation schema
   const form = useForm<FamilyHistory>({
     resolver: zodResolver(familyHistorySchema),
     defaultValues: initialData || {
-      relevantFamilyHistory: "",
-      preExistingConditions: [],
-      familySupport: "",
+      // Previous road traffic accidents
+      hasPreviousAccident: false,
+      previousAccidentYear: "",
+      previousAccidentRecovery: undefined,
+      
+      // Previous medical conditions
+      hasPreviousMedicalCondition: false,
+      previousMedicalConditionDetails: "",
+      
+      // Exceptional severity claim
+      hasExceptionalSeverity: false,
+      
+      // Physiotherapy preference
+      physiotherapyPreference: undefined,
+      
+      // Additional notes
       additionalNotes: "",
+      
+      // Summary
+      medicalHistorySummary: "The claimant reports no previous road traffic accidents. The claimant has not reported any pre-existing medical conditions that have been exacerbated by this accident. The claimant does not report any exceptionally severe physical or psychological injuries."
     },
   });
   
-  // Check if form has been modified
-  const isComplete = !!form.watch("relevantFamilyHistory") || 
-                     (form.watch("preExistingConditions")?.length > 0) || 
-                     !!form.watch("familySupport");
+  // Watch values for conditional fields
+  const hasPreviousAccident = form.watch("hasPreviousAccident");
+  const hasPreviousMedicalCondition = form.watch("hasPreviousMedicalCondition");
   
-  const addOtherCondition = () => {
-    if (otherCondition.trim() === "") return;
+  // Generate medical history summary
+  React.useEffect(() => {
+    let summary = "";
     
-    const currentConditions = form.getValues("preExistingConditions") || [];
-    form.setValue("preExistingConditions", [...currentConditions, otherCondition.trim()]);
-    setOtherCondition("");
-  };
+    // Previous road traffic accidents
+    if (hasPreviousAccident) {
+      const year = form.watch("previousAccidentYear");
+      const recovery = form.watch("previousAccidentRecovery");
+      
+      summary += `The claimant reports a previous road traffic accident in ${year || "a previous year"}`;
+      if (recovery) {
+        summary += ` with ${recovery.toLowerCase()} recovery`;
+      }
+      summary += ". ";
+    } else {
+      summary += "The claimant reports no previous road traffic accidents. ";
+    }
+    
+    // Previous medical conditions
+    if (hasPreviousMedicalCondition) {
+      const condition = form.watch("previousMedicalConditionDetails");
+      if (condition) {
+        summary += `The claimant reports pre-existing medical conditions (${condition}) that have been exacerbated by this accident. `;
+      } else {
+        summary += "The claimant reports pre-existing medical conditions that have been exacerbated by this accident. ";
+      }
+    } else {
+      summary += "The claimant has not reported any pre-existing medical conditions that have been exacerbated by this accident. ";
+    }
+    
+    // Exceptional severity
+    const hasExceptionalSeverity = form.watch("hasExceptionalSeverity");
+    if (hasExceptionalSeverity) {
+      summary += "The claimant reports exceptionally severe physical or psychological injuries. ";
+    } else {
+      summary += "The claimant does not report any exceptionally severe physical or psychological injuries. ";
+    }
+    
+    // Physiotherapy preference
+    const physiotherapyPreference = form.watch("physiotherapyPreference");
+    if (physiotherapyPreference) {
+      switch(physiotherapyPreference) {
+        case "Yes":
+          summary += "The claimant would prefer to have physiotherapy if offered.";
+          break;
+        case "No":
+          summary += "The claimant would not prefer to have physiotherapy if offered.";
+          break;
+        case "Already ongoing":
+          summary += "The claimant is already undergoing physiotherapy.";
+          break;
+        case "Already recovered":
+          summary += "The claimant has already recovered and does not require physiotherapy.";
+          break;
+      }
+    }
+    
+    form.setValue("medicalHistorySummary", summary);
+  }, [
+    hasPreviousAccident, 
+    form.watch("previousAccidentYear"),
+    form.watch("previousAccidentRecovery"),
+    hasPreviousMedicalCondition,
+    form.watch("previousMedicalConditionDetails"),
+    form.watch("hasExceptionalSeverity"),
+    form.watch("physiotherapyPreference"),
+    form
+  ]);
   
-  const removeCondition = (condition: string) => {
-    const currentConditions = form.getValues("preExistingConditions") || [];
-    form.setValue(
-      "preExistingConditions",
-      currentConditions.filter(c => c !== condition)
-    );
-  };
+  // Check if form has been modified
+  const isComplete = hasPreviousAccident !== undefined || 
+                     hasPreviousMedicalCondition !== undefined || 
+                     form.watch("hasExceptionalSeverity") !== undefined ||
+                     form.watch("physiotherapyPreference") !== undefined;
   
   const onSubmit = async (data: FamilyHistory) => {
     try {
@@ -80,16 +145,16 @@ export function FamilyHistoryForm({ caseId, initialData, onSaved }: FamilyHistor
       await apiRequest("POST", `/api/cases/${caseId}/calculate-completion`);
       
       toast({
-        title: "Family history saved",
-        description: "Family history information has been saved successfully.",
+        title: "Medical history saved",
+        description: "Past medical history information has been saved successfully.",
       });
       
       if (onSaved) onSaved();
     } catch (error) {
-      console.error("Error saving family history:", error);
+      console.error("Error saving medical history:", error);
       toast({
-        title: "Error saving family history",
-        description: "There was an error saving the family history information. Please try again.",
+        title: "Error saving medical history",
+        description: "There was an error saving the medical history information. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -99,124 +164,248 @@ export function FamilyHistoryForm({ caseId, initialData, onSaved }: FamilyHistor
   
   return (
     <FormSection 
-      title="Family History" 
+      title="Past History of Accidents or Illness" 
       isComplete={isComplete}
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <SubSection>
+          <SubSection title="Past Medical History">
+            <FormDescription className="text-sm mb-4">
+              Please provide information about any previous medical conditions or incidents
+            </FormDescription>
+            
+            {/* Previous Road Traffic Accidents */}
             <FormField
               control={form.control}
-              name="relevantFamilyHistory"
+              name="hasPreviousAccident"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Relevant Family History</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Describe any relevant family medical history that may impact the case"
-                      rows={4}
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </SubSection>
-          
-          <SubSection title="Pre-existing Conditions">
-            <FormField
-              control={form.control}
-              name="preExistingConditions"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Pre-existing Conditions</FormLabel>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {commonPreExistingConditions.map((condition) => (
-                      <FormItem
-                        key={condition}
-                        className="flex flex-row items-center space-x-2 space-y-0"
+                <FormItem className="mb-4">
+                  <FormLabel>Previous road traffic accident?</FormLabel>
+                  <div className="flex items-center space-x-2 mt-2">
+                    <FormControl>
+                      <RadioGroup 
+                        onValueChange={(value) => field.onChange(value === "true")} 
+                        value={field.value ? "true" : "false"}
+                        className="flex space-x-4"
                       >
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value?.includes(condition)}
-                            onCheckedChange={(checked) => {
-                              const updatedConditions = checked
-                                ? [...(field.value || []), condition]
-                                : (field.value || []).filter(
-                                    (val) => val !== condition
-                                  );
-                              field.onChange(updatedConditions);
-                            }}
-                          />
-                        </FormControl>
-                        <FormLabel className="text-sm font-normal">
-                          {condition}
-                        </FormLabel>
-                      </FormItem>
-                    ))}
+                        <FormItem className="flex items-center space-x-2">
+                          <FormControl>
+                            <RadioGroupItem value="true" />
+                          </FormControl>
+                          <FormLabel className="font-normal">Yes</FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-2">
+                          <FormControl>
+                            <RadioGroupItem value="false" />
+                          </FormControl>
+                          <FormLabel className="font-normal">No</FormLabel>
+                        </FormItem>
+                      </RadioGroup>
+                    </FormControl>
                   </div>
                   <FormMessage />
                 </FormItem>
               )}
             />
             
-            <div className="mt-4">
-              <FormLabel>Other Pre-existing Condition</FormLabel>
-              <div className="flex items-center gap-2 mt-1">
-                <Input
-                  value={otherCondition}
-                  onChange={(e) => setOtherCondition(e.target.value)}
-                  placeholder="Enter other condition"
-                  className="flex-1"
+            {hasPreviousAccident && (
+              <div className="ml-6 border-l-2 border-gray-200 pl-4 pb-2 space-y-4">
+                <FormField
+                  control={form.control}
+                  name="previousAccidentYear"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>What year?</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Enter year of previous accident"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={addOtherCondition}
-                  disabled={!otherCondition.trim()}
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-            
-            {form.watch("preExistingConditions")?.length > 0 && (
-              <div className="mt-4">
-                <FormLabel>Selected Conditions</FormLabel>
-                <div className="flex flex-wrap gap-2 mt-1">
-                  {form.watch("preExistingConditions")?.map((condition) => (
-                    <div
-                      key={condition}
-                      className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800"
-                    >
-                      {condition}
-                      <button
-                        type="button"
-                        onClick={() => removeCondition(condition)}
-                        className="ml-1 text-gray-500 hover:text-gray-700"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
+                
+                <FormField
+                  control={form.control}
+                  name="previousAccidentRecovery"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Did you recover completely/partially?</FormLabel>
+                      <FormControl>
+                        <RadioGroup 
+                          onValueChange={field.onChange} 
+                          value={field.value}
+                          className="flex space-x-4 mt-2"
+                        >
+                          <FormItem className="flex items-center space-x-2">
+                            <FormControl>
+                              <RadioGroupItem value="Complete" />
+                            </FormControl>
+                            <FormLabel className="font-normal">Complete</FormLabel>
+                          </FormItem>
+                          <FormItem className="flex items-center space-x-2">
+                            <FormControl>
+                              <RadioGroupItem value="Partial" />
+                            </FormControl>
+                            <FormLabel className="font-normal">Partial</FormLabel>
+                          </FormItem>
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
             )}
-          </SubSection>
-          
-          <SubSection title="Family Support">
+            
+            {/* Previous Medical Conditions */}
             <FormField
               control={form.control}
-              name="familySupport"
+              name="hasPreviousMedicalCondition"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Family Support</FormLabel>
+                <FormItem className="mt-6 mb-4">
+                  <FormLabel>Any Previous medical conditions worsened by this accident?</FormLabel>
+                  <div className="flex items-center space-x-2 mt-2">
+                    <FormControl>
+                      <RadioGroup 
+                        onValueChange={(value) => field.onChange(value === "true")} 
+                        value={field.value ? "true" : "false"}
+                        className="flex space-x-4"
+                      >
+                        <FormItem className="flex items-center space-x-2">
+                          <FormControl>
+                            <RadioGroupItem value="true" />
+                          </FormControl>
+                          <FormLabel className="font-normal">Yes</FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-2">
+                          <FormControl>
+                            <RadioGroupItem value="false" />
+                          </FormControl>
+                          <FormLabel className="font-normal">No</FormLabel>
+                        </FormItem>
+                      </RadioGroup>
+                    </FormControl>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            {hasPreviousMedicalCondition && (
+              <div className="ml-6 border-l-2 border-gray-200 pl-4 pb-2">
+                <FormField
+                  control={form.control}
+                  name="previousMedicalConditionDetails"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Enter details if yes, what condition</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Describe the pre-existing condition and how it's been affected"
+                          rows={3}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+            
+            {/* Exceptional Severity */}
+            <FormField
+              control={form.control}
+              name="hasExceptionalSeverity"
+              render={({ field }) => (
+                <FormItem className="mt-6 mb-4">
+                  <FormLabel>Do you want to claim that your physical or psychological injuries are Exceptionally severe?</FormLabel>
+                  <div className="flex items-center space-x-2 mt-2">
+                    <FormControl>
+                      <RadioGroup 
+                        onValueChange={(value) => field.onChange(value === "true")} 
+                        value={field.value ? "true" : "false"}
+                        className="flex space-x-4"
+                      >
+                        <FormItem className="flex items-center space-x-2">
+                          <FormControl>
+                            <RadioGroupItem value="true" />
+                          </FormControl>
+                          <FormLabel className="font-normal">Yes</FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-2">
+                          <FormControl>
+                            <RadioGroupItem value="false" />
+                          </FormControl>
+                          <FormLabel className="font-normal">No</FormLabel>
+                        </FormItem>
+                      </RadioGroup>
+                    </FormControl>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            {/* Physiotherapy Preference */}
+            <FormField
+              control={form.control}
+              name="physiotherapyPreference"
+              render={({ field }) => (
+                <FormItem className="mt-6 mb-4">
+                  <FormLabel>Would you prefer to have physiotherapy if offered?</FormLabel>
+                  <FormControl>
+                    <RadioGroup 
+                      onValueChange={field.onChange} 
+                      value={field.value}
+                      className="flex flex-col space-y-2 mt-2"
+                    >
+                      <FormItem className="flex items-center space-x-2">
+                        <FormControl>
+                          <RadioGroupItem value="Yes" />
+                        </FormControl>
+                        <FormLabel className="font-normal">Yes</FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-2">
+                        <FormControl>
+                          <RadioGroupItem value="No" />
+                        </FormControl>
+                        <FormLabel className="font-normal">No</FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-2">
+                        <FormControl>
+                          <RadioGroupItem value="Already ongoing" />
+                        </FormControl>
+                        <FormLabel className="font-normal">Already ongoing</FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-2">
+                        <FormControl>
+                          <RadioGroupItem value="Already recovered" />
+                        </FormControl>
+                        <FormLabel className="font-normal">Already recovered</FormLabel>
+                      </FormItem>
+                    </RadioGroup>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            {/* Additional Notes */}
+            <FormField
+              control={form.control}
+              name="additionalNotes"
+              render={({ field }) => (
+                <FormItem className="mt-6">
+                  <FormLabel>Is there anything else you want to add?</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Describe the level of family support available to the claimant during recovery"
+                      placeholder="Add any additional information you'd like to include"
                       rows={3}
-                      {...field} 
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
@@ -225,20 +414,19 @@ export function FamilyHistoryForm({ caseId, initialData, onSaved }: FamilyHistor
             />
           </SubSection>
           
-          <SubSection>
+          {/* Medical History Summary */}
+          <SubSection title="Summary">
             <FormField
               control={form.control}
-              name="additionalNotes"
+              name="medicalHistorySummary"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Additional Notes</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Any additional notes regarding family history"
-                      rows={3}
-                      {...field} 
-                    />
-                  </FormControl>
+                  <div className="p-4 border rounded-md bg-muted/30">
+                    <p className="text-sm leading-relaxed">{field.value}</p>
+                  </div>
+                  <FormDescription className="text-xs mt-2">
+                    This medical history summary is generated automatically based on your responses.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -247,7 +435,7 @@ export function FamilyHistoryForm({ caseId, initialData, onSaved }: FamilyHistor
           
           <div className="flex justify-end mt-6">
             <Button type="submit" disabled={saving}>
-              {saving ? "Saving..." : "Save Family History"}
+              {saving ? "Saving..." : "Save Medical History"}
             </Button>
           </div>
         </form>

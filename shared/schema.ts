@@ -218,10 +218,26 @@ export const lifestyleImpactSchema = z.object({
 });
 
 export const familyHistorySchema = z.object({
-  relevantFamilyHistory: z.string().optional(),
-  preExistingConditions: z.array(z.string()).optional(),
-  familySupport: z.string().optional(),
+  // Previous road traffic accidents
+  hasPreviousAccident: z.boolean().optional(),
+  previousAccidentYear: z.string().optional(),
+  previousAccidentRecovery: z.enum(["Complete", "Partial"]).optional(),
+  
+  // Previous medical conditions
+  hasPreviousMedicalCondition: z.boolean().optional(),
+  previousMedicalConditionDetails: z.string().optional(),
+  
+  // Exceptional severity claim
+  hasExceptionalSeverity: z.boolean().optional(),
+  
+  // Physiotherapy preference
+  physiotherapyPreference: z.enum(["Yes", "No", "Already ongoing", "Already recovered"]).optional(),
+  
+  // Additional notes
   additionalNotes: z.string().optional(),
+  
+  // Summary
+  medicalHistorySummary: z.string().optional(),
 });
 
 export const workHistorySchema = z.object({
