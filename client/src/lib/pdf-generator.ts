@@ -223,11 +223,11 @@ export const generatePDF = (caseData: Case, options?: PDFCustomizationOptions): 
   const cardMargin = 5;
   
   // Patient Information Card - Sleeker Design with visual elements
-  // Draw a gradient background for the card with fixed height
+  // Draw a gradient background for the card with fixed height - even larger to contain everything
   const grdX = margin;
   const grdY = yPosition;
   const grdW = cardWidth;
-  const grdH = 100; // Increased fixed height
+  const grdH = 110; // Further increased fixed height to ensure all content fits
   
   // Create gradient from light to slightly darker
   doc.setDrawColor(0);
@@ -271,21 +271,29 @@ export const generatePDF = (caseData: Case, options?: PDFCustomizationOptions): 
   doc.text("Personal Details", col1X, detailsY);
   detailsY += 10; // Spacing after section header
   
-  // Create a consistent layout function for fields
+  // Create a consistent layout function for fields with strict width constraints
   const addField = (label: string, value: string, x: number, y: number) => {
-    // Create shortened value if too long
-    const maxValueLength = 25; // Maximum characters in value
+    // Create shortened value if too long - with stricter max length
+    const maxValueLength = 20; // Reduced maximum characters in value
     let displayValue = value;
     if (value.length > maxValueLength) {
       displayValue = value.substring(0, maxValueLength) + "...";
     }
     
+    // Calculate available space for value (half of card width minus label width minus padding)
+    const availableWidth = (cardWidth / 2) - fieldLabelWidth - 15;
+    
     doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
     doc.setTextColor(60, 60, 60);
     doc.text(label, x, y);
     doc.setFont(pdfOptions.fontFamily || "helvetica", "normal");
-    doc.text(displayValue, x + fieldLabelWidth, y);
-    return y + 9; // Increased line spacing
+    
+    // Split value to fit in available width if needed
+    const valueLines = doc.splitTextToSize(displayValue, availableWidth);
+    doc.text(valueLines, x + fieldLabelWidth, y);
+    
+    // Return increased Y position based on number of lines
+    return y + (valueLines.length > 1 ? 10 * valueLines.length : 9);
   };
   
   // First column fields with constrained values
@@ -309,15 +317,15 @@ export const generatePDF = (caseData: Case, options?: PDFCustomizationOptions): 
   legalY = addField("Reference:", `${claimant?.referenceNumber || "Not provided"}`, col2X, legalY);
   legalY = addField("MedCo Ref:", `${claimant?.medcoRefNumber || "Not provided"}`, col2X, legalY);
   
-  // Update Y position after the card
-  yPosition += 100;
+  // Update Y position after the card to match the larger card height
+  yPosition += 115;
   
   // Examination Details Card - Sleek Design matching the patient card
-  // Draw a gradient background for the card with fixed height and border
+  // Draw a gradient background for the card with fixed height and border to prevent overflow
   const examGrdX = margin;
   const examGrdY = yPosition;
   const examGrdW = cardWidth;
-  const examGrdH = 70; // Adjusted fixed height
+  const examGrdH = 80; // Further increased fixed height to ensure all content fits
   
   // Create gradient from light to slightly darker
   doc.setDrawColor(0);
@@ -367,7 +375,7 @@ export const generatePDF = (caseData: Case, options?: PDFCustomizationOptions): 
   examColY = addField("Time with Claimant:", `${claimant?.timeSpentWithClaimant || "Not recorded"}`, examCol2, examColY);
   
   // Update Y position after the card - matching the actual card height
-  yPosition += 75; // Increased to match the card height
+  yPosition += 85; // Increased to match the larger card height
   
   // Expert details section
   yPosition += 20;
