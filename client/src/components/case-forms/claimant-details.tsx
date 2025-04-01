@@ -161,19 +161,7 @@ export function ClaimantDetailsForm({ caseId, initialData, onSaved }: ClaimantDe
                 )}
               />
               
-              <FormField
-                control={form.control}
-                name="accidentDate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Accident Date</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Accident Date field removed - moved to Accident Details section only */}
             </div>
 
             <div className="grid grid-cols-1 gap-6 mt-6">
@@ -255,35 +243,7 @@ export function ClaimantDetailsForm({ caseId, initialData, onSaved }: ClaimantDe
             </div>
           </SubSection>
           
-          <SubSection title="Identification">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="identification.type"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Identification Type</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select ID type" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="Passport">Passport</SelectItem>
-                        <SelectItem value="Driving Licence">Driving Licence</SelectItem>
-                        <SelectItem value="Other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          </SubSection>
+          {/* Identification section removed as requested */}
 
           <SubSection title="Examination Details">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
