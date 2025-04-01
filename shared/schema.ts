@@ -149,6 +149,11 @@ export const psychologicalInjuriesSchema = z.object({
     })
   ).optional(),
   traumaAssessment: z.string().optional(),
+  travelAnxietySymptoms: z.array(z.string()).optional(),
+  travelAnxietyOnset: z.enum(["Same Day", "Next Day", "Few Days Later"]).optional(),
+  travelAnxietyInitialSeverity: z.enum(["Mild", "Moderate", "Severe"]).optional(),
+  travelAnxietyCurrentSeverity: z.enum(["Mild", "Moderate", "Severe", "Resolved"]).optional(),
+  travelAnxietyResolutionDays: z.string().optional(),
   additionalNotes: z.string().optional(),
 });
 

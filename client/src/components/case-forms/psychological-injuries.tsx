@@ -16,6 +16,7 @@ import { FormSection, SubSection } from "@/components/ui/form-section";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
@@ -24,6 +25,20 @@ const commonPsychologicalSymptoms = [
   "Anxiety", "Depression", "PTSD", "Insomnia", "Flashbacks", "Nightmares", 
   "Irritability", "Difficulty Concentrating", "Social Withdrawal", "Mood Swings",
   "Panic Attacks", "Fear of Driving", "Emotional Distress"
+];
+
+// Predefined list for travel anxiety symptoms
+const travelAnxietySymptoms = [
+  "Being a more cautious driver",
+  "Looking in the mirror more frequently / checking over shoulders",
+  "Avoiding the road where the accident happened",
+  "Avoiding being a passenger in a car",
+  "Avoiding driving a car",
+  "Getting panic attacks when in a car",
+  "Anxiety when traveling as a passenger",
+  "Anxiety on busy roads or highways",
+  "Prevented from driving for leisure or work",
+  "Other"
 ];
 
 interface PsychologicalInjuriesFormProps {
@@ -43,6 +58,11 @@ export function PsychologicalInjuriesForm({ caseId, initialData, onSaved }: Psyc
       psychologicalSymptoms: [],
       mentalHealthDiagnoses: [{ diagnosis: "", diagnosisDate: "", diagnosingProvider: "" }],
       traumaAssessment: "",
+      travelAnxietySymptoms: [],
+      travelAnxietyOnset: undefined,
+      travelAnxietyInitialSeverity: undefined,
+      travelAnxietyCurrentSeverity: undefined,
+      travelAnxietyResolutionDays: "",
       additionalNotes: "",
     },
   });
@@ -55,8 +75,9 @@ export function PsychologicalInjuriesForm({ caseId, initialData, onSaved }: Psyc
   
   // Check if form has been modified
   const isComplete = (form.watch("psychologicalSymptoms")?.length > 0) || 
-                     (form.watch("mentalHealthDiagnoses")?.length > 0 && !!form.watch("mentalHealthDiagnoses")[0].diagnosis) || 
-                     !!form.watch("traumaAssessment");
+                     (form.watch("mentalHealthDiagnoses")?.length > 0 && !!form.watch("mentalHealthDiagnoses")[0]?.diagnosis) || 
+                     !!form.watch("traumaAssessment") ||
+                     (form.watch("travelAnxietySymptoms")?.length > 0);
   
   const onSubmit = async (data: PsychologicalInjuries) => {
     try {
@@ -225,6 +246,211 @@ export function PsychologicalInjuriesForm({ caseId, initialData, onSaved }: Psyc
                 </FormItem>
               )}
             />
+          </SubSection>
+          
+          <SubSection title="Travel Anxiety Symptoms">
+            <FormField
+              control={form.control}
+              name="travelAnxietySymptoms"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Travel Anxiety Symptoms</FormLabel>
+                  <div className="flex flex-col gap-2 mt-2">
+                    {travelAnxietySymptoms.map((symptom) => (
+                      <FormItem
+                        key={symptom}
+                        className="flex flex-row items-center space-x-2 space-y-0"
+                      >
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value?.includes(symptom)}
+                            onCheckedChange={(checked) => {
+                              const updatedSymptoms = checked
+                                ? [...(field.value || []), symptom]
+                                : (field.value || []).filter(
+                                    (val) => val !== symptom
+                                  );
+                              field.onChange(updatedSymptoms);
+                            }}
+                          />
+                        </FormControl>
+                        <FormLabel className="text-sm font-normal">
+                          {symptom}
+                        </FormLabel>
+                      </FormItem>
+                    ))}
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+              <div>
+                <FormField
+                  control={form.control}
+                  name="travelAnxietyOnset"
+                  render={({ field }) => (
+                    <FormItem className="space-y-3">
+                      <FormLabel>When did your travel anxiety start?</FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          className="flex flex-col space-y-1"
+                        >
+                          <FormItem className="flex items-center space-x-3 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value="Same Day" />
+                            </FormControl>
+                            <FormLabel className="font-normal">
+                              Same day
+                            </FormLabel>
+                          </FormItem>
+                          <FormItem className="flex items-center space-x-3 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value="Next Day" />
+                            </FormControl>
+                            <FormLabel className="font-normal">
+                              Next Day
+                            </FormLabel>
+                          </FormItem>
+                          <FormItem className="flex items-center space-x-3 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value="Few Days Later" />
+                            </FormControl>
+                            <FormLabel className="font-normal">
+                              Few days Later
+                            </FormLabel>
+                          </FormItem>
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              <div>
+                <FormField
+                  control={form.control}
+                  name="travelAnxietyInitialSeverity"
+                  render={({ field }) => (
+                    <FormItem className="space-y-3">
+                      <FormLabel>Initial Severity of travel anxiety</FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          className="flex flex-col space-y-1"
+                        >
+                          <FormItem className="flex items-center space-x-3 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value="Mild" />
+                            </FormControl>
+                            <FormLabel className="font-normal">
+                              Mild
+                            </FormLabel>
+                          </FormItem>
+                          <FormItem className="flex items-center space-x-3 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value="Moderate" />
+                            </FormControl>
+                            <FormLabel className="font-normal">
+                              Moderate
+                            </FormLabel>
+                          </FormItem>
+                          <FormItem className="flex items-center space-x-3 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value="Severe" />
+                            </FormControl>
+                            <FormLabel className="font-normal">
+                              Severe
+                            </FormLabel>
+                          </FormItem>
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              <div>
+                <FormField
+                  control={form.control}
+                  name="travelAnxietyCurrentSeverity"
+                  render={({ field }) => (
+                    <FormItem className="space-y-3">
+                      <FormLabel>Current Severity of travel anxiety</FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          className="flex flex-col space-y-1"
+                        >
+                          <FormItem className="flex items-center space-x-3 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value="Mild" />
+                            </FormControl>
+                            <FormLabel className="font-normal">
+                              Mild
+                            </FormLabel>
+                          </FormItem>
+                          <FormItem className="flex items-center space-x-3 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value="Moderate" />
+                            </FormControl>
+                            <FormLabel className="font-normal">
+                              Moderate
+                            </FormLabel>
+                          </FormItem>
+                          <FormItem className="flex items-center space-x-3 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value="Severe" />
+                            </FormControl>
+                            <FormLabel className="font-normal">
+                              Severe
+                            </FormLabel>
+                          </FormItem>
+                          <FormItem className="flex items-center space-x-3 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value="Resolved" />
+                            </FormControl>
+                            <FormLabel className="font-normal">
+                              Resolved
+                            </FormLabel>
+                          </FormItem>
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              {form.watch("travelAnxietyCurrentSeverity") === "Resolved" && (
+                <div>
+                  <FormField
+                    control={form.control}
+                    name="travelAnxietyResolutionDays"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Days until resolution</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="e.g. 30"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
+            </div>
           </SubSection>
           
           <SubSection>
