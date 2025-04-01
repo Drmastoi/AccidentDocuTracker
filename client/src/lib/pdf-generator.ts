@@ -219,99 +219,189 @@ export const generatePDF = (caseData: Case, options?: PDFCustomizationOptions): 
   
   // Define card dimensions and styling
   const cardWidth = pageWidth - (margin * 2);
+  const tableWidth = cardWidth; // Define tableWidth for use in other sections
   const cardMargin = 5;
   
-  // Patient Information Card
-  doc.setFillColor(245, 248, 250);
-  doc.roundedRect(margin, yPosition, cardWidth, 90, 3, 3, 'F');
+  // Patient Information Card - Sleeker Design with visual elements
+  // Draw a gradient background for the card
+  const grdX = margin;
+  const grdY = yPosition;
+  const grdW = cardWidth;
+  const grdH = 92;
   
-  // Card Title
+  // Create gradient from light to slightly darker
+  const grd = doc.setDrawColor(0);
+  doc.setFillColor(248, 250, 252);
+  doc.roundedRect(grdX, grdY, grdW, grdH, 5, 5, 'F');
+  
+  // Add a colored accent bar on the left side
+  doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  doc.rect(grdX, grdY, 5, grdH, 'F');
+  
+  // Add a subtle top shadow
+  doc.setDrawColor(220, 220, 220);
+  doc.setLineWidth(0.5);
+  doc.line(grdX + 5, grdY + 1, grdX + grdW - 5, grdY + 1);
+  
+  // Card Title with icon-like prefix
   doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-  doc.setFontSize(12);
+  doc.setFontSize(13);
   doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
-  doc.text("PATIENT INFORMATION", margin + cardMargin, yPosition + 12);
+  doc.text("PATIENT INFORMATION", margin + 10, yPosition + 12);
+  
+  // Add a horizontal rule under the title
+  doc.setDrawColor(230, 230, 230);
+  doc.setLineWidth(0.3);
+  doc.line(margin + 10, yPosition + 16, margin + 160, yPosition + 16);
   
   // Reset for content
-  doc.setTextColor(60, 60, 60);
-  doc.setFontSize(10);
+  doc.setTextColor(80, 80, 80);
+  doc.setFontSize(9.5);
   
   // Create two-column layout
-  const col1X = margin + cardMargin;
-  const col2X = margin + (cardWidth / 2) + cardMargin;
-  let detailsY = yPosition + 25;
+  const col1X = margin + 12;
+  const col2X = margin + (cardWidth / 2) + 5;
+  let detailsY = yPosition + 28;
   
-  // Column 1: Personal Information
+  // Column 1: Personal Information - with visual emphasis
   doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
+  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
   doc.text("Personal Details", col1X, detailsY);
-  detailsY += 10;
+  detailsY += 9;
   
+  // Full name with emphasized styling
+  doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
+  doc.setTextColor(60, 60, 60);
+  doc.text("Full Name:", col1X, detailsY);
   doc.setFont(pdfOptions.fontFamily || "helvetica", "normal");
-  doc.text(`Full Name: ${claimant?.fullName || "Not provided"}`, col1X, detailsY);
+  doc.text(`${claimant?.fullName || "Not provided"}`, col1X + 30, detailsY);
   detailsY += 8;
   
-  doc.text(`Date of Birth: ${claimant?.dateOfBirth ? formatDate(claimant.dateOfBirth) : "Not provided"}`, col1X, detailsY);
+  // Date of birth
+  doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
+  doc.text("Date of Birth:", col1X, detailsY);
+  doc.setFont(pdfOptions.fontFamily || "helvetica", "normal");
+  doc.text(`${claimant?.dateOfBirth ? formatDate(claimant.dateOfBirth) : "Not provided"}`, col1X + 30, detailsY);
   detailsY += 8;
   
-  doc.text(`Address: ${claimant?.address || "Not provided"}`, col1X, detailsY);
+  // Address
+  doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
+  doc.text("Address:", col1X, detailsY);
+  doc.setFont(pdfOptions.fontFamily || "helvetica", "normal");
+  doc.text(`${claimant?.address || "Not provided"}`, col1X + 30, detailsY);
   detailsY += 8;
   
-  doc.text(`ID Checked: ${claimant?.idChecked || "Not verified"}`, col1X, detailsY);
-  detailsY += 8;
+  // Accompanied by
+  doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
+  doc.text("Accompanied By:", col1X, detailsY);
+  doc.setFont(pdfOptions.fontFamily || "helvetica", "normal");
+  doc.text(`${claimant?.accompaniedBy || "None"}`, col1X + 30, detailsY);
   
-  doc.text(`Accompanied By: ${claimant?.accompaniedBy || "None"}`, col1X, detailsY);
-  
-  // Column 2: Legal Information
-  detailsY = yPosition + 25;
+  // Column 2: Legal Information - with visual emphasis
+  detailsY = yPosition + 28;
   
   doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
+  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
   doc.text("Legal Information", col2X, detailsY);
-  detailsY += 10;
+  detailsY += 9;
   
+  doc.setTextColor(60, 60, 60);
+  doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
+  doc.text("Instructing Party:", col2X, detailsY);
   doc.setFont(pdfOptions.fontFamily || "helvetica", "normal");
-  doc.text(`Instructing Party: ${claimant?.instructingParty || "Not provided"}`, col2X, detailsY);
+  doc.text(`${claimant?.instructingParty || "Not provided"}`, col2X + 38, detailsY);
   detailsY += 8;
   
-  doc.text(`IP Reference: ${claimant?.instructingPartyRef || "Not provided"}`, col2X, detailsY);
+  doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
+  doc.text("IP Reference:", col2X, detailsY);
+  doc.setFont(pdfOptions.fontFamily || "helvetica", "normal");
+  doc.text(`${claimant?.instructingPartyRef || "Not provided"}`, col2X + 38, detailsY);
   detailsY += 8;
   
-  doc.text(`Solicitor: ${claimant?.solicitorName || "Not provided"}`, col2X, detailsY);
+  doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
+  doc.text("Solicitor:", col2X, detailsY);
+  doc.setFont(pdfOptions.fontFamily || "helvetica", "normal");
+  doc.text(`${claimant?.solicitorName || "Not provided"}`, col2X + 38, detailsY);
   detailsY += 8;
   
-  doc.text(`Reference Number: ${claimant?.referenceNumber || "Not provided"}`, col2X, detailsY);
+  doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
+  doc.text("Reference:", col2X, detailsY);
+  doc.setFont(pdfOptions.fontFamily || "helvetica", "normal");
+  doc.text(`${claimant?.referenceNumber || "Not provided"}`, col2X + 38, detailsY);
   detailsY += 8;
   
-  doc.text(`MedCo Ref Number: ${claimant?.medcoRefNumber || "Not provided"}`, col2X, detailsY);
+  doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
+  doc.text("MedCo Ref:", col2X, detailsY);
+  doc.setFont(pdfOptions.fontFamily || "helvetica", "normal");
+  doc.text(`${claimant?.medcoRefNumber || "Not provided"}`, col2X + 38, detailsY);
   
   // Update Y position after the card
   yPosition += 100;
   
-  // Examination Details Card
-  doc.setFillColor(240, 245, 250);
-  doc.roundedRect(margin, yPosition, cardWidth, 55, 3, 3, 'F');
+  // Examination Details Card - Sleek Design
+  // Draw a gradient background for the card
+  const examGrdX = margin;
+  const examGrdY = yPosition;
+  const examGrdW = cardWidth;
+  const examGrdH = 60;
   
-  // Card Title
-  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-  doc.setFontSize(12);
+  // Create gradient from light to slightly darker
+  doc.setDrawColor(0);
+  doc.setFillColor(245, 252, 255); // Slightly different shade than the patient card
+  doc.roundedRect(examGrdX, examGrdY, examGrdW, examGrdH, 5, 5, 'F');
+  
+  // Add a colored accent bar on the left side with a different color
+  doc.setFillColor(primaryColor[0], primaryColor[1]-20, primaryColor[2]+20); // Slightly different accent color
+  doc.rect(examGrdX, examGrdY, 5, examGrdH, 'F');
+  
+  // Add a subtle top shadow
+  doc.setDrawColor(220, 220, 220);
+  doc.setLineWidth(0.5);
+  doc.line(examGrdX + 5, examGrdY + 1, examGrdX + examGrdW - 5, examGrdY + 1);
+  
+  // Card Title with icon-like prefix
+  doc.setTextColor(primaryColor[0], primaryColor[1]-10, primaryColor[2]+10);
+  doc.setFontSize(13);
   doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
-  doc.text("EXAMINATION DETAILS", margin + cardMargin, yPosition + 12);
+  doc.text("EXAMINATION DETAILS", margin + 10, yPosition + 12);
+  
+  // Add a horizontal rule under the title
+  doc.setDrawColor(230, 230, 230);
+  doc.setLineWidth(0.3);
+  doc.line(margin + 10, yPosition + 16, margin + 160, yPosition + 16);
   
   // Reset for content
-  doc.setTextColor(60, 60, 60);
-  doc.setFontSize(10);
+  doc.setTextColor(80, 80, 80);
+  doc.setFontSize(9.5);
   
-  detailsY = yPosition + 25;
+  detailsY = yPosition + 28;
   
+  // Add the information in a more visually appealing format
+  const examCol1 = margin + 12;
+  const examCol2 = margin + (cardWidth / 2) + 5;
+  
+  // First row
+  doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
+  doc.text("Location:", examCol1, detailsY);
   doc.setFont(pdfOptions.fontFamily || "helvetica", "normal");
-  doc.text(`Location: ${claimant?.placeOfExamination || "Not provided"}`, margin + cardMargin, detailsY);
-  detailsY += 8;
+  doc.text(`${claimant?.placeOfExamination || "Not provided"}`, examCol1 + 30, detailsY);
   
-  doc.text(`Date of Examination: ${claimant?.dateOfExamination ? formatDate(claimant.dateOfExamination) : "Not provided"}`, margin + cardMargin, detailsY);
-  detailsY += 8;
+  doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
+  doc.text("Date of Examination:", examCol2, detailsY);
+  doc.setFont(pdfOptions.fontFamily || "helvetica", "normal");
+  doc.text(`${claimant?.dateOfExamination ? formatDate(claimant.dateOfExamination) : "Not provided"}`, examCol2 + 50, detailsY);
   
-  doc.text(`Date of Report: ${claimant?.dateOfReport ? formatDate(claimant.dateOfReport) : "Not provided"}`, margin + cardMargin, detailsY);
-  detailsY += 8;
+  // Second row
+  detailsY += 12;
+  doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
+  doc.text("Date of Report:", examCol1, detailsY);
+  doc.setFont(pdfOptions.fontFamily || "helvetica", "normal");
+  doc.text(`${claimant?.dateOfReport ? formatDate(claimant.dateOfReport) : "Not provided"}`, examCol1 + 30, detailsY);
   
-  doc.text(`Time Spent with Claimant: ${claimant?.timeSpentWithClaimant || "Not recorded"}`, margin + cardMargin, detailsY);
+  doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
+  doc.text("Time with Claimant:", examCol2, detailsY);
+  doc.setFont(pdfOptions.fontFamily || "helvetica", "normal");
+  doc.text(`${claimant?.timeSpentWithClaimant || "Not recorded"}`, examCol2 + 50, detailsY);
   
   // Update Y position after the card
   yPosition += 65;
