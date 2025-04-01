@@ -1,12 +1,15 @@
 import { jsPDF } from "jspdf";
-import { Case } from "@shared/schema";
-import { sections } from "./sections";
+import { Case, PhysicalInjury } from "@shared/schema";
 
-// Function to format date from ISO string to MM/DD/YYYY
+// Function to format date from ISO string to DD/MM/YYYY
 const formatDate = (dateString?: string) => {
   if (!dateString) return "N/A";
   const date = new Date(dateString);
-  return date.toLocaleDateString();
+  return date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric"
+  });
 };
 
 // Function to calculate age from date of birth
@@ -26,260 +29,821 @@ const calculateAge = (dateOfBirth?: string) => {
   return age;
 };
 
+// Function to add footer with claimant name and date on each page
+const addFooter = (doc: jsPDF, claimantName: string) => {
+  const totalPages = doc.getNumberOfPages();
+  
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setTextColor(102, 102, 102); // Dark gray
+    
+    // Current date
+    const currentDate = formatDate(new Date().toISOString());
+    
+    // Add footer text
+    doc.text(`${claimantName || "Unknown Claimant"} - ${currentDate}`, 105, 290, { align: "center" });
+  }
+};
+
 // Generate PDF from case data
 export const generatePDF = (caseData: Case): string => {
-  // Create a new PDF document
-  const doc = new jsPDF();
+  // Create a new PDF document (A4 portrait)
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4'
+  });
   
-  // Set font
+  // Set the main font
   doc.setFont("helvetica");
   
-  // Add header
-  doc.setFontSize(16);
-  doc.setTextColor(0, 0, 0);
-  doc.text("MEDICAL-LEGAL REPORT", 105, 20, { align: "center" });
+  // Define the dark teal brand color
+  const primaryColor = [14, 124, 123]; // RGB for #0E7C7B dark teal
+  const secondaryColor = [74, 85, 104]; // RGB for #4A5568 slate grey
   
-  doc.setFontSize(12);
-  doc.text("Road Traffic Accident Case Assessment", 105, 28, { align: "center" });
+  // ==================== PAGE 1: COVER PAGE ====================
   
+  // Add header with background
+  doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  doc.rect(0, 0, 210, 30, "F");
+  
+  // Title
+  doc.setFontSize(18);
+  doc.setTextColor(255, 255, 255); // White
+  doc.setFont("helvetica", "bold");
+  doc.text("MEDICAL REPORT", 105, 18, { align: "center" });
+  
+  // Subtitle
   doc.setFontSize(10);
-  doc.text(`Case Number: ${caseData.caseNumber}`, 105, 36, { align: "center" });
-  doc.text(`Report Date: ${new Date().toLocaleDateString()}`, 105, 42, { align: "center" });
+  doc.setFont("helvetica", "normal");
+  doc.text("Road Traffic Accident Assessment", 105, 25, { align: "center" });
   
-  // Add line
-  doc.setLineWidth(0.5);
-  doc.line(20, 48, 190, 48);
+  let yPosition = 45;
   
-  let yPosition = 55;
-  
-  // 1. Claimant Details
+  // Claimant Details
   if (caseData.claimantDetails) {
-    doc.setFontSize(12);
-    doc.setTextColor(0, 124, 123); // Primary teal color
-    doc.text("1. CLAIMANT DETAILS", 20, yPosition);
-    yPosition += 8;
-    
     const claimant = caseData.claimantDetails;
     
+    // Claimant Box
+    doc.setFillColor(245, 247, 250); // Light gray background
+    doc.roundedRect(20, yPosition, 170, 55, 3, 3, "F");
+    
+    doc.setFontSize(12);
+    doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.setFont("helvetica", "bold");
+    doc.text("CLAIMANT DETAILS", 25, yPosition + 10);
+    
     doc.setFontSize(10);
-    doc.setTextColor(0, 0, 0);
+    doc.setTextColor(60, 60, 60);
+    doc.setFont("helvetica", "normal");
     
-    doc.text(`Name: ${claimant.fullName || "N/A"}`, 20, yPosition);
-    yPosition += 6;
+    // Left column
+    let yDetail = yPosition + 20;
+    doc.text(`Name: ${claimant.fullName || "N/A"}`, 25, yDetail);
+    yDetail += 8;
+    doc.text(`Date of Birth: ${formatDate(claimant.dateOfBirth)} (${calculateAge(claimant.dateOfBirth)} years)`, 25, yDetail);
+    yDetail += 8;
+    doc.text(`Address: ${claimant.address || "N/A"}`, 25, yDetail);
+    yDetail += 8;
+    doc.text(`Post Code: ${claimant.postCode || "N/A"}`, 25, yDetail);
     
-    doc.text(`Date of Birth: ${formatDate(claimant.dateOfBirth)} (${calculateAge(claimant.dateOfBirth)} years)`, 20, yPosition);
-    yPosition += 6;
+    // Right column
+    yDetail = yPosition + 20;
+    doc.text(`Accident Date: ${formatDate(claimant.accidentDate)}`, 115, yDetail);
+    yDetail += 8;
+    doc.text(`Report Date: ${formatDate(claimant.dateOfReport)}`, 115, yDetail);
+    yDetail += 8;
+    doc.text(`Examination Date: ${formatDate(claimant.dateOfExamination)}`, 115, yDetail);
+    yDetail += 8;
+    doc.text(`Place of Examination: ${claimant.placeOfExamination || "N/A"}`, 115, yDetail);
     
-    doc.text(`Address: ${claimant.address || ""} ${claimant.city || ""}, ${claimant.state || ""} ${claimant.zipCode || ""}`.trim(), 20, yPosition);
-    yPosition += 6;
+    yPosition += 65;
+  }
+  
+  // Referral Agency and Solicitor Box
+  doc.setFillColor(245, 247, 250); // Light gray background
+  doc.roundedRect(20, yPosition, 170, 50, 3, 3, "F");
+  
+  doc.setFontSize(12);
+  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  doc.setFont("helvetica", "bold");
+  doc.text("AGENCY & SOLICITOR INFORMATION", 25, yPosition + 10);
+  
+  doc.setFontSize(10);
+  doc.setTextColor(60, 60, 60);
+  doc.setFont("helvetica", "normal");
+  
+  let yDetail = yPosition + 25;
+  doc.text("Referring Agency: [Agency Name]", 25, yDetail);
+  yDetail += 8;
+  doc.text("Agency Reference: [Reference Number]", 25, yDetail);
+  
+  yDetail = yPosition + 25;
+  doc.text("Solicitor Name: [Solicitor Name]", 115, yDetail);
+  yDetail += 8;
+  doc.text("Solicitor Reference: [Reference Number]", 115, yDetail);
+  
+  yPosition += 60;
+  
+  // MedCo and Expert Box
+  doc.setFillColor(245, 247, 250); // Light gray background
+  doc.roundedRect(20, yPosition, 170, 50, 3, 3, "F");
+  
+  doc.setFontSize(12);
+  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  doc.setFont("helvetica", "bold");
+  doc.text("MEDCO & EXPERT INFORMATION", 25, yPosition + 10);
+  
+  doc.setFontSize(10);
+  doc.setTextColor(60, 60, 60);
+  doc.setFont("helvetica", "normal");
+  
+  if (caseData.expertDetails) {
+    const expert = caseData.expertDetails;
     
-    doc.text(`Phone: ${claimant.phone || "N/A"}`, 20, yPosition);
-    yPosition += 6;
+    yDetail = yPosition + 25;
+    doc.text("MedCo Number: [MedCo Number]", 25, yDetail);
     
-    doc.text(`Email: ${claimant.email || "N/A"}`, 20, yPosition);
-    yPosition += 6;
+    yDetail = yPosition + 25;
+    doc.text(`Medical Expert: ${expert.examiner || "N/A"}`, 115, yDetail);
+    yDetail += 8;
+    doc.text(`Credentials: ${expert.credentials || "N/A"}`, 115, yDetail);
+  } else {
+    yDetail = yPosition + 25;
+    doc.text("MedCo Number: [MedCo Number]", 25, yDetail);
     
-    doc.text(`Occupation: ${claimant.occupation || "N/A"}`, 20, yPosition);
-    yPosition += 6;
+    yDetail = yPosition + 25;
+    doc.text("Medical Expert: [Expert Name]", 115, yDetail);
+    yDetail += 8;
+    doc.text("Credentials: [Credentials]", 115, yDetail);
+  }
+  
+  yPosition += 60;
+  
+  // Case information
+  doc.setFontSize(12);
+  doc.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
+  doc.setFont("helvetica", "bold");
+  doc.text(`Case Number: ${caseData.caseNumber}`, 105, yPosition, { align: "center" });
+  yPosition += 8;
+  doc.text(`Report Generated: ${formatDate(new Date().toISOString())}`, 105, yPosition, { align: "center" });
+  
+  // ==================== PAGE 2: INJURY TABLE & DETAILS ====================
+  doc.addPage();
+  
+  // Add header with background
+  doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  doc.rect(0, 0, 210, 20, "F");
+  
+  // Header text
+  doc.setFontSize(14);
+  doc.setTextColor(255, 255, 255); // White
+  doc.setFont("helvetica", "bold");
+  doc.text("INJURY ASSESSMENT & TREATMENT DETAILS", 105, 14, { align: "center" });
+  
+  yPosition = 30;
+  
+  // Injury Table
+  if (caseData.physicalInjuryDetails?.injuries && caseData.physicalInjuryDetails.injuries.length > 0) {
+    doc.setFontSize(12);
+    doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.setFont("helvetica", "bold");
+    doc.text("INJURY SUMMARY TABLE", 105, yPosition, { align: "center" });
     
-    doc.text(`Employer: ${claimant.employer || "N/A"}`, 20, yPosition);
-    yPosition += 6;
+    yPosition += 10;
     
-    doc.text(`Insurance: ${claimant.insurance || "N/A"} (Policy #: ${claimant.policyNumber || "N/A"})`, 20, yPosition);
+    // Table headers
+    const headers = ["Injury", "Current Condition", "Prognosis", "Treatment", "Classification"];
+    const columnWidths = [40, 35, 35, 35, 35];
+    const startX = 15;
+    
+    // Draw table header
+    doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.rect(startX, yPosition, columnWidths.reduce((a, b) => a + b, 0), 10, "F");
+    
+    // Header text
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(9);
+    
+    let currentX = startX;
+    headers.forEach((header, i) => {
+      doc.text(header, currentX + columnWidths[i] / 2, yPosition + 6, { align: "center" });
+      currentX += columnWidths[i];
+    });
+    
+    yPosition += 10;
+    
+    // Draw table rows
+    const injuries = caseData.physicalInjuryDetails.injuries;
+    let rowHeight = 10;
+    
+    // Get prognosis data if available
+    const treatmentRecommendations = caseData.prognosis?.treatmentRecommendations || [];
+    
+    doc.setTextColor(60, 60, 60);
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    
+    injuries.forEach((injury, index) => {
+      // Set alternating row background
+      if (index % 2 === 0) {
+        doc.setFillColor(245, 247, 250);
+      } else {
+        doc.setFillColor(255, 255, 255);
+      }
+      
+      doc.rect(startX, yPosition, columnWidths.reduce((a, b) => a + b, 0), rowHeight, "F");
+      
+      // Row content
+      currentX = startX;
+      
+      // Injury name
+      doc.text(injury.type, currentX + 2, yPosition + 6);
+      currentX += columnWidths[0];
+      
+      // Current condition
+      doc.text(injury.currentSeverity, currentX + 2, yPosition + 6);
+      currentX += columnWidths[1];
+      
+      // Prognosis
+      let prognosisText = "";
+      if (injury.currentSeverity === "Resolved") {
+        prognosisText = `Resolved after ${injury.resolutionDays || "unknown"} days`;
+      } else {
+        prognosisText = caseData.prognosis?.overallPrognosis || "Ongoing";
+      }
+      doc.text(prognosisText, currentX + 2, yPosition + 6);
+      currentX += columnWidths[2];
+      
+      // Treatment recommendation
+      const treatment = treatmentRecommendations.length > 0 ? 
+        treatmentRecommendations[0] : "Standard care advised";
+      doc.text(treatment, currentX + 2, yPosition + 6);
+      currentX += columnWidths[3];
+      
+      // Classification
+      doc.text(injury.classification, currentX + 2, yPosition + 6);
+      
+      yPosition += rowHeight;
+    });
+    
     yPosition += 10;
   }
   
-  // 2. Accident Details
+  // Sections with details
+  
+  // Accident Details Section
   if (caseData.accidentDetails) {
-    doc.setFontSize(12);
-    doc.setTextColor(0, 124, 123); // Primary teal color
-    doc.text("2. ACCIDENT DETAILS", 20, yPosition);
-    yPosition += 8;
+    doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.rect(15, yPosition, 180, 10, "F");
+    
+    doc.setFontSize(11);
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.text("ACCIDENT DETAILS", 105, yPosition + 7, { align: "center" });
+    
+    yPosition += 15;
+    
+    doc.setTextColor(60, 60, 60);
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
     
     const accident = caseData.accidentDetails;
     
-    doc.setFontSize(10);
-    doc.setTextColor(0, 0, 0);
+    // Create formatted description text
+    let description = `Date: ${formatDate(accident.accidentDate)} | Time: ${accident.accidentTime || "Unknown"} | Location: ${accident.accidentLocation || "Unknown"}\n`;
     
-    doc.text(`Date and Time: ${formatDate(accident.accidentDate)} ${accident.accidentTime || ""}`.trim(), 20, yPosition);
-    yPosition += 6;
+    if (accident.vehicleType) {
+      description += `Vehicle Type: ${accident.vehicleType} | `;
+    }
     
-    doc.text(`Location: ${accident.accidentLocation || "N/A"}`, 20, yPosition);
-    yPosition += 6;
+    if (accident.claimantPosition) {
+      description += `Claimant Position: ${accident.claimantPosition} | `;
+    }
     
-    doc.text(`Weather Conditions: ${accident.weatherConditions || "N/A"}`, 20, yPosition);
-    yPosition += 6;
+    if (accident.impactLocation) {
+      description += `Impact: ${accident.impactLocation}\n`;
+    }
     
-    doc.text(`Type of Accident: ${accident.accidentType || "N/A"}`, 20, yPosition);
-    yPosition += 6;
-    
-    // Description with word wrap
     if (accident.accidentDescription) {
-      doc.text("Description:", 20, yPosition);
-      yPosition += 5;
-      
-      const splitText = doc.splitTextToSize(accident.accidentDescription, 170);
-      doc.text(splitText, 20, yPosition);
-      yPosition += splitText.length * 5 + 5;
+      description += `\n${accident.accidentDescription}`;
     }
     
-    // Police report information
-    doc.text(`Police Report Filed: ${accident.policeReportFiled ? "Yes" : "No"}`, 20, yPosition);
-    yPosition += 6;
+    const splitText = doc.splitTextToSize(description, 170);
+    doc.text(splitText, 20, yPosition);
     
-    if (accident.policeReportFiled) {
-      doc.text(`Report Number: ${accident.reportNumber || "N/A"}`, 20, yPosition);
-      yPosition += 6;
-      
-      doc.text(`Reporting Officer: ${accident.reportingOfficer || "N/A"}`, 20, yPosition);
-      yPosition += 6;
-    }
-    
-    // Witness information
-    if (accident.witnesses && accident.witnesses.length > 0) {
-      doc.text("Witnesses:", 20, yPosition);
-      yPosition += 6;
-      
-      accident.witnesses.forEach((witness, index) => {
-        doc.text(`Witness #${index + 1}: ${witness.name || "N/A"}`, 25, yPosition);
-        yPosition += 5;
-        
-        if (witness.statement) {
-          const splitStatement = doc.splitTextToSize(`Statement: ${witness.statement}`, 165);
-          doc.text(splitStatement, 30, yPosition);
-          yPosition += splitStatement.length * 5 + 2;
-        }
-      });
-    }
-    
-    yPosition += 4;
+    yPosition += splitText.length * 5 + 10;
   }
   
-  // Check if we need a new page before continuing
-  if (yPosition > 250) {
-    doc.addPage();
-    yPosition = 20;
-  }
-  
-  // 3. Physical Injury Details
+  // Injury Details Section
   if (caseData.physicalInjuryDetails) {
-    doc.setFontSize(12);
-    doc.setTextColor(0, 124, 123); // Primary teal color
-    doc.text("3. PHYSICAL INJURY DETAILS", 20, yPosition);
-    yPosition += 8;
-    
-    const physical = caseData.physicalInjuryDetails;
-    
-    doc.setFontSize(10);
-    doc.setTextColor(0, 0, 0);
-    
-    // Initial Complaints
-    if (physical.initialComplaints) {
-      doc.text("Initial Complaints:", 20, yPosition);
-      yPosition += 5;
+    // Check if we need to start a new page
+    if (yPosition > 230) {
+      doc.addPage();
       
-      const splitComplaints = doc.splitTextToSize(physical.initialComplaints, 170);
-      doc.text(splitComplaints, 20, yPosition);
-      yPosition += splitComplaints.length * 5 + 5;
-    }
-    
-    // Pain Scale
-    if (physical.painScale !== undefined) {
-      doc.text(`Pain Scale (0-10): ${physical.painScale}`, 20, yPosition);
-      yPosition += 6;
-    }
-    
-    // Injury Locations
-    if (physical.injuryLocations && physical.injuryLocations.length > 0) {
-      doc.text(`Injury Locations: ${physical.injuryLocations.join(", ")}`, 20, yPosition);
-      yPosition += 6;
-    }
-    
-    // Symptoms
-    if (physical.symptoms && physical.symptoms.length > 0) {
-      doc.text(`Reported Symptoms: ${physical.symptoms.join(", ")}`, 20, yPosition);
-      yPosition += 6;
-    }
-    
-    // Diagnoses
-    if (physical.diagnoses && physical.diagnoses.length > 0) {
-      doc.text("Diagnoses:", 20, yPosition);
-      yPosition += 6;
+      // Add header with background
+      doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      doc.rect(0, 0, 210, 20, "F");
       
-      physical.diagnoses.forEach((diagnosis, index) => {
-        doc.text(`${index + 1}. ${diagnosis.diagnosis || "N/A"} (Date: ${formatDate(diagnosis.diagnosisDate)})`, 25, yPosition);
-        yPosition += 5;
-        
-        if (diagnosis.diagnosingPhysician) {
-          doc.text(`   Physician: ${diagnosis.diagnosingPhysician}`, 25, yPosition);
-          yPosition += 5;
-        }
-      });
+      // Header text
+      doc.setFontSize(14);
+      doc.setTextColor(255, 255, 255); // White
+      doc.setFont("helvetica", "bold");
+      doc.text("INJURY & TREATMENT DETAILS (CONTINUED)", 105, 14, { align: "center" });
       
-      yPosition += 2;
+      yPosition = 30;
     }
     
-    // Additional Notes
-    if (physical.additionalNotes) {
+    doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.rect(15, yPosition, 180, 10, "F");
+    
+    doc.setFontSize(11);
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.text("INJURY DETAILS", 105, yPosition + 7, { align: "center" });
+    
+    yPosition += 15;
+    
+    doc.setTextColor(60, 60, 60);
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    
+    // Physical injuries summary
+    if (caseData.physicalInjuryDetails.physicalInjurySummary) {
+      const splitSummary = doc.splitTextToSize(caseData.physicalInjuryDetails.physicalInjurySummary, 170);
+      doc.text(splitSummary, 20, yPosition);
+      yPosition += splitSummary.length * 5 + 5;
+    }
+    
+    // Additional notes
+    if (caseData.physicalInjuryDetails.additionalNotes) {
+      doc.setFont("helvetica", "bold");
       doc.text("Additional Notes:", 20, yPosition);
+      doc.setFont("helvetica", "normal");
       yPosition += 5;
       
-      const splitNotes = doc.splitTextToSize(physical.additionalNotes, 170);
+      const splitNotes = doc.splitTextToSize(caseData.physicalInjuryDetails.additionalNotes, 170);
       doc.text(splitNotes, 20, yPosition);
       yPosition += splitNotes.length * 5 + 5;
     }
     
-    yPosition += 4;
+    yPosition += 5;
   }
   
-  // Continue with other sections...
-  // (Add similar blocks for remaining sections)
-  
-  // Check if we need a new page for expert details
-  if (yPosition > 250) {
-    doc.addPage();
-    yPosition = 20;
-  }
-  
-  // Finally, add Expert Details and Signature
-  if (caseData.expertDetails) {
-    doc.setFontSize(12);
-    doc.setTextColor(0, 124, 123);
-    doc.text("MEDICAL EXPERT DETAILS", 20, yPosition);
-    yPosition += 8;
+  // Treatment Details Section
+  if (caseData.treatments) {
+    // Check if we need to start a new page
+    if (yPosition > 230) {
+      doc.addPage();
+      
+      // Add header with background
+      doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      doc.rect(0, 0, 210, 20, "F");
+      
+      // Header text
+      doc.setFontSize(14);
+      doc.setTextColor(255, 255, 255); // White
+      doc.setFont("helvetica", "bold");
+      doc.text("INJURY & TREATMENT DETAILS (CONTINUED)", 105, 14, { align: "center" });
+      
+      yPosition = 30;
+    }
     
+    doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.rect(15, yPosition, 180, 10, "F");
+    
+    doc.setFontSize(11);
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.text("TREATMENT DETAILS", 105, yPosition + 7, { align: "center" });
+    
+    yPosition += 15;
+    
+    doc.setTextColor(60, 60, 60);
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    
+    const treatments = caseData.treatments;
+    
+    let treatmentText = "";
+    
+    // Treatment at accident scene
+    if (treatments.receivedTreatmentAtScene) {
+      treatmentText += "Treatment at Scene: ";
+      const sceneTreatments = [];
+      
+      if (treatments.sceneFirstAid) sceneTreatments.push("First Aid");
+      if (treatments.sceneNeckCollar) sceneTreatments.push("Neck Collar");
+      if (treatments.sceneAmbulanceArrived) sceneTreatments.push("Ambulance Attendance");
+      if (treatments.scenePoliceArrived) sceneTreatments.push("Police Attendance");
+      if (treatments.sceneOtherTreatment && treatments.sceneOtherTreatmentDetails) {
+        sceneTreatments.push(treatments.sceneOtherTreatmentDetails);
+      }
+      
+      treatmentText += sceneTreatments.join(", ") + "\n";
+    }
+    
+    // Hospital treatment
+    if (treatments.wentToHospital) {
+      treatmentText += "Hospital Attendance: ";
+      
+      if (treatments.hospitalName) {
+        treatmentText += treatments.hospitalName;
+      }
+      
+      treatmentText += "\nHospital Treatment: ";
+      const hospitalTreatments = [];
+      
+      if (treatments.hospitalXRay) hospitalTreatments.push("X-Ray");
+      if (treatments.hospitalCTScan) hospitalTreatments.push("CT Scan");
+      if (treatments.hospitalBandage) hospitalTreatments.push("Bandage");
+      if (treatments.hospitalNeckCollar) hospitalTreatments.push("Neck Collar");
+      if (treatments.hospitalOtherTreatment && treatments.hospitalOtherTreatmentDetails) {
+        hospitalTreatments.push(treatments.hospitalOtherTreatmentDetails);
+      }
+      if (treatments.hospitalNoTreatment) hospitalTreatments.push("No treatment received");
+      
+      treatmentText += hospitalTreatments.join(", ") + "\n";
+    }
+    
+    // GP/Walk-in treatment
+    if (treatments.wentToGPWalkIn) {
+      treatmentText += "GP/Walk-in Visit: ";
+      if (treatments.daysToGPWalkIn) {
+        treatmentText += `${treatments.daysToGPWalkIn} days after accident`;
+      } else {
+        treatmentText += "Yes";
+      }
+      treatmentText += "\n";
+    }
+    
+    // Current medications
+    const medications = [];
+    if (treatments.takingParacetamol) medications.push("Paracetamol");
+    if (treatments.takingIbuprofen) medications.push("Ibuprofen");
+    if (treatments.takingCodeine) medications.push("Codeine");
+    if (treatments.takingOtherMedication && treatments.otherMedicationDetails) {
+      medications.push(treatments.otherMedicationDetails);
+    }
+    
+    if (medications.length > 0) {
+      treatmentText += "Current Medications: " + medications.join(", ") + "\n";
+    }
+    
+    // Physiotherapy
+    if (treatments.physiotherapySessions) {
+      treatmentText += `Physiotherapy: ${treatments.physiotherapySessions} sessions\n`;
+    }
+    
+    // Treatment summary
+    if (treatments.treatmentSummary) {
+      treatmentText += "\n" + treatments.treatmentSummary;
+    }
+    
+    const splitTreatment = doc.splitTextToSize(treatmentText, 170);
+    doc.text(splitTreatment, 20, yPosition);
+    yPosition += splitTreatment.length * 5 + 10;
+  }
+  
+  // Impact on Lifestyle Section
+  if (caseData.lifestyleImpact) {
+    // Check if we need to start a new page
+    if (yPosition > 230) {
+      doc.addPage();
+      
+      // Add header with background
+      doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      doc.rect(0, 0, 210, 20, "F");
+      
+      // Header text
+      doc.setFontSize(14);
+      doc.setTextColor(255, 255, 255); // White
+      doc.setFont("helvetica", "bold");
+      doc.text("INJURY IMPACT & PROGNOSIS (CONTINUED)", 105, 14, { align: "center" });
+      
+      yPosition = 30;
+    }
+    
+    doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.rect(15, yPosition, 180, 10, "F");
+    
+    doc.setFontSize(11);
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.text("IMPACT ON LIFESTYLE", 105, yPosition + 7, { align: "center" });
+    
+    yPosition += 15;
+    
+    doc.setTextColor(60, 60, 60);
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    
+    const lifestyle = caseData.lifestyleImpact;
+    
+    let lifestyleText = "";
+    
+    // Job details
+    if (lifestyle.currentJobTitle) {
+      lifestyleText += `Job Title: ${lifestyle.currentJobTitle} (${lifestyle.workStatus || "Unknown status"})\n`;
+      
+      if (lifestyle.secondJob) {
+        lifestyleText += `Second Job: ${lifestyle.secondJob}\n`;
+      }
+    }
+    
+    // Work impact
+    if (lifestyle.daysOffWork) {
+      lifestyleText += `Days Off Work: ${lifestyle.daysOffWork}\n`;
+    }
+    
+    if (lifestyle.workDifficulties && lifestyle.workDifficulties.length > 0) {
+      lifestyleText += `Work Difficulties: ${lifestyle.workDifficulties.join(", ")}\n`;
+    }
+    
+    // Sleep impact
+    if (lifestyle.hasSleepDisturbance && lifestyle.sleepDisturbances && lifestyle.sleepDisturbances.length > 0) {
+      lifestyleText += `Sleep Disturbances: ${lifestyle.sleepDisturbances.join(", ")}\n`;
+    }
+    
+    // Domestic impact
+    if (lifestyle.hasDomesticImpact && lifestyle.domesticActivities && lifestyle.domesticActivities.length > 0) {
+      lifestyleText += `Domestic Activities Affected: ${lifestyle.domesticActivities.join(", ")}\n`;
+    }
+    
+    // Sport/leisure impact
+    if (lifestyle.hasSportLeisureImpact && lifestyle.sportLeisureActivities && lifestyle.sportLeisureActivities.length > 0) {
+      lifestyleText += `Sport/Leisure Activities Affected: ${lifestyle.sportLeisureActivities.join(", ")}\n`;
+    }
+    
+    // Social impact
+    if (lifestyle.hasSocialImpact && lifestyle.socialActivities && lifestyle.socialActivities.length > 0) {
+      lifestyleText += `Social Activities Affected: ${lifestyle.socialActivities.join(", ")}\n`;
+    }
+    
+    // Lifestyle summary
+    if (lifestyle.lifestyleSummary) {
+      lifestyleText += "\n" + lifestyle.lifestyleSummary;
+    }
+    
+    const splitLifestyle = doc.splitTextToSize(lifestyleText, 170);
+    doc.text(splitLifestyle, 20, yPosition);
+    yPosition += splitLifestyle.length * 5 + 10;
+  }
+  
+  // Attached Statements Section - First Statement
+  let addedFirstStatement = false;
+  
+  if (caseData.familyHistory) {
+    // Check if we need to start a new page
+    if (yPosition > 230) {
+      doc.addPage();
+      
+      // Add header with background
+      doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      doc.rect(0, 0, 210, 20, "F");
+      
+      // Header text
+      doc.setFontSize(14);
+      doc.setTextColor(255, 255, 255); // White
+      doc.setFont("helvetica", "bold");
+      doc.text("ATTACHMENTS & STATEMENTS", 105, 14, { align: "center" });
+      
+      yPosition = 30;
+    }
+    
+    doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.rect(15, yPosition, 180, 10, "F");
+    
+    doc.setFontSize(11);
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.text("ATTACHED STATEMENT - PREVIOUS MEDICAL HISTORY", 105, yPosition + 7, { align: "center" });
+    
+    yPosition += 15;
+    
+    doc.setTextColor(60, 60, 60);
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    
+    const history = caseData.familyHistory;
+    
+    let historyText = "";
+    
+    // Previous accidents
+    if (history.hasPreviousAccident) {
+      historyText += `Previous Road Traffic Accident: Yes\n`;
+      if (history.previousAccidentYear) {
+        historyText += `Year of Previous Accident: ${history.previousAccidentYear}\n`;
+      }
+      if (history.previousAccidentRecovery) {
+        historyText += `Recovery from Previous Accident: ${history.previousAccidentRecovery}\n`;
+      }
+    } else {
+      historyText += "Previous Road Traffic Accident: No\n";
+    }
+    
+    // Previous medical conditions
+    if (history.hasPreviousMedicalCondition) {
+      historyText += `Pre-existing Medical Conditions: Yes\n`;
+      if (history.previousMedicalConditionDetails) {
+        historyText += `Details: ${history.previousMedicalConditionDetails}\n`;
+      }
+    } else {
+      historyText += "Pre-existing Medical Conditions: No\n";
+    }
+    
+    // Exceptional severity
+    if (history.hasExceptionalSeverity) {
+      historyText += "This case has exceptional severity: Yes\n";
+    }
+    
+    // Physiotherapy preference
+    if (history.physiotherapyPreference) {
+      historyText += `Physiotherapy Preference: ${history.physiotherapyPreference}\n`;
+    }
+    
+    // Medical history summary
+    if (history.medicalHistorySummary) {
+      historyText += "\n" + history.medicalHistorySummary;
+    }
+    
+    // Additional notes
+    if (history.additionalNotes) {
+      historyText += "\n\nAdditional Notes:\n" + history.additionalNotes;
+    }
+    
+    const splitHistory = doc.splitTextToSize(historyText, 170);
+    doc.text(splitHistory, 20, yPosition);
+    yPosition += splitHistory.length * 5 + 10;
+    
+    addedFirstStatement = true;
+  }
+  
+  // Attached Statements Section - Second Statement (Prognosis)
+  if (caseData.prognosis) {
+    // Check if we need to start a new page
+    if (yPosition > 230) {
+      doc.addPage();
+      
+      // Add header with background
+      doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      doc.rect(0, 0, 210, 20, "F");
+      
+      // Header text
+      doc.setFontSize(14);
+      doc.setTextColor(255, 255, 255); // White
+      doc.setFont("helvetica", "bold");
+      doc.text(addedFirstStatement ? "ATTACHMENTS & STATEMENTS (CONTINUED)" : "ATTACHMENTS & STATEMENTS", 105, 14, { align: "center" });
+      
+      yPosition = 30;
+    }
+    
+    doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.rect(15, yPosition, 180, 10, "F");
+    
+    doc.setFontSize(11);
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.text("ATTACHED STATEMENT - PROGNOSIS & RECOMMENDATIONS", 105, yPosition + 7, { align: "center" });
+    
+    yPosition += 15;
+    
+    doc.setTextColor(60, 60, 60);
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    
+    const prognosis = caseData.prognosis;
+    
+    let prognosisText = "";
+    
+    // Overall prognosis
+    if (prognosis.overallPrognosis) {
+      prognosisText += `Overall Prognosis: ${prognosis.overallPrognosis}\n`;
+    }
+    
+    // Expected recovery
+    if (prognosis.expectedRecoveryTime) {
+      prognosisText += `Expected Recovery Time: ${prognosis.expectedRecoveryTime}\n`;
+    }
+    
+    // Permanent impairment
+    if (prognosis.permanentImpairment) {
+      prognosisText += `Permanent Impairment: ${prognosis.permanentImpairment}\n`;
+    }
+    
+    // Future care
+    if (prognosis.futureCarePlans) {
+      prognosisText += `Future Care Plans: ${prognosis.futureCarePlans}\n`;
+    }
+    
+    // Treatment recommendations
+    if (prognosis.treatmentRecommendations && prognosis.treatmentRecommendations.length > 0) {
+      prognosisText += `Treatment Recommendations: ${prognosis.treatmentRecommendations.join(", ")}\n`;
+    }
+    
+    // Additional notes
+    if (prognosis.additionalNotes) {
+      prognosisText += "\nAdditional Notes:\n" + prognosis.additionalNotes;
+    }
+    
+    const splitPrognosis = doc.splitTextToSize(prognosisText, 170);
+    doc.text(splitPrognosis, 20, yPosition);
+    yPosition += splitPrognosis.length * 5 + 10;
+  }
+  
+  // Add final declaration and signature page
+  doc.addPage();
+  
+  // Add header with background
+  doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  doc.rect(0, 0, 210, 20, "F");
+  
+  // Header text
+  doc.setFontSize(14);
+  doc.setTextColor(255, 255, 255); // White
+  doc.setFont("helvetica", "bold");
+  doc.text("DECLARATION", 105, 14, { align: "center" });
+  
+  yPosition = 30;
+  
+  // Declaration content
+  doc.setTextColor(60, 60, 60);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  
+  // Declaration text
+  let declarationText = "Declaration:";
+  const splitDeclaration = doc.splitTextToSize(declarationText, 170);
+  doc.text(splitDeclaration, 20, yPosition);
+  yPosition += splitDeclaration.length * 5 + 15;
+  
+  // Agreement text
+  declarationText = "Agreement of Report:";
+  const splitAgreement = doc.splitTextToSize(declarationText, 170);
+  doc.text(splitAgreement, 20, yPosition);
+  yPosition += splitAgreement.length * 5 + 15;
+  
+  // Statement of Truth text
+  declarationText = "Statement of Truth:";
+  const splitTruth = doc.splitTextToSize(declarationText, 170);
+  doc.text(splitTruth, 20, yPosition);
+  yPosition += splitTruth.length * 5 + 30;
+  
+  // Signature line
+  doc.text("Signature:", 20, yPosition);
+  doc.line(55, yPosition, 180, yPosition);
+  yPosition += 15;
+  
+  // Date line
+  doc.text("Date:", 20, yPosition);
+  doc.line(55, yPosition, 180, yPosition);
+  yPosition += 25;
+  
+  // Medical expert CV
+  doc.setFontSize(11);
+  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  doc.setFont("helvetica", "bold");
+  doc.text("Medical Expert's Curriculum Vitae:", 20, yPosition);
+  yPosition += 15;
+  
+  if (caseData.expertDetails) {
     const expert = caseData.expertDetails;
     
-    doc.setFontSize(10);
-    doc.setTextColor(0, 0, 0);
+    doc.setTextColor(60, 60, 60);
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
     
-    doc.text(`Examiner: ${expert.examiner || "N/A"}`, 20, yPosition);
-    yPosition += 6;
+    let cvText = "";
     
-    doc.text(`Credentials: ${expert.credentials || "N/A"}`, 20, yPosition);
-    yPosition += 6;
+    cvText += `Name: ${expert.examiner || "N/A"}\n`;
+    cvText += `Credentials: ${expert.credentials || "N/A"}\n`;
     
     if (expert.specialty) {
-      doc.text(`Specialty: ${expert.specialty}`, 20, yPosition);
-      yPosition += 6;
+      cvText += `Specialty: ${expert.specialty}\n`;
     }
     
     if (expert.licensureState && expert.licenseNumber) {
-      doc.text(`License: ${expert.licenseNumber} (${expert.licensureState})`, 20, yPosition);
-      yPosition += 6;
+      cvText += `License: ${expert.licenseNumber} (${expert.licensureState})\n`;
     }
     
     if (expert.experienceYears) {
-      doc.text(`Years of Experience: ${expert.experienceYears}`, 20, yPosition);
-      yPosition += 6;
+      cvText += `Years of Experience: ${expert.experienceYears}\n`;
     }
     
-    // Signature area
-    yPosition += 10;
-    doc.text("Signature: ________________________", 20, yPosition);
-    yPosition += 6;
+    if (expert.contactInformation) {
+      cvText += `Contact Information: ${expert.contactInformation}\n`;
+    }
     
-    doc.text(`Date: ${formatDate(expert.signatureDate) || new Date().toLocaleDateString()}`, 20, yPosition);
+    const splitCV = doc.splitTextToSize(cvText, 170);
+    doc.text(splitCV, 20, yPosition);
+  }
+  
+  // Add footer on each page
+  if (caseData.claimantDetails?.fullName) {
+    addFooter(doc, caseData.claimantDetails.fullName);
+  } else {
+    addFooter(doc, "Unknown Claimant");
   }
   
   // Generate data URL for the PDF
@@ -289,11 +853,11 @@ export const generatePDF = (caseData: Case): string => {
 // Generate a preview of the PDF from case data
 export const generatePDFPreview = (caseData: Case): string => {
   // In a real application, we would render this as an HTML preview
-  // This is a simplified version that would normally be more complex
+  // For now, we'll return a message that the preview is generated in PDF format
   return `
     <div>
-      <h1>PDF Preview would go here</h1>
-      <p>This is a placeholder for the PDF preview</p>
+      <h2>MedCo-Compliant PDF Report</h2>
+      <p>The PDF report has been generated. Click "Generate PDF" to download the complete report.</p>
     </div>
   `;
 };
