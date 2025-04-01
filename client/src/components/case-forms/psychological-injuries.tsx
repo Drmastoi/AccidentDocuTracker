@@ -300,43 +300,30 @@ export function PsychologicalInjuriesForm({ caseId, initialData, onSaved }: Psyc
           
           <SubSection title="Summary">
             <div className="p-4 border rounded-md bg-muted/30">
-              <h4 className="font-medium mb-2">Selected Travel Anxiety Symptoms:</h4>
-              <div className="space-y-1 text-sm">
+              <h4 className="font-medium mb-2">Travel Anxiety Assessment:</h4>
+              <div className="text-sm">
                 {symptoms && symptoms.length > 0 ? (
-                  symptoms.map((symptom, index) => (
-                    <div key={index} className="flex items-start">
-                      <div className="mr-2">•</div>
-                      <div>{symptom}</div>
-                    </div>
-                  ))
+                  <p className="leading-relaxed">
+                    The claimant reports {symptoms.length === 1 ? 'a symptom of' : 'symptoms of'} travel anxiety 
+                    {symptoms.length > 0 && ' including '} 
+                    {symptoms.map((symptom, index) => {
+                      if (index === 0) {
+                        return symptom.toLowerCase();
+                      } else if (index === symptoms.length - 1) {
+                        return ` and ${symptom.toLowerCase()}`;
+                      } else {
+                        return `, ${symptom.toLowerCase()}`;
+                      }
+                    })}
+                    {form.watch("travelAnxietyOnset") && `. These symptoms began ${form.watch("travelAnxietyOnset").toLowerCase()}`}
+                    {form.watch("travelAnxietyInitialSeverity") && ` with an initial severity described as ${form.watch("travelAnxietyInitialSeverity").toLowerCase()}`}
+                    {form.watch("travelAnxietyCurrentSeverity") && ` and current severity assessed as ${form.watch("travelAnxietyCurrentSeverity").toLowerCase()}`}
+                    {form.watch("travelAnxietyCurrentSeverity") === "Resolved" && form.watch("travelAnxietyResolutionDays") && `, resolving after approximately ${form.watch("travelAnxietyResolutionDays")} days`}.
+                  </p>
                 ) : (
-                  <div className="text-muted-foreground">No symptoms selected</div>
+                  <div className="text-muted-foreground">No symptoms of travel anxiety reported.</div>
                 )}
               </div>
-              
-              {form.watch("travelAnxietyOnset") && (
-                <div className="mt-3">
-                  <span className="font-medium">Onset:</span> {form.watch("travelAnxietyOnset")}
-                </div>
-              )}
-              
-              {form.watch("travelAnxietyInitialSeverity") && (
-                <div className="mt-1">
-                  <span className="font-medium">Initial Severity:</span> {form.watch("travelAnxietyInitialSeverity")}
-                </div>
-              )}
-              
-              {form.watch("travelAnxietyCurrentSeverity") && (
-                <div className="mt-1">
-                  <span className="font-medium">Current Severity:</span> {form.watch("travelAnxietyCurrentSeverity")}
-                </div>
-              )}
-              
-              {form.watch("travelAnxietyCurrentSeverity") === "Resolved" && form.watch("travelAnxietyResolutionDays") && (
-                <div className="mt-1">
-                  <span className="font-medium">Days until resolution:</span> {form.watch("travelAnxietyResolutionDays")}
-                </div>
-              )}
             </div>
           </SubSection>
           
