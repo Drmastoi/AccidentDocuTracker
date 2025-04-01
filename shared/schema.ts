@@ -140,15 +140,6 @@ export const physicalInjurySchema = z.object({
 });
 
 export const psychologicalInjuriesSchema = z.object({
-  psychologicalSymptoms: z.array(z.string()).optional(),
-  mentalHealthDiagnoses: z.array(
-    z.object({
-      diagnosis: z.string().optional(),
-      diagnosisDate: z.string().optional(),
-      diagnosingProvider: z.string().optional(),
-    })
-  ).optional(),
-  traumaAssessment: z.string().optional(),
   travelAnxietySymptoms: z.array(z.string()).optional(),
   travelAnxietyOnset: z.enum(["Same Day", "Next Day", "Few Days Later"]).optional(),
   travelAnxietyInitialSeverity: z.enum(["Mild", "Moderate", "Severe"]).optional(),

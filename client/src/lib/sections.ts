@@ -61,11 +61,11 @@ export const sections: Section[] = [
   },
   {
     id: "psychological",
-    name: "Psychological Injuries",
+    name: "Travel Anxiety",
     icon: Brain,
     apiPath: "psychological-injuries",
     getCompletionStatus: (caseData) => 
-      !!caseData?.psychologicalInjuries
+      caseData?.psychologicalInjuries?.travelAnxietySymptoms?.length > 0
   },
   {
     id: "treatments",
