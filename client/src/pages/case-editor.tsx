@@ -22,7 +22,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
-import { generatePDF } from "@/lib/pdf-generator";
+import { generatePDF, PDFCustomizationOptions } from "@/lib/pdf-generator";
 
 export default function CaseEditor() {
   const [, setLocation] = useLocation();
@@ -101,7 +101,7 @@ export default function CaseEditor() {
     }
   };
   
-  const handleGeneratePdf = () => {
+  const handleGeneratePdf = (options?: PDFCustomizationOptions) => {
     if (!caseData) {
       toast({
         title: "Cannot generate PDF",
@@ -112,8 +112,8 @@ export default function CaseEditor() {
     }
     
     try {
-      // Generate PDF
-      const pdfDataUri = generatePDF(caseData as Case);
+      // Generate PDF with optional customization options
+      const pdfDataUri = generatePDF(caseData as Case, options);
       
       // Open the PDF in a new window
       const newWindow = window.open();

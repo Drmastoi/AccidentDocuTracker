@@ -4,11 +4,12 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useParams } from "wouter";
+import { PDFCustomizationOptions } from "@/lib/pdf-generator";
 
 interface HeaderProps {
   caseNumber?: string;
   onSave: () => Promise<void>;
-  onGeneratePdf: () => void;
+  onGeneratePdf: (options?: PDFCustomizationOptions) => void;
 }
 
 export function Header({ caseNumber, onSave, onGeneratePdf }: HeaderProps) {

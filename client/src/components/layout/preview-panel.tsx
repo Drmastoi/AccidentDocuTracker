@@ -1,13 +1,15 @@
-import React from "react";
-import { FileText, FileQuestion } from "lucide-react";
+import React, { useState } from "react";
+import { FileText, FileQuestion, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { calculateCompletionPercentage } from "@/lib/sections";
 import { Case } from "@shared/schema";
+import { PDFCustomizationOptions } from "@/lib/pdf-generator";
+import { PDFOptionsPanel } from "./pdf-options-panel";
 
 interface PreviewPanelProps {
   caseData: Case | null;
-  onGeneratePdf: () => void;
+  onGeneratePdf: (options?: PDFCustomizationOptions) => void;
 }
 
 // Helper for date formatting in GB format
@@ -23,19 +25,80 @@ const formatDate = (dateString?: string) => {
 
 export function PreviewPanel({ caseData, onGeneratePdf }: PreviewPanelProps) {
   const completionPercentage = caseData ? calculateCompletionPercentage(caseData) : 0;
+  const [showPdfOptions, setShowPdfOptions] = useState(false);
+  const [pdfOptions, setPdfOptions] = useState<PDFCustomizationOptions>({
+    pageSize: 'a4',
+    orientation: 'portrait',
+    includeCoverPage: true,
+    includeAgencyDetails: true,
+    fontFamily: 'helvetica',
+    fontSize: {
+      title: 18,
+      subtitle: 10,
+      sectionHeader: 12,
+      bodyText: 9
+    },
+    includeSectionNumbers: false,
+    includeTableOfContents: false,
+    primaryColor: [14, 124, 123], // RGB for #0E7C7B dark teal
+    secondaryColor: [74, 85, 104], // RGB for #4A5568 slate grey
+    includeExpertCV: true,
+    includeDeclaration: true,
+    includeFooterOnEveryPage: true,
+    sectionsToInclude: {
+      claimantDetails: true,
+      accidentDetails: true,
+      physicalInjury: true,
+      psychologicalInjury: true,
+      treatments: true,
+      lifeStyleImpact: true,
+      familyHistory: true,
+      prognosis: true,
+      expertDetails: true
+    }
+  });
+  
+  const handleGeneratePdf = () => {
+    onGeneratePdf(pdfOptions);
+  };
+  
+  const handleApplyOptions = () => {
+    setShowPdfOptions(false);
+    // Preview will update with the new options automatically
+  };
   
   return (
     <aside className="w-96 border-l border-gray-200 bg-white overflow-hidden flex flex-col">
       <div className="p-4 border-b border-gray-200 flex items-center justify-between">
         <h2 className="text-lg font-medium text-[#4A5568]">MedCo Report Preview</h2>
-        <button
-          className="text-sm text-[#0E7C7B] font-medium hover:text-teal-900 flex items-center"
-          onClick={onGeneratePdf}
-        >
-          <FileText className="h-4 w-4 mr-1" />
-          Download PDF
-        </button>
+        <div className="flex items-center space-x-2">
+          <button
+            className="text-sm text-[#4A5568] font-medium hover:text-slate-800 flex items-center"
+            onClick={() => setShowPdfOptions(!showPdfOptions)}
+          >
+            <Settings className="h-4 w-4 mr-1" />
+            Options
+          </button>
+          <button
+            className="text-sm text-[#0E7C7B] font-medium hover:text-teal-900 flex items-center"
+            onClick={(e) => { e.preventDefault(); handleGeneratePdf(); }}
+          >
+            <FileText className="h-4 w-4 mr-1" />
+            Download PDF
+          </button>
+        </div>
       </div>
+      
+      {showPdfOptions && (
+        <div className="p-4 border-b border-gray-200 bg-gray-50">
+          <PDFOptionsPanel 
+            options={pdfOptions}
+            onChange={setPdfOptions}
+            onClose={() => setShowPdfOptions(false)}
+            onApply={handleApplyOptions}
+          />
+        </div>
+      )}
       
       <div className="flex-1 overflow-y-auto bg-gray-50">
         {/* Placeholder content for PDF preview */}
@@ -263,7 +326,7 @@ export function PreviewPanel({ caseData, onGeneratePdf }: PreviewPanelProps) {
               <div className="flex justify-center mt-8">
                 <Button 
                   className="w-60 bg-[#0E7C7B] hover:bg-[#0A6463]" 
-                  onClick={onGeneratePdf}
+                  onClick={(e) => { e.preventDefault(); handleGeneratePdf(); }}
                 >
                   <FileText className="mr-2 h-4 w-4" />
                   Generate Full PDF Report
@@ -273,6 +336,27 @@ export function PreviewPanel({ caseData, onGeneratePdf }: PreviewPanelProps) {
               <p className="text-center text-xs text-gray-500 mt-4">
                 This preview shows a simplified version of the PDF report. The generated PDF will include all details in a professionally formatted document.
               </p>
+              
+              {/* PDF Customization Options Summary */}
+              <div className="mt-6 border-t pt-4">
+                <h4 className="text-sm font-medium text-gray-700 mb-2">PDF Customization Options</h4>
+                <div className="bg-gray-50 p-3 rounded text-xs">
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                    <p><span className="font-medium">Layout:</span> {pdfOptions.pageSize} ({pdfOptions.orientation})</p>
+                    <p><span className="font-medium">Font:</span> {pdfOptions.fontFamily}</p>
+                    <p><span className="font-medium">Cover Page:</span> {pdfOptions.includeCoverPage ? 'Included' : 'Not included'}</p>
+                    <p><span className="font-medium">Table of Contents:</span> {pdfOptions.includeTableOfContents ? 'Included' : 'Not included'}</p>
+                    <p><span className="font-medium">Expert CV:</span> {pdfOptions.includeExpertCV ? 'Included' : 'Not included'}</p>
+                    <p><span className="font-medium">Declaration:</span> {pdfOptions.includeDeclaration ? 'Included' : 'Not included'}</p>
+                  </div>
+                  <button 
+                    className="w-full mt-2 text-center text-[#0E7C7B] hover:text-teal-800"
+                    onClick={() => setShowPdfOptions(true)}
+                  >
+                    Customize PDF settings
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}

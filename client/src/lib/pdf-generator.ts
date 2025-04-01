@@ -1,6 +1,51 @@
 import { jsPDF } from "jspdf";
 import { Case, PhysicalInjury, ClaimantDetails, AccidentDetails, Treatments, FamilyHistory, Prognosis, ExpertDetails, LifestyleImpact } from "@shared/schema";
 
+// PDF customization options interface
+export interface PDFCustomizationOptions {
+  // Layout options
+  pageSize?: 'a4' | 'letter';
+  orientation?: 'portrait' | 'landscape';
+  
+  // Cover page options
+  includeCoverPage?: boolean;
+  includeAgencyDetails?: boolean;
+  logoUrl?: string;
+  
+  // Content options
+  fontFamily?: 'helvetica' | 'courier' | 'times';
+  fontSize?: {
+    title: number;
+    subtitle: number;
+    sectionHeader: number;
+    bodyText: number;
+  };
+  includeSectionNumbers?: boolean;
+  includeTableOfContents?: boolean;
+  
+  // Style options
+  primaryColor?: [number, number, number]; // RGB values
+  secondaryColor?: [number, number, number]; // RGB values
+  
+  // Additional content options
+  includeExpertCV?: boolean;
+  includeDeclaration?: boolean;
+  includeFooterOnEveryPage?: boolean;
+  
+  // Sections to include/exclude
+  sectionsToInclude?: {
+    claimantDetails?: boolean;
+    accidentDetails?: boolean;
+    physicalInjury?: boolean;
+    psychologicalInjury?: boolean;
+    treatments?: boolean;
+    lifeStyleImpact?: boolean;
+    familyHistory?: boolean;
+    prognosis?: boolean;
+    expertDetails?: boolean;
+  };
+}
+
 // Type guard functions to ensure proper type checking with jsonb fields
 const hasClaimantDetails = (details: any): details is ClaimantDetails => {
   return details !== null && typeof details === 'object';
@@ -98,21 +143,57 @@ const addFooter = (doc: jsPDF, claimantName: string) => {
   }
 };
 
+// Default PDF customization options
+const defaultPDFOptions: PDFCustomizationOptions = {
+  pageSize: 'a4',
+  orientation: 'portrait',
+  includeCoverPage: true,
+  includeAgencyDetails: true,
+  fontFamily: 'helvetica',
+  fontSize: {
+    title: 18,
+    subtitle: 10,
+    sectionHeader: 12,
+    bodyText: 9
+  },
+  includeSectionNumbers: false,
+  includeTableOfContents: false,
+  primaryColor: [14, 124, 123], // RGB for #0E7C7B dark teal
+  secondaryColor: [74, 85, 104], // RGB for #4A5568 slate grey
+  includeExpertCV: true,
+  includeDeclaration: true,
+  includeFooterOnEveryPage: true,
+  sectionsToInclude: {
+    claimantDetails: true,
+    accidentDetails: true,
+    physicalInjury: true,
+    psychologicalInjury: true,
+    treatments: true,
+    lifeStyleImpact: true,
+    familyHistory: true,
+    prognosis: true,
+    expertDetails: true
+  }
+};
+
 // Generate PDF from case data
-export const generatePDF = (caseData: Case): string => {
-  // Create a new PDF document (A4 portrait)
+export const generatePDF = (caseData: Case, options?: PDFCustomizationOptions): string => {
+  // Merge provided options with default options
+  const pdfOptions = { ...defaultPDFOptions, ...options };
+  
+  // Create a new PDF document
   const doc = new jsPDF({
-    orientation: 'portrait',
+    orientation: pdfOptions.orientation,
     unit: 'mm',
-    format: 'a4'
+    format: pdfOptions.pageSize
   });
   
   // Set the main font
-  doc.setFont("helvetica");
+  doc.setFont(pdfOptions.fontFamily || "helvetica");
   
-  // Define the dark teal brand color
-  const primaryColor = [14, 124, 123]; // RGB for #0E7C7B dark teal
-  const secondaryColor = [74, 85, 104]; // RGB for #4A5568 slate grey
+  // Define the brand colors
+  const primaryColor = pdfOptions.primaryColor || [14, 124, 123]; // RGB for #0E7C7B dark teal
+  const secondaryColor = pdfOptions.secondaryColor || [74, 85, 104]; // RGB for #4A5568 slate grey
   
   // ==================== PAGE 1: COVER PAGE ====================
   
@@ -909,13 +990,49 @@ export const generatePDF = (caseData: Case): string => {
 };
 
 // Generate a preview of the PDF from case data
-export const generatePDFPreview = (caseData: Case): string => {
+export const generatePDFPreview = (caseData: Case, options?: PDFCustomizationOptions): string => {
   // In a real application, we would render this as an HTML preview
-  // For now, we'll return a message that the preview is generated in PDF format
+  // For now, we'll return a message that the preview is generated in PDF format with options
+  
+  // Merge provided options with default options
+  const pdfOptions = { ...defaultPDFOptions, ...options };
+  
+  // Create a string representation of the active options for display
+  const optionsDisplay = `
+    <div class="pdf-options-summary">
+      <h3>PDF Customization Options</h3>
+      <ul>
+        <li><strong>Page Layout:</strong> ${pdfOptions.pageSize} (${pdfOptions.orientation})</li>
+        <li><strong>Font:</strong> ${pdfOptions.fontFamily}</li>
+        <li><strong>Cover Page:</strong> ${pdfOptions.includeCoverPage ? 'Included' : 'Not included'}</li>
+        <li><strong>Agency Details:</strong> ${pdfOptions.includeAgencyDetails ? 'Included' : 'Not included'}</li>
+        <li><strong>Logo:</strong> ${pdfOptions.logoUrl ? 'Custom logo' : 'Default logo'}</li>
+        <li><strong>Table of Contents:</strong> ${pdfOptions.includeTableOfContents ? 'Included' : 'Not included'}</li>
+        <li><strong>Expert CV:</strong> ${pdfOptions.includeExpertCV ? 'Included' : 'Not included'}</li>
+        <li><strong>Declaration:</strong> ${pdfOptions.includeDeclaration ? 'Included' : 'Not included'}</li>
+        <li><strong>Primary Color:</strong> RGB(${pdfOptions.primaryColor?.join(', ')})</li>
+      </ul>
+      <h4>Sections to Include:</h4>
+      <ul>
+        <li><strong>Claimant Details:</strong> ${pdfOptions.sectionsToInclude?.claimantDetails ? 'Yes' : 'No'}</li>
+        <li><strong>Accident Details:</strong> ${pdfOptions.sectionsToInclude?.accidentDetails ? 'Yes' : 'No'}</li>
+        <li><strong>Physical Injury:</strong> ${pdfOptions.sectionsToInclude?.physicalInjury ? 'Yes' : 'No'}</li>
+        <li><strong>Psychological Injury:</strong> ${pdfOptions.sectionsToInclude?.psychologicalInjury ? 'Yes' : 'No'}</li>
+        <li><strong>Treatments:</strong> ${pdfOptions.sectionsToInclude?.treatments ? 'Yes' : 'No'}</li>
+        <li><strong>Lifestyle Impact:</strong> ${pdfOptions.sectionsToInclude?.lifeStyleImpact ? 'Yes' : 'No'}</li>
+        <li><strong>Family History:</strong> ${pdfOptions.sectionsToInclude?.familyHistory ? 'Yes' : 'No'}</li>
+        <li><strong>Prognosis:</strong> ${pdfOptions.sectionsToInclude?.prognosis ? 'Yes' : 'No'}</li>
+        <li><strong>Expert Details:</strong> ${pdfOptions.sectionsToInclude?.expertDetails ? 'Yes' : 'No'}</li>
+      </ul>
+    </div>
+  `;
+  
   return `
     <div>
       <h2>MedCo-Compliant PDF Report</h2>
-      <p>The PDF report has been generated. Click "Generate PDF" to download the complete report.</p>
+      <p>The PDF report has been customized with the following options:</p>
+      ${optionsDisplay}
+      <p>Click "Generate PDF" to download the complete report with these options.</p>
     </div>
   `;
 };
