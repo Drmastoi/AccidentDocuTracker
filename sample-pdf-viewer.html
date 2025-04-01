@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sample Medical Report PDF</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f7fafc;
+    }
+    h1 {
+      color: #0E7C7B;
+      text-align: center;
+    }
+    .container {
+      background-color: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .pdf-embed {
+      width: 100%;
+      height: 600px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .instructions {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #e6f7f7;
+      border-radius: 4px;
+      border-left: 4px solid #0E7C7B;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Sample Medical Report PDF</h1>
+    
+    <div id="pdf-container">
+      <iframe src="sample-report.html" class="pdf-embed"></iframe>
+    </div>
+    
+    <div class="instructions">
+      <h3>Instructions:</h3>
+      <p>This is a sample MedCo-compliant medical report generated with the following features:</p>
+      <ul>
+        <li>Comprehensive claimant details</li>
+        <li>Detailed accident information</li>
+        <li>Physical injury assessment with severity classification</li>
+        <li>Psychological impact evaluation</li>
+        <li>Treatment history and recommendations</li>
+        <li>Lifestyle impact analysis</li>
+        <li>Previous medical history</li>
+        <li>Prognosis and recovery timeline</li>
+        <li>Medical expert credentials</li>
+      </ul>
+      <p>The PDF is generated dynamically using the jsPDF library with data from our application.</p>
+    </div>
+  </div>
+
+  <script>
+    // In a real implementation, this would be the actual data URL from the PDF generator
+    // For demonstration, we'll use a placeholder or the actual generated PDF
+    window.addEventListener('DOMContentLoaded', function() {
+      // In a real application, you would get this from the API
+      // For now, we'll just show a message
+      const pdfContainer = document.getElementById('pdf-container');
+      pdfContainer.innerHTML = `
+        <div style="padding: 20px; text-align: center; background-color: #f9f9f9; border-radius: 4px;">
+          <h3>PDF Preview</h3>
+          <p>In the actual application, the PDF would be displayed here. The PDF generation functionality is working in the backend, but for this sample, we're showing this placeholder instead.</p>
+          <p>When using the application, users can generate and download PDFs with their actual case data.</p>
+        </div>
+      `;
+    });
+  </script>
+</body>
+</html>
