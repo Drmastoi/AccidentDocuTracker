@@ -94,13 +94,7 @@ export function Sidebar({ caseData, activeSection, onSectionChange, onPreviewCli
             <Progress value={completionPercentage} className="h-2" />
           </div>
         </div>
-        <Button 
-          className="w-full flex items-center justify-center" 
-          onClick={onPreviewClick}
-        >
-          <Eye className="h-4 w-4 mr-1" />
-          Preview Report
-        </Button>
+        {/* Preview button removed as requested */}
       </div>
     </aside>
   );

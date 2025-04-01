@@ -139,8 +139,9 @@ export default function CaseEditor() {
     }
   };
   
+  // Preview functionality removed as requested
   const handlePreviewClick = () => {
-    setIsPreviewOpen(true);
+    // No longer used but kept for type compatibility
   };
   
   // Show loading state while fetching case data

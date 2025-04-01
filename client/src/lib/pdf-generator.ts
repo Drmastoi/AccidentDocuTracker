@@ -258,9 +258,6 @@ export const generatePDF = (caseData: Case, options?: PDFCustomizationOptions): 
   drawTableRow("Accompanied By:", claimant?.accompaniedBy || "", yPosition);
   yPosition += rowHeight;
   
-  drawTableRow("Date Of Accident:", claimant?.accidentDate ? `${formatDate(claimant.accidentDate)}` : "{{Date of Accident}}", yPosition);
-  yPosition += rowHeight;
-  
   // Multi-row cells - Solicitor and reference details
   const multiRowStartY = yPosition;
   doc.setLineWidth(0.5);
@@ -462,8 +459,8 @@ export const generatePDF = (caseData: Case, options?: PDFCustomizationOptions): 
     
     const accident = caseData.accidentDetails;
     
-    // Create formatted description text
-    let description = `Date: ${formatDate(accident.accidentDate)} | Time: ${accident.accidentTime || "Unknown"} | Location: ${accident.accidentLocation || "Unknown"}\n`;
+    // Create formatted description text without repeating the accident date
+    let description = `Time: ${accident.accidentTime || "Unknown"} | Location: ${accident.accidentLocation || "Unknown"}\n`;
     
     if (accident.vehicleType) {
       description += `Vehicle Type: ${accident.vehicleType} | `;
