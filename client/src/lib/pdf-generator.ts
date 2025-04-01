@@ -319,9 +319,9 @@ export const generatePDF = (caseData: Case, options?: PDFCustomizationOptions): 
   doc.setFontSize(14);
   doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
   
-  const expertName = caseData.expertDetails?.examiner || "Dr Awais Iqbal";
+  const coverExpertName = caseData.expertDetails?.examiner || "Dr Awais Iqbal";
   const expertTitle = caseData.expertDetails?.credentials || "MBBS, Direct Medical Expert";
-  doc.text(`${expertName}, ${expertTitle}`, margin + 100, yPosition);
+  doc.text(`${coverExpertName}, ${expertTitle}`, margin + 100, yPosition);
   
   // Expert statement
   yPosition += 15;
@@ -329,7 +329,7 @@ export const generatePDF = (caseData: Case, options?: PDFCustomizationOptions): 
   doc.setFont(pdfOptions.fontFamily || "helvetica", "normal");
   doc.setTextColor(0, 0, 0);
   
-  const expertStatement = `The Writer: I, ${expertName}, am a medico-legal practitioner. Full details of my qualifications and experience entitling me to provide an expert opinion can be found on the last page of this medical report.`;
+  const expertStatement = `The Writer: I, ${coverExpertName}, am a medico-legal practitioner. Full details of my qualifications and experience entitling me to provide an expert opinion can be found on the last page of this medical report.`;
   const statementLines = doc.splitTextToSize(expertStatement, tableWidth);
   doc.text(statementLines, margin, yPosition);
   
@@ -853,6 +853,14 @@ export const generatePDF = (caseData: Case, options?: PDFCustomizationOptions): 
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
   
+  // Prepared by section
+  doc.setTextColor(0, 133, 161); // Teal blue color matching the image
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "bold");
+  doc.text("Prepared by", 20, yPosition);
+  doc.setTextColor(60, 60, 60);
+  yPosition += 15;
+  
   // Declaration text
   let declarationText = "Declaration:";
   doc.setFont("helvetica", "bold");
@@ -861,7 +869,8 @@ export const generatePDF = (caseData: Case, options?: PDFCustomizationOptions): 
   yPosition += 10;
   
   // Expert declaration
-  const expertDeclaration = "I, Dr. Awais Iqbal, am a medico-legal practitioner. Full details of my qualifications and experience entitling me to provide an expert opinion can be found on the last page of this medical report.";
+  const declarationExpertName = caseData.expertDetails?.examiner || "Dr. Awais Iqbal";
+  const expertDeclaration = `I, ${declarationExpertName}, am a medico-legal practitioner. Full details of my qualifications and experience entitling me to provide an expert opinion can be found on the last page of this medical report.`;
   const splitExpertDeclaration = doc.splitTextToSize(expertDeclaration, 170);
   doc.text(splitExpertDeclaration, 20, yPosition);
   yPosition += splitExpertDeclaration.length * 6 + 15;
