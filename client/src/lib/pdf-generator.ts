@@ -258,82 +258,62 @@ export const generatePDF = (caseData: Case, options?: PDFCustomizationOptions): 
   doc.setTextColor(80, 80, 80);
   doc.setFontSize(9.5);
   
-  // Create two-column layout
-  const col1X = margin + 12;
-  const col2X = margin + (cardWidth / 2) + 5;
-  let detailsY = yPosition + 28;
+  // Create two-column layout with consistent spacing
+  const fieldLabelWidth = 35; // Fixed width for labels for better alignment
+  const col1X = margin + 15; // Increased left margin for better spacing
+  const col2X = margin + (cardWidth / 2) + 10; // Adjusted for better balance
+  let detailsY = yPosition + 30; // Slightly increased top margin
   
   // Column 1: Personal Information - with visual emphasis
   doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
   doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
   doc.text("Personal Details", col1X, detailsY);
-  detailsY += 9;
+  detailsY += 10; // Slightly more spacing after section header
+  
+  // Create a consistent layout function to ensure alignment
+  const addField = (label: string, value: string, x: number, y: number) => {
+    doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
+    doc.setTextColor(60, 60, 60);
+    doc.text(label, x, y);
+    doc.setFont(pdfOptions.fontFamily || "helvetica", "normal");
+    doc.text(value, x + fieldLabelWidth, y);
+    return y + 8; // Return the next Y position
+  };
   
   // Full name with emphasized styling
-  doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
-  doc.setTextColor(60, 60, 60);
-  doc.text("Full Name:", col1X, detailsY);
-  doc.setFont(pdfOptions.fontFamily || "helvetica", "normal");
-  doc.text(`${claimant?.fullName || "Not provided"}`, col1X + 30, detailsY);
-  detailsY += 8;
+  detailsY = addField("Full Name:", `${claimant?.fullName || "Not provided"}`, col1X, detailsY);
   
   // Date of birth
-  doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
-  doc.text("Date of Birth:", col1X, detailsY);
-  doc.setFont(pdfOptions.fontFamily || "helvetica", "normal");
-  doc.text(`${claimant?.dateOfBirth ? formatDate(claimant.dateOfBirth) : "Not provided"}`, col1X + 30, detailsY);
-  detailsY += 8;
+  detailsY = addField("Date of Birth:", `${claimant?.dateOfBirth ? formatDate(claimant.dateOfBirth) : "Not provided"}`, col1X, detailsY);
   
   // Address
-  doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
-  doc.text("Address:", col1X, detailsY);
-  doc.setFont(pdfOptions.fontFamily || "helvetica", "normal");
-  doc.text(`${claimant?.address || "Not provided"}`, col1X + 30, detailsY);
-  detailsY += 8;
+  detailsY = addField("Address:", `${claimant?.address || "Not provided"}`, col1X, detailsY);
   
   // Accompanied by
-  doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
-  doc.text("Accompanied By:", col1X, detailsY);
-  doc.setFont(pdfOptions.fontFamily || "helvetica", "normal");
-  doc.text(`${claimant?.accompaniedBy || "None"}`, col1X + 30, detailsY);
+  detailsY = addField("Accompanied By:", `${claimant?.accompaniedBy || "None"}`, col1X, detailsY);
   
   // Column 2: Legal Information - with visual emphasis
-  detailsY = yPosition + 28;
+  let legalY = yPosition + 30;
   
   doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
   doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-  doc.text("Legal Information", col2X, detailsY);
-  detailsY += 9;
+  doc.text("Legal Information", col2X, legalY);
+  legalY += 10; // Consistent spacing after header
   
-  doc.setTextColor(60, 60, 60);
-  doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
-  doc.text("Instructing Party:", col2X, detailsY);
-  doc.setFont(pdfOptions.fontFamily || "helvetica", "normal");
-  doc.text(`${claimant?.instructingParty || "Not provided"}`, col2X + 38, detailsY);
-  detailsY += 8;
+  // Instructing Party
+  legalY = addField("Instructing Party:", `${claimant?.instructingParty || "Not provided"}`, col2X, legalY);
   
-  doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
-  doc.text("IP Reference:", col2X, detailsY);
-  doc.setFont(pdfOptions.fontFamily || "helvetica", "normal");
-  doc.text(`${claimant?.instructingPartyRef || "Not provided"}`, col2X + 38, detailsY);
-  detailsY += 8;
+  // IP Reference
+  legalY = addField("IP Reference:", `${claimant?.instructingPartyRef || "Not provided"}`, col2X, legalY);
   
-  doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
-  doc.text("Solicitor:", col2X, detailsY);
-  doc.setFont(pdfOptions.fontFamily || "helvetica", "normal");
-  doc.text(`${claimant?.solicitorName || "Not provided"}`, col2X + 38, detailsY);
-  detailsY += 8;
+  // Solicitor
+  legalY = addField("Solicitor:", `${claimant?.solicitorName || "Not provided"}`, col2X, legalY);
   
-  doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
-  doc.text("Reference:", col2X, detailsY);
-  doc.setFont(pdfOptions.fontFamily || "helvetica", "normal");
-  doc.text(`${claimant?.referenceNumber || "Not provided"}`, col2X + 38, detailsY);
-  detailsY += 8;
+  // Reference
+  legalY = addField("Reference:", `${claimant?.referenceNumber || "Not provided"}`, col2X, legalY);
   
-  doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
-  doc.text("MedCo Ref:", col2X, detailsY);
-  doc.setFont(pdfOptions.fontFamily || "helvetica", "normal");
-  doc.text(`${claimant?.medcoRefNumber || "Not provided"}`, col2X + 38, detailsY);
+  // MedCo Ref
+  legalY = addField("MedCo Ref:", `${claimant?.medcoRefNumber || "Not provided"}`, col2X, legalY);
   
   // Update Y position after the card
   yPosition += 100;
@@ -376,32 +356,20 @@ export const generatePDF = (caseData: Case, options?: PDFCustomizationOptions): 
   
   detailsY = yPosition + 28;
   
-  // Add the information in a more visually appealing format
-  const examCol1 = margin + 12;
-  const examCol2 = margin + (cardWidth / 2) + 5;
+  // Add the information with the same consistent layout as the first card
+  // Use the same addField function created earlier for consistent alignment
+  const examCol1 = margin + 15;
+  const examCol2 = margin + (cardWidth / 2) + 10;
   
   // First row
-  doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
-  doc.text("Location:", examCol1, detailsY);
-  doc.setFont(pdfOptions.fontFamily || "helvetica", "normal");
-  doc.text(`${claimant?.placeOfExamination || "Not provided"}`, examCol1 + 30, detailsY);
+  let examY = detailsY;
+  examY = addField("Location:", `${claimant?.placeOfExamination || "Not provided"}`, examCol1, examY);
+  examY = addField("Date of Report:", `${claimant?.dateOfReport ? formatDate(claimant.dateOfReport) : "Not provided"}`, examCol1, examY);
   
-  doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
-  doc.text("Date of Examination:", examCol2, detailsY);
-  doc.setFont(pdfOptions.fontFamily || "helvetica", "normal");
-  doc.text(`${claimant?.dateOfExamination ? formatDate(claimant.dateOfExamination) : "Not provided"}`, examCol2 + 50, detailsY);
-  
-  // Second row
-  detailsY += 12;
-  doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
-  doc.text("Date of Report:", examCol1, detailsY);
-  doc.setFont(pdfOptions.fontFamily || "helvetica", "normal");
-  doc.text(`${claimant?.dateOfReport ? formatDate(claimant.dateOfReport) : "Not provided"}`, examCol1 + 30, detailsY);
-  
-  doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
-  doc.text("Time with Claimant:", examCol2, detailsY);
-  doc.setFont(pdfOptions.fontFamily || "helvetica", "normal");
-  doc.text(`${claimant?.timeSpentWithClaimant || "Not recorded"}`, examCol2 + 50, detailsY);
+  // Second column
+  let examColY = detailsY;
+  examColY = addField("Date of Examination:", `${claimant?.dateOfExamination ? formatDate(claimant.dateOfExamination) : "Not provided"}`, examCol2, examColY);
+  examColY = addField("Time with Claimant:", `${claimant?.timeSpentWithClaimant || "Not recorded"}`, examCol2, examColY);
   
   // Update Y position after the card
   yPosition += 65;
