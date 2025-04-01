@@ -213,100 +213,108 @@ export const generatePDF = (caseData: Case, options?: PDFCustomizationOptions): 
   doc.setFontSize(pdfOptions.fontSize?.subtitle || 14);
   doc.text("Prepared for the Court on:", margin, yPosition);
   
-  // Draw table
+  // Create a modern card-based layout for patient details
   yPosition += 15;
-  const tableStartY = yPosition;
-  const tableWidth = pageWidth - (margin * 2);
-  const leftColWidth = tableWidth / 2;
-  const rowHeight = 22;
   const claimant = caseData.claimantDetails;
   
-  // Function to draw a table row
-  const drawTableRow = (label: string, value: string, y: number) => {
-    // Draw borders
-    doc.setLineWidth(0.5);
-    doc.line(margin, y, margin + tableWidth, y); // Top line
-    doc.line(margin, y + rowHeight, margin + tableWidth, y + rowHeight); // Bottom line
-    doc.line(margin, y, margin, y + rowHeight); // Left line
-    doc.line(margin + leftColWidth, y, margin + leftColWidth, y + rowHeight); // Middle line
-    doc.line(margin + tableWidth, y, margin + tableWidth, y + rowHeight); // Right line
-    
-    // Add text
-    doc.setFontSize(10);
-    doc.setFont(pdfOptions.fontFamily || "helvetica", "normal");
-    doc.text(label, margin + 5, y + 15);
-    doc.text(value, margin + leftColWidth + 5, y + 15);
-  };
+  // Define card dimensions and styling
+  const cardWidth = pageWidth - (margin * 2);
+  const cardMargin = 5;
   
-  // Table rows
-  drawTableRow("Claimant's Full Name", claimant?.fullName ? `${claimant.fullName}` : "{{Full Name}}", yPosition);
-  yPosition += rowHeight;
+  // Patient Information Card
+  doc.setFillColor(245, 248, 250);
+  doc.roundedRect(margin, yPosition, cardWidth, 90, 3, 3, 'F');
   
-  drawTableRow("Date Of Birth:", claimant?.dateOfBirth ? `${formatDate(claimant.dateOfBirth)}` : "{{Date of birth}}", yPosition);
-  yPosition += rowHeight;
+  // Card Title
+  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  doc.setFontSize(12);
+  doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
+  doc.text("PATIENT INFORMATION", margin + cardMargin, yPosition + 12);
   
-  drawTableRow("Address:", claimant?.address ? `${claimant.address}` : "{{Full Address}}", yPosition);
-  yPosition += rowHeight;
+  // Reset for content
+  doc.setTextColor(60, 60, 60);
+  doc.setFontSize(10);
   
-  drawTableRow("ID Checked:", "{{Type of ID}}", yPosition);
-  yPosition += rowHeight;
+  // Create two-column layout
+  const col1X = margin + cardMargin;
+  const col2X = margin + (cardWidth / 2) + cardMargin;
+  let detailsY = yPosition + 25;
   
-  drawTableRow("Instructing Party:", claimant?.instructingParty ? `${claimant.instructingParty}` : "", yPosition);
-  yPosition += rowHeight;
+  // Column 1: Personal Information
+  doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
+  doc.text("Personal Details", col1X, detailsY);
+  detailsY += 10;
   
-  drawTableRow("IP Reference:", claimant?.instructingPartyRef ? `${claimant.instructingPartyRef}` : "", yPosition);
-  yPosition += rowHeight;
+  doc.setFont(pdfOptions.fontFamily || "helvetica", "normal");
+  doc.text(`Full Name: ${claimant?.fullName || "Not provided"}`, col1X, detailsY);
+  detailsY += 8;
   
-  drawTableRow("Solicitor:", claimant?.solicitorName ? `${claimant.solicitorName}` : "", yPosition);
-  yPosition += rowHeight;
+  doc.text(`Date of Birth: ${claimant?.dateOfBirth ? formatDate(claimant.dateOfBirth) : "Not provided"}`, col1X, detailsY);
+  detailsY += 8;
   
-  drawTableRow("Reference Number:", claimant?.referenceNumber ? `${claimant.referenceNumber}` : "", yPosition);
-  yPosition += rowHeight;
+  doc.text(`Address: ${claimant?.address || "Not provided"}`, col1X, detailsY);
+  detailsY += 8;
   
-  drawTableRow("MedCo Ref Number:", claimant?.medcoRefNumber ? `${claimant.medcoRefNumber}` : "", yPosition);
-  yPosition += rowHeight;
+  doc.text(`ID Checked: ${claimant?.idChecked || "Not verified"}`, col1X, detailsY);
+  detailsY += 8;
   
-  drawTableRow("Accompanied By:", claimant?.accompaniedBy || "", yPosition);
-  yPosition += rowHeight;
+  doc.text(`Accompanied By: ${claimant?.accompaniedBy || "None"}`, col1X, detailsY);
   
-  // Multi-row cells - Solicitor and reference details
-  const multiRowStartY = yPosition;
-  doc.setLineWidth(0.5);
+  // Column 2: Legal Information
+  detailsY = yPosition + 25;
   
-  // Left column for labels - 3 rows
-  doc.line(margin, multiRowStartY, margin + leftColWidth, multiRowStartY); // Top line
-  doc.line(margin, multiRowStartY, margin, multiRowStartY + (rowHeight * 3)); // Left line
-  doc.line(margin, multiRowStartY + (rowHeight * 3), margin + leftColWidth, multiRowStartY + (rowHeight * 3)); // Bottom line
-  doc.line(margin + leftColWidth, multiRowStartY, margin + leftColWidth, multiRowStartY + (rowHeight * 3)); // Middle line
+  doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
+  doc.text("Legal Information", col2X, detailsY);
+  detailsY += 10;
   
-  // Right column for values - 3 rows
-  doc.line(margin + leftColWidth, multiRowStartY, margin + tableWidth, multiRowStartY); // Top line
-  doc.line(margin + tableWidth, multiRowStartY, margin + tableWidth, multiRowStartY + (rowHeight * 3)); // Right line
-  doc.line(margin + leftColWidth, multiRowStartY + (rowHeight * 3), margin + tableWidth, multiRowStartY + (rowHeight * 3)); // Bottom line
+  doc.setFont(pdfOptions.fontFamily || "helvetica", "normal");
+  doc.text(`Instructing Party: ${claimant?.instructingParty || "Not provided"}`, col2X, detailsY);
+  detailsY += 8;
   
-  // Add text for multi-row cells
-  doc.text("Name Of Referring Party:", margin + 5, multiRowStartY + 15);
-  doc.text("Reference Number:", margin + 5, multiRowStartY + 35);
-  doc.text("Name Of Solicitor:", margin + 5, multiRowStartY + 55);
-  doc.text("Reference Number:", margin + 5, multiRowStartY + 75);
-  doc.text("Time Spent With Claimant:", margin + 5, multiRowStartY + 95);
+  doc.text(`IP Reference: ${claimant?.instructingPartyRef || "Not provided"}`, col2X, detailsY);
+  detailsY += 8;
   
-  // Add horizontal lines between rows in the multi-row section
-  doc.line(margin, multiRowStartY + rowHeight, margin + tableWidth, multiRowStartY + rowHeight); // Line after row 1
-  doc.line(margin, multiRowStartY + (rowHeight * 2), margin + tableWidth, multiRowStartY + (rowHeight * 2)); // Line after row 2
+  doc.text(`Solicitor: ${claimant?.solicitorName || "Not provided"}`, col2X, detailsY);
+  detailsY += 8;
   
-  yPosition += (rowHeight * 3);
+  doc.text(`Reference Number: ${claimant?.referenceNumber || "Not provided"}`, col2X, detailsY);
+  detailsY += 8;
   
-  // Continue with single rows
+  doc.text(`MedCo Ref Number: ${claimant?.medcoRefNumber || "Not provided"}`, col2X, detailsY);
   
-  drawTableRow("Examination Location:", claimant?.placeOfExamination || "", yPosition);
-  yPosition += rowHeight;
+  // Update Y position after the card
+  yPosition += 100;
   
-  drawTableRow("Date Of Examination:", claimant?.dateOfExamination ? `${formatDate(claimant.dateOfExamination)}` : "", yPosition);
-  yPosition += rowHeight;
+  // Examination Details Card
+  doc.setFillColor(240, 245, 250);
+  doc.roundedRect(margin, yPosition, cardWidth, 55, 3, 3, 'F');
   
-  drawTableRow("Date Of Report:", claimant?.dateOfReport ? `${formatDate(claimant.dateOfReport)}` : "", yPosition);
-  yPosition += rowHeight;
+  // Card Title
+  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  doc.setFontSize(12);
+  doc.setFont(pdfOptions.fontFamily || "helvetica", "bold");
+  doc.text("EXAMINATION DETAILS", margin + cardMargin, yPosition + 12);
+  
+  // Reset for content
+  doc.setTextColor(60, 60, 60);
+  doc.setFontSize(10);
+  
+  detailsY = yPosition + 25;
+  
+  doc.setFont(pdfOptions.fontFamily || "helvetica", "normal");
+  doc.text(`Location: ${claimant?.placeOfExamination || "Not provided"}`, margin + cardMargin, detailsY);
+  detailsY += 8;
+  
+  doc.text(`Date of Examination: ${claimant?.dateOfExamination ? formatDate(claimant.dateOfExamination) : "Not provided"}`, margin + cardMargin, detailsY);
+  detailsY += 8;
+  
+  doc.text(`Date of Report: ${claimant?.dateOfReport ? formatDate(claimant.dateOfReport) : "Not provided"}`, margin + cardMargin, detailsY);
+  detailsY += 8;
+  
+  doc.text(`Time Spent with Claimant: ${claimant?.timeSpentWithClaimant || "Not recorded"}`, margin + cardMargin, detailsY);
+  
+  // Update Y position after the card
+  yPosition += 65;
   
   // Expert details section
   yPosition += 20;
