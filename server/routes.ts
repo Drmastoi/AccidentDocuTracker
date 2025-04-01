@@ -516,15 +516,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Case not found" });
       }
       
-      // In a real application, we would generate the PDF here
-      // For this demo, we'll just return the case data with a PDF generation message
+      // Return the case data for client-side PDF generation
+      // The actual PDF generation happens in the client using jsPDF
       res.json({
-        message: "PDF generation would happen here in a real application",
+        message: "Case data retrieved for PDF generation",
         caseData: existingCase
       });
     } catch (error) {
-      console.error("Error generating PDF:", error);
-      res.status(500).json({ message: "Failed to generate PDF" });
+      console.error("Error retrieving case data for PDF:", error);
+      res.status(500).json({ message: "Failed to retrieve case data for PDF generation" });
     }
   });
 

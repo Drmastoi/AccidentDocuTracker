@@ -1,5 +1,57 @@
 import { jsPDF } from "jspdf";
-import { Case, PhysicalInjury } from "@shared/schema";
+import { Case, PhysicalInjury, ClaimantDetails, AccidentDetails, Treatments, FamilyHistory, Prognosis, ExpertDetails, LifestyleImpact } from "@shared/schema";
+
+// Type guard functions to ensure proper type checking with jsonb fields
+const hasClaimantDetails = (details: any): details is ClaimantDetails => {
+  return details !== null && typeof details === 'object';
+};
+
+const hasAccidentDetails = (details: any): details is AccidentDetails => {
+  return details !== null && typeof details === 'object';
+};
+
+// Type guard for PhysicalInjury with injuries array
+interface PhysicalInjuryWithInjuries extends PhysicalInjury {
+  injuries: any[];
+}
+
+const hasPhysicalInjury = (details: any): details is PhysicalInjury => {
+  return details !== null && typeof details === 'object';
+};
+
+const hasPhysicalInjuryWithInjuries = (details: any): details is PhysicalInjuryWithInjuries => {
+  return hasPhysicalInjury(details) && Array.isArray(details.injuries);
+};
+
+const hasTreatments = (details: any): details is Treatments => {
+  return details !== null && typeof details === 'object';
+};
+
+const hasLifestyleImpact = (details: any): details is LifestyleImpact => {
+  return details !== null && typeof details === 'object';
+};
+
+const hasFamilyHistory = (details: any): details is FamilyHistory => {
+  return details !== null && typeof details === 'object';
+};
+
+// Type guard for Prognosis with treatmentRecommendations array
+interface PrognosisWithRecommendations extends Prognosis {
+  treatmentRecommendations: string[];
+  overallPrognosis: string;
+}
+
+const hasPrognosis = (details: any): details is Prognosis => {
+  return details !== null && typeof details === 'object';
+};
+
+const hasPrognosisWithRecommendations = (details: any): details is PrognosisWithRecommendations => {
+  return hasPrognosis(details) && Array.isArray(details.treatmentRecommendations) && typeof details.overallPrognosis === 'string';
+};
+
+const hasExpertDetails = (details: any): details is ExpertDetails => {
+  return details !== null && typeof details === 'object';
+};
 
 // Function to format date from ISO string to DD/MM/YYYY
 const formatDate = (dateString?: string) => {
@@ -82,7 +134,7 @@ export const generatePDF = (caseData: Case): string => {
   let yPosition = 45;
   
   // Claimant Details
-  if (caseData.claimantDetails) {
+  if (caseData.claimantDetails && hasClaimantDetails(caseData.claimantDetails)) {
     const claimant = caseData.claimantDetails;
     
     // Claimant Box
@@ -159,7 +211,7 @@ export const generatePDF = (caseData: Case): string => {
   doc.setTextColor(60, 60, 60);
   doc.setFont("helvetica", "normal");
   
-  if (caseData.expertDetails) {
+  if (caseData.expertDetails && hasExpertDetails(caseData.expertDetails)) {
     const expert = caseData.expertDetails;
     
     yDetail = yPosition + 25;
@@ -205,7 +257,7 @@ export const generatePDF = (caseData: Case): string => {
   yPosition = 30;
   
   // Injury Table
-  if (caseData.physicalInjuryDetails?.injuries && caseData.physicalInjuryDetails.injuries.length > 0) {
+  if (caseData.physicalInjuryDetails && hasPhysicalInjuryWithInjuries(caseData.physicalInjuryDetails) && caseData.physicalInjuryDetails.injuries.length > 0) {
     doc.setFontSize(12);
     doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
     doc.setFont("helvetica", "bold");
@@ -239,13 +291,16 @@ export const generatePDF = (caseData: Case): string => {
     let rowHeight = 10;
     
     // Get prognosis data if available
-    const treatmentRecommendations = caseData.prognosis?.treatmentRecommendations || [];
+    let treatmentRecommendations: string[] = [];
+    if (caseData.prognosis && hasPrognosisWithRecommendations(caseData.prognosis)) {
+      treatmentRecommendations = caseData.prognosis.treatmentRecommendations;
+    }
     
     doc.setTextColor(60, 60, 60);
     doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
     
-    injuries.forEach((injury, index) => {
+    injuries.forEach((injury: any, index: number) => {
       // Set alternating row background
       if (index % 2 === 0) {
         doc.setFillColor(245, 247, 250);
@@ -271,7 +326,10 @@ export const generatePDF = (caseData: Case): string => {
       if (injury.currentSeverity === "Resolved") {
         prognosisText = `Resolved after ${injury.resolutionDays || "unknown"} days`;
       } else {
-        prognosisText = caseData.prognosis?.overallPrognosis || "Ongoing";
+        prognosisText = "Ongoing";
+        if (caseData.prognosis && hasPrognosisWithRecommendations(caseData.prognosis)) {
+          prognosisText = caseData.prognosis.overallPrognosis;
+        }
       }
       doc.text(prognosisText, currentX + 2, yPosition + 6);
       currentX += columnWidths[2];
@@ -294,7 +352,7 @@ export const generatePDF = (caseData: Case): string => {
   // Sections with details
   
   // Accident Details Section
-  if (caseData.accidentDetails) {
+  if (caseData.accidentDetails && hasAccidentDetails(caseData.accidentDetails)) {
     doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
     doc.rect(15, yPosition, 180, 10, "F");
     
@@ -337,7 +395,7 @@ export const generatePDF = (caseData: Case): string => {
   }
   
   // Injury Details Section
-  if (caseData.physicalInjuryDetails) {
+  if (caseData.physicalInjuryDetails && hasPhysicalInjury(caseData.physicalInjuryDetails)) {
     // Check if we need to start a new page
     if (yPosition > 230) {
       doc.addPage();
@@ -392,7 +450,7 @@ export const generatePDF = (caseData: Case): string => {
   }
   
   // Treatment Details Section
-  if (caseData.treatments) {
+  if (caseData.treatments && hasTreatments(caseData.treatments)) {
     // Check if we need to start a new page
     if (yPosition > 230) {
       doc.addPage();
@@ -507,7 +565,7 @@ export const generatePDF = (caseData: Case): string => {
   }
   
   // Impact on Lifestyle Section
-  if (caseData.lifestyleImpact) {
+  if (caseData.lifestyleImpact && hasLifestyleImpact(caseData.lifestyleImpact)) {
     // Check if we need to start a new page
     if (yPosition > 230) {
       doc.addPage();
@@ -594,7 +652,7 @@ export const generatePDF = (caseData: Case): string => {
   // Attached Statements Section - First Statement
   let addedFirstStatement = false;
   
-  if (caseData.familyHistory) {
+  if (caseData.familyHistory && hasFamilyHistory(caseData.familyHistory)) {
     // Check if we need to start a new page
     if (yPosition > 230) {
       doc.addPage();
@@ -681,7 +739,7 @@ export const generatePDF = (caseData: Case): string => {
   }
   
   // Attached Statements Section - Second Statement (Prognosis)
-  if (caseData.prognosis) {
+  if (caseData.prognosis && hasPrognosis(caseData.prognosis)) {
     // Check if we need to start a new page
     if (yPosition > 230) {
       doc.addPage();
@@ -718,7 +776,7 @@ export const generatePDF = (caseData: Case): string => {
     let prognosisText = "";
     
     // Overall prognosis
-    if (prognosis.overallPrognosis) {
+    if (hasPrognosisWithRecommendations(prognosis) && prognosis.overallPrognosis) {
       prognosisText += `Overall Prognosis: ${prognosis.overallPrognosis}\n`;
     }
     
@@ -738,7 +796,7 @@ export const generatePDF = (caseData: Case): string => {
     }
     
     // Treatment recommendations
-    if (prognosis.treatmentRecommendations && prognosis.treatmentRecommendations.length > 0) {
+    if (hasPrognosisWithRecommendations(prognosis) && prognosis.treatmentRecommendations.length > 0) {
       prognosisText += `Treatment Recommendations: ${prognosis.treatmentRecommendations.join(", ")}\n`;
     }
     
@@ -807,7 +865,7 @@ export const generatePDF = (caseData: Case): string => {
   doc.text("Medical Expert's Curriculum Vitae:", 20, yPosition);
   yPosition += 15;
   
-  if (caseData.expertDetails) {
+  if (caseData.expertDetails && hasExpertDetails(caseData.expertDetails)) {
     const expert = caseData.expertDetails;
     
     doc.setTextColor(60, 60, 60);
@@ -840,7 +898,7 @@ export const generatePDF = (caseData: Case): string => {
   }
   
   // Add footer on each page
-  if (caseData.claimantDetails?.fullName) {
+  if (caseData.claimantDetails && hasClaimantDetails(caseData.claimantDetails) && caseData.claimantDetails.fullName) {
     addFooter(doc, caseData.claimantDetails.fullName);
   } else {
     addFooter(doc, "Unknown Claimant");
