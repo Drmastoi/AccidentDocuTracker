@@ -854,8 +854,8 @@ export const generatePDF = (caseData: Case, options?: PDFCustomizationOptions): 
   doc.setFont("helvetica", "normal");
   
   // Prepared by section
-  doc.setTextColor(0, 133, 161); // Teal blue color matching the image
-  doc.setFontSize(11);
+  doc.setTextColor(0, 124, 173); // Adjusted teal blue color to match the image exactly
+  doc.setFontSize(12);
   doc.setFont("helvetica", "normal");
   doc.text("Prepared by", 20, yPosition);
   doc.setTextColor(60, 60, 60);
