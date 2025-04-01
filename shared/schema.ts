@@ -187,12 +187,34 @@ export const treatmentsSchema = z.object({
 });
 
 export const lifestyleImpactSchema = z.object({
-  adl: z.string().optional(), // Activities of Daily Living
-  workImpact: z.string().optional(),
-  recreationalImpact: z.string().optional(),
-  socialImpact: z.string().optional(),
-  sleepImpact: z.string().optional(),
-  additionalNotes: z.string().optional(),
+  // Work impact
+  daysOffWork: z.string().optional(),
+  daysLightDuties: z.string().optional(),
+  workDifficulties: z.array(z.string()).optional(),
+  workOtherDetails: z.string().optional(),
+  
+  // Sleep disturbances
+  hasSleepDisturbance: z.boolean().optional(),
+  sleepDisturbances: z.array(z.string()).optional(),
+  sleepOtherDetails: z.string().optional(),
+  
+  // Domestic living
+  hasDomesticImpact: z.boolean().optional(),
+  domesticActivities: z.array(z.string()).optional(),
+  domesticOtherDetails: z.string().optional(),
+  
+  // Sport & leisure
+  hasSportLeisureImpact: z.boolean().optional(),
+  sportLeisureActivities: z.array(z.string()).optional(),
+  sportLeisureOtherDetails: z.string().optional(),
+  
+  // Social life
+  hasSocialImpact: z.boolean().optional(),
+  socialActivities: z.array(z.string()).optional(),
+  socialOtherDetails: z.string().optional(),
+  
+  // Summary
+  lifestyleSummary: z.string().optional(),
 });
 
 export const familyHistorySchema = z.object({
