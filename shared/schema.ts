@@ -144,8 +144,7 @@ export const psychologicalInjuriesSchema = z.object({
   travelAnxietyOnset: z.enum(["Same Day", "Next Day", "Few Days Later"]).optional(),
   travelAnxietyInitialSeverity: z.enum(["Mild", "Moderate", "Severe"]).optional(),
   travelAnxietyCurrentSeverity: z.enum(["Mild", "Moderate", "Severe", "Resolved"]).optional(),
-  travelAnxietyResolutionDays: z.string().optional(),
-  additionalNotes: z.string().optional(),
+  travelAnxietyResolutionDays: z.string().optional()
 });
 
 export const treatmentsSchema = z.object({

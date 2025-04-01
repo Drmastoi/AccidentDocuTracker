@@ -51,8 +51,7 @@ export function PsychologicalInjuriesForm({ caseId, initialData, onSaved }: Psyc
       travelAnxietyOnset: undefined,
       travelAnxietyInitialSeverity: undefined,
       travelAnxietyCurrentSeverity: undefined,
-      travelAnxietyResolutionDays: "",
-      additionalNotes: "",
+      travelAnxietyResolutionDays: ""
     },
   });
   
@@ -299,24 +298,46 @@ export function PsychologicalInjuriesForm({ caseId, initialData, onSaved }: Psyc
             </div>
           </SubSection>
           
-          <SubSection>
-            <FormField
-              control={form.control}
-              name="additionalNotes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Additional Notes</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Any additional notes regarding travel anxiety"
-                      rows={3}
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+          <SubSection title="Summary">
+            <div className="p-4 border rounded-md bg-muted/30">
+              <h4 className="font-medium mb-2">Selected Travel Anxiety Symptoms:</h4>
+              <div className="space-y-1 text-sm">
+                {symptoms && symptoms.length > 0 ? (
+                  symptoms.map((symptom, index) => (
+                    <div key={index} className="flex items-start">
+                      <div className="mr-2">•</div>
+                      <div>{symptom}</div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-muted-foreground">No symptoms selected</div>
+                )}
+              </div>
+              
+              {form.watch("travelAnxietyOnset") && (
+                <div className="mt-3">
+                  <span className="font-medium">Onset:</span> {form.watch("travelAnxietyOnset")}
+                </div>
               )}
-            />
+              
+              {form.watch("travelAnxietyInitialSeverity") && (
+                <div className="mt-1">
+                  <span className="font-medium">Initial Severity:</span> {form.watch("travelAnxietyInitialSeverity")}
+                </div>
+              )}
+              
+              {form.watch("travelAnxietyCurrentSeverity") && (
+                <div className="mt-1">
+                  <span className="font-medium">Current Severity:</span> {form.watch("travelAnxietyCurrentSeverity")}
+                </div>
+              )}
+              
+              {form.watch("travelAnxietyCurrentSeverity") === "Resolved" && form.watch("travelAnxietyResolutionDays") && (
+                <div className="mt-1">
+                  <span className="font-medium">Days until resolution:</span> {form.watch("travelAnxietyResolutionDays")}
+                </div>
+              )}
+            </div>
           </SubSection>
           
           <div className="flex justify-end mt-6">
