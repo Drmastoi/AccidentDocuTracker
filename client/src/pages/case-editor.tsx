@@ -16,7 +16,7 @@ import { WorkHistoryForm } from "@/components/case-forms/work-history";
 
 import { ExpertDetailsForm } from "@/components/case-forms/expert-details";
 import { useToast } from "@/hooks/use-toast";
-import { SectionId } from "@/lib/sections";
+import { SectionId, sections } from "@/lib/sections";
 import { apiRequest } from "@/lib/queryClient";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
@@ -145,6 +145,18 @@ export default function CaseEditor() {
     // No longer used but kept for type compatibility
   };
   
+  // Function to navigate to the next section
+  const navigateToNextSection = () => {
+    // Get the current section index from our defined sections
+    const currentSectionIndex = sections.findIndex(section => section.id === activeSection);
+    
+    // If there's a next section, navigate to it
+    if (currentSectionIndex < sections.length - 1) {
+      const nextSection = sections[currentSectionIndex + 1].id;
+      setActiveSection(nextSection);
+    }
+  };
+  
   // Show loading state while fetching case data
   if (!isNewCase && isLoadingCase) {
     return (
@@ -213,7 +225,10 @@ export default function CaseEditor() {
             <ClaimantDetailsForm
               caseId={caseData?.id ?? 0}
               initialData={caseData?.claimantDetails}
-              onSaved={() => queryClient.invalidateQueries({ queryKey: [`/api/cases/${caseData?.id}`] })}
+              onSaved={() => {
+                queryClient.invalidateQueries({ queryKey: [`/api/cases/${caseData?.id}`] });
+                navigateToNextSection();
+              }}
             />
           )}
           
@@ -221,7 +236,10 @@ export default function CaseEditor() {
             <AccidentDetailsForm
               caseId={caseData?.id ?? 0}
               initialData={caseData?.accidentDetails}
-              onSaved={() => queryClient.invalidateQueries({ queryKey: [`/api/cases/${caseData?.id}`] })}
+              onSaved={() => {
+                queryClient.invalidateQueries({ queryKey: [`/api/cases/${caseData?.id}`] });
+                navigateToNextSection();
+              }}
             />
           )}
           
@@ -229,7 +247,10 @@ export default function CaseEditor() {
             <PhysicalInjuryForm
               caseId={caseData?.id ?? 0}
               initialData={caseData?.physicalInjuryDetails}
-              onSaved={() => queryClient.invalidateQueries({ queryKey: [`/api/cases/${caseData?.id}`] })}
+              onSaved={() => {
+                queryClient.invalidateQueries({ queryKey: [`/api/cases/${caseData?.id}`] });
+                navigateToNextSection();
+              }}
             />
           )}
           
@@ -237,7 +258,10 @@ export default function CaseEditor() {
             <PsychologicalInjuriesForm
               caseId={caseData?.id ?? 0}
               initialData={caseData?.psychologicalInjuries}
-              onSaved={() => queryClient.invalidateQueries({ queryKey: [`/api/cases/${caseData?.id}`] })}
+              onSaved={() => {
+                queryClient.invalidateQueries({ queryKey: [`/api/cases/${caseData?.id}`] });
+                navigateToNextSection();
+              }}
             />
           )}
           
@@ -245,7 +269,10 @@ export default function CaseEditor() {
             <TreatmentsForm
               caseId={caseData?.id ?? 0}
               initialData={caseData?.treatments}
-              onSaved={() => queryClient.invalidateQueries({ queryKey: [`/api/cases/${caseData?.id}`] })}
+              onSaved={() => {
+                queryClient.invalidateQueries({ queryKey: [`/api/cases/${caseData?.id}`] });
+                navigateToNextSection();
+              }}
             />
           )}
           
@@ -253,7 +280,10 @@ export default function CaseEditor() {
             <LifestyleImpactForm
               caseId={caseData?.id ?? 0}
               initialData={caseData?.lifestyleImpact}
-              onSaved={() => queryClient.invalidateQueries({ queryKey: [`/api/cases/${caseData?.id}`] })}
+              onSaved={() => {
+                queryClient.invalidateQueries({ queryKey: [`/api/cases/${caseData?.id}`] });
+                navigateToNextSection();
+              }}
             />
           )}
           
@@ -261,15 +291,22 @@ export default function CaseEditor() {
             <FamilyHistoryForm
               caseId={caseData?.id ?? 0}
               initialData={caseData?.familyHistory}
-              onSaved={() => queryClient.invalidateQueries({ queryKey: [`/api/cases/${caseData?.id}`] })}
+              onSaved={() => {
+                queryClient.invalidateQueries({ queryKey: [`/api/cases/${caseData?.id}`] });
+                navigateToNextSection();
+              }}
             />
           )}
           
-          {activeSection === "work" && (
+          {/* Work History section is not in our main sections but we'll render it conditionally */}
+          {activeSection === "family" && caseData?.familyHistory && (
             <WorkHistoryForm
               caseId={caseData?.id ?? 0}
               initialData={caseData?.workHistory}
-              onSaved={() => queryClient.invalidateQueries({ queryKey: [`/api/cases/${caseData?.id}`] })}
+              onSaved={() => {
+                queryClient.invalidateQueries({ queryKey: [`/api/cases/${caseData?.id}`] });
+                navigateToNextSection();
+              }}
             />
           )}
           
@@ -279,7 +316,13 @@ export default function CaseEditor() {
             <ExpertDetailsForm
               caseId={caseData?.id ?? 0}
               initialData={caseData?.expertDetails}
-              onSaved={() => queryClient.invalidateQueries({ queryKey: [`/api/cases/${caseData?.id}`] })}
+              onSaved={() => {
+                queryClient.invalidateQueries({ queryKey: [`/api/cases/${caseData?.id}`] });
+                toast({
+                  title: "Expert details saved",
+                  description: "All sections have been completed. You can now generate the PDF report.",
+                });
+              }}
             />
           )}
           
