@@ -4,7 +4,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Case } from "@shared/schema";
 import { Header } from "@/components/layout/header";
 import { Sidebar } from "@/components/layout/sidebar";
-import { PreviewPanel } from "@/components/layout/preview-panel";
 import { SuggestionPanel } from "@/components/suggestions/suggestion-panel";
 import { ClaimantDetailsForm } from "@/components/case-forms/claimant-details";
 import { AccidentDetailsForm } from "@/components/case-forms/accident-details";
@@ -33,7 +32,6 @@ export default function CaseEditor() {
   const queryClient = useQueryClient();
   const [activeSection, setActiveSection] = useState<SectionId>("claimant");
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   
   // Check if this is a new case or editing an existing one
   const isNewCase = params.id === "new";
@@ -141,11 +139,6 @@ export default function CaseEditor() {
     }
   };
   
-  // Preview functionality removed as requested
-  const handlePreviewClick = () => {
-    // No longer used but kept for type compatibility
-  };
-  
   // Function to navigate to the next section
   const navigateToNextSection = () => {
     // Get the current section index from our defined sections
@@ -179,9 +172,6 @@ export default function CaseEditor() {
           <div className="flex-1 overflow-y-auto p-6 bg-[#F7FAFC]">
             <Skeleton className="h-12 w-64 mb-4" />
             <Skeleton className="h-96 rounded-lg" />
-          </div>
-          <div className="w-80 border-l border-gray-200 bg-white">
-            <Skeleton className="h-full" />
           </div>
         </div>
       </div>
@@ -218,10 +208,22 @@ export default function CaseEditor() {
           caseData={caseData as Case | null}
           activeSection={activeSection}
           onSectionChange={setActiveSection}
-          onPreviewClick={handlePreviewClick}
         />
         
         <main className="flex-1 overflow-y-auto content-scroll p-6 bg-[#F7FAFC]">
+          {/* PDF Generation Options */}
+          {caseData && (
+            <div className="flex justify-end mb-4">
+              <Button 
+                className="bg-[#0E7C7B] hover:bg-[#0A6463] mr-2" 
+                onClick={() => handleGeneratePdf()}
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                Generate PDF Report
+              </Button>
+            </div>
+          )}
+          
           {/* AI Suggestions Panel */}
           {caseData && (
             <div className="mb-6">
@@ -358,11 +360,6 @@ export default function CaseEditor() {
             </div>
           )}
         </main>
-        
-        <PreviewPanel
-          caseData={caseData as Case | null}
-          onGeneratePdf={handleGeneratePdf}
-        />
       </div>
     </div>
   );

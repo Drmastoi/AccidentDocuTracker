@@ -1,7 +1,5 @@
 import React from "react";
 import { sections, SectionId, calculateCompletionPercentage } from "@/lib/sections";
-import { Eye } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Case } from "@shared/schema";
 import { cn } from "@/lib/utils";
@@ -10,10 +8,9 @@ interface SidebarProps {
   caseData: Case | null;
   activeSection: SectionId;
   onSectionChange: (section: SectionId) => void;
-  onPreviewClick: () => void;
 }
 
-export function Sidebar({ caseData, activeSection, onSectionChange, onPreviewClick }: SidebarProps) {
+export function Sidebar({ caseData, activeSection, onSectionChange }: SidebarProps) {
   const completionPercentage = caseData ? calculateCompletionPercentage(caseData) : 0;
   
   return (
