@@ -747,8 +747,109 @@ export const generateCustomMedcoPDF = (caseData: Case & {
     yPos += 10;
   }
   
-  // Add footer to page 3
-  addFooter(3, 3);
+  // Add Section 4: Treatments
+  // Check if we need a new page based on current y position
+  if (yPos > pageHeight - 90) {
+    // Add footer to current page
+    addFooter(3, 3);
+    
+    // Add new page
+    doc.addPage();
+    yPos = margin;
+  } else {
+    yPos += 20;
+  }
+  
+  // Section title
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(tealColor[0], tealColor[1], tealColor[2]);
+  doc.text("4 - TREATMENTS", margin, yPos);
+  
+  yPos += 8;
+  
+  // Treatment details from the questionnaire
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(0, 0, 0);
+  
+  // Extract treatment information from the case data
+  const treatmentDetails = caseData.treatmentDetails || {};
+  
+  // Function to add a treatment subsection
+  const addTreatmentSubsection = (title: string, value: string | undefined | null, defaultText: string = "None reported") => {
+    // Skip if at bottom of page
+    if (yPos > pageHeight - 40) {
+      // Add footer to current page
+      addFooter(3, 4);
+      
+      // Add new page
+      doc.addPage();
+      yPos = margin;
+      
+      // Add continued section header
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(tealColor[0], tealColor[1], tealColor[2]);
+      doc.text("4 - TREATMENTS (CONTINUED)", margin, yPos);
+      
+      yPos += 10;
+    }
+    
+    // Subsection title
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.text(title + ":", margin, yPos);
+    
+    yPos += 6;
+    
+    // Subsection content with word wrapping
+    doc.setFont("helvetica", "normal");
+    const textToUse = value || defaultText;
+    const textLines = doc.splitTextToSize(textToUse, pageWidth - (margin * 2) - 10);
+    doc.text(textLines, margin + 10, yPos);
+    
+    // Adjust y position based on text lines
+    yPos += Math.max(8, textLines.length * 5);
+  };
+  
+  // Get treatment summary
+  const treatmentSummary = treatmentDetails.treatmentSummary;
+  
+  // Add treatment summary section
+  addTreatmentSubsection("Treatment Summary", treatmentSummary, "No treatment summary provided");
+  
+  // Add emergency treatment details
+  const emergencyTreatment = treatmentDetails.emergencyTreatment;
+  addTreatmentSubsection("Emergency Treatment", emergencyTreatment, "No emergency treatment was received");
+  
+  // Add GP visits details
+  const gpVisits = treatmentDetails.gpVisits 
+    ? `Number of visits: ${treatmentDetails.gpVisits}. ${treatmentDetails.gpTreatmentDetails || ''}`
+    : "No GP visits reported";
+  addTreatmentSubsection("GP Visits", gpVisits);
+  
+  // Add hospital treatment details
+  const hospitalTreatment = treatmentDetails.hospitalTreatment;
+  addTreatmentSubsection("Hospital Treatment", hospitalTreatment, "No hospital treatment was received");
+  
+  // Add physiotherapy details
+  const physiotherapy = treatmentDetails.physiotherapy 
+    ? `Number of sessions: ${treatmentDetails.physiotherapySessions || 'Unknown'}. ${treatmentDetails.physiotherapyDetails || ''}`
+    : "No physiotherapy was received";
+  addTreatmentSubsection("Physiotherapy", physiotherapy);
+  
+  // Add other treatment details
+  const otherTreatments = treatmentDetails.otherTreatments;
+  addTreatmentSubsection("Other Treatments", otherTreatments, "No other treatments were received");
+  
+  // Add current medication details
+  const currentMedication = treatmentDetails.currentMedication;
+  addTreatmentSubsection("Current Medication", currentMedication, "No current medications reported");
+  
+  // Add footer to final page
+  const currentPage = doc.getNumberOfPages();
+  addFooter(currentPage, currentPage);
   
   // Return the PDF as data URL
   return doc.output('dataurlstring');
