@@ -316,11 +316,11 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   doc.setFont("helvetica", "normal");
   
   // Get injuries from physical injuries if available
-  const injuries = caseData.physicalInjuryDetails?.injuries || [];
+  const tableInjuries = caseData.physicalInjuryDetails?.injuries || [];
   
-  if (injuries.length > 0) {
+  if (tableInjuries.length > 0) {
     // Add data rows
-    injuries.forEach((injury: any) => {
+    tableInjuries.forEach((injury: any) => {
       // Draw row background (alternating colors for better readability)
       doc.setFillColor(245, 245, 245);
       doc.rect(tableX, yPos, tableWidth, rowHeight, "F");
@@ -475,6 +475,223 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   
   const accidentLines = doc.splitTextToSize(accidentSummary, pageWidth - (margin * 2));
   doc.text(accidentLines, margin, yPos);
+  
+  // Add detailed Injuries/Symptoms section
+  yPos += 30;
+  
+  // Section title
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(tealColor[0], tealColor[1], tealColor[2]);
+  doc.text("3 - INJURIES / SYMPTOMS", margin, yPos);
+  
+  yPos += 10;
+  
+  // Get injuries from physical injuries if available
+  const detailedInjuries = caseData.physicalInjuryDetails?.injuries || [];
+  
+  if (detailedInjuries.length > 0) {
+    // Process each injury with detailed information
+    detailedInjuries.forEach((injury: any, index: number) => {
+      // Skip if at bottom of page - ensure enough space for at least header
+      if (yPos > pageHeight - 60) {
+        // Add footer to current page
+        addFooter(3, 3);
+        
+        // Add new page
+        doc.addPage();
+        yPos = margin;
+        
+        // Add continued section header
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(11);
+        doc.setTextColor(tealColor[0], tealColor[1], tealColor[2]);
+        doc.text("3 - INJURIES / SYMPTOMS (CONTINUED)", margin, yPos);
+        
+        yPos += 10;
+      }
+      
+      // Injury number
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(tealColor[0], tealColor[1], tealColor[2]);
+      doc.text(`Injury ${index + 1}:`, margin, yPos);
+      
+      yPos += 6;
+      
+      // Format for each injury detail
+      const addDetail = (label: string, value: string) => {
+        // Skip if at bottom of page
+        if (yPos > pageHeight - 40) {
+          // Add footer to current page
+          addFooter(3, 3);
+          
+          // Add new page
+          doc.addPage();
+          yPos = margin;
+          
+          // Add continued section header
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(11);
+          doc.setTextColor(tealColor[0], tealColor[1], tealColor[2]);
+          doc.text("3 - INJURIES / SYMPTOMS (CONTINUED)", margin, yPos);
+          
+          yPos += 10;
+        }
+        
+        // Label
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(9);
+        doc.setTextColor(0, 0, 0);
+        doc.text(`${label}:`, margin + 5, yPos);
+        
+        // Value (with word wrapping)
+        doc.setFont("helvetica", "normal");
+        const valueLines = doc.splitTextToSize(value, pageWidth - margin * 2 - 65);
+        doc.text(valueLines, margin + 65, yPos);
+        
+        // Increase y position based on number of lines
+        yPos += Math.max(5, valueLines.length * 5);
+      };
+      
+      // Extract injury information
+      const injuryName = injury.type || "Unspecified injury";
+      
+      // Determine onset based on timing data or default
+      const onset = injury.onsetTiming === "immediate" ? "Same day" : 
+                    injury.onsetTiming === "delayed" ? "Next day" : "Not specified";
+      
+      // Determine injury severity (initial and current)
+      const initialSeverity = injury.initialSeverity || "Moderate";
+      const currentSeverity = injury.currentSeverity || injury.severityGrade || "Mild";
+      
+      // Classify injury based on type (following the rules provided)
+      let classification = "Non-whiplash";
+      if (injuryName.toLowerCase().includes("neck") || 
+          injuryName.toLowerCase().includes("shoulder") || 
+          injuryName.toLowerCase().includes("back")) {
+        classification = "Whiplash";
+      } else if (injuryName.toLowerCase().includes("headache")) {
+        classification = "Whiplash Associated";
+      } else if (injuryName.toLowerCase().includes("bruising")) {
+        classification = "Non-whiplash";
+      } else if (injuryName.toLowerCase().includes("anxiety") || 
+                 injuryName.toLowerCase().includes("stress") || 
+                 injuryName.toLowerCase().includes("depression") ||
+                 injuryName.toLowerCase().includes("trauma")) {
+        classification = "Psychological";
+      }
+      
+      // Generate mechanism description based on classification and accident details
+      let mechanism = "";
+      if (classification === "Whiplash" || classification === "Whiplash Associated") {
+        // Determine jolt direction based on impact type
+        let joltDirection = "forward and backward";
+        if (impactType === "rear-end") {
+          joltDirection = "forward and backward";
+        } else if (impactType === "front-end") {
+          joltDirection = "backward and forward";
+        } else if (impactType === "side") {
+          joltDirection = "sideways";
+        }
+        
+        mechanism = `Due to sudden jolt ${joltDirection} during the collision. It is classified as a ${classification} injury.`;
+      } else if (classification === "Non-whiplash") {
+        mechanism = "It was due to the direct trauma. It is classified as a non-whiplash injury and falls within subsection 1.3 of the Civil Liability Act 2018.";
+      } else if (classification === "Psychological") {
+        mechanism = "Due to the psychological impact of the accident and its aftermath. It is classified as a psychological injury related to the accident.";
+      }
+      
+      // Generate examination findings based on current severity
+      let examination = "";
+      if (currentSeverity.toLowerCase() === "resolved") {
+        examination = "No findings upon examination as the injury has resolved.";
+      } else {
+        let tenderness = "mild";
+        if (currentSeverity.toLowerCase() === "moderate") {
+          tenderness = "moderate";
+        } else if (currentSeverity.toLowerCase() === "severe") {
+          tenderness = "severe";
+        }
+        
+        // Standard examination findings
+        if (classification === "Whiplash" || classification === "Whiplash Associated") {
+          examination = `Palpation: ${tenderness} tenderness\nRange of Motion: Flexion and extension limited due to pain\nNeurological Assessment: normal.`;
+        } else if (classification === "Non-whiplash") {
+          examination = `Inspection: ${tenderness} visible signs\nPalpation: ${tenderness} tenderness on palpation\nNeurological Assessment: normal.`;
+        } else if (classification === "Psychological") {
+          examination = "Based on patient interview and self-reported symptoms. No physical examination findings.";
+        }
+      }
+      
+      // Generate treatment recommendations based on current severity and preferences
+      let treatmentRecommendations = "";
+      const wantsPhysiotherapy = injury.wantsPhysiotherapy !== false;
+      
+      if (currentSeverity.toLowerCase() === "resolved") {
+        treatmentRecommendations = "No further treatment needed as the injury has resolved.";
+      } else if (wantsPhysiotherapy) {
+        treatmentRecommendations = "Physiotherapy is recommended. Number of sessions to be advised by the referred expert.";
+      } else {
+        treatmentRecommendations = "Pain management with appropriate over-the-counter pain medications as the claimant does not want physiotherapy.";
+      }
+      
+      // Generate prognosis based on current severity
+      let prognosis = "";
+      const needsSpecialistReferral = injury.needsSpecialistReferral === true;
+      
+      if (currentSeverity.toLowerCase() === "resolved") {
+        prognosis = "Injury has resolved with no expected ongoing symptoms.";
+      } else if (needsSpecialistReferral) {
+        prognosis = "Prognosis to be provided by referred expert in an additional report.";
+      } else if (currentSeverity.toLowerCase() === "mild") {
+        prognosis = "Expected recovery within 3 months from the date of accident.";
+      } else if (currentSeverity.toLowerCase() === "moderate") {
+        prognosis = "Expected recovery within 6 months from the date of accident.";
+      } else if (currentSeverity.toLowerCase() === "severe") {
+        prognosis = "Expected recovery within 9 months from the date of accident.";
+      } else {
+        prognosis = "Prognosis uncertain at this time and will depend on response to treatment.";
+      }
+      
+      // Determine if additional report is required
+      const additionalReportRequired = needsSpecialistReferral ? "Yes" : "No";
+      let referredExpert = "";
+      
+      if (needsSpecialistReferral) {
+        if (classification === "Whiplash" || classification === "Whiplash Associated" || classification === "Non-whiplash") {
+          referredExpert = "Orthopedic Specialist";
+        } else if (classification === "Psychological") {
+          referredExpert = "Clinical Psychologist";
+        } else {
+          referredExpert = "Relevant Specialist";
+        }
+      }
+      
+      // Add all the details
+      addDetail("Injury Name", injuryName);
+      addDetail("Onset", onset);
+      addDetail("Initial Severity", initialSeverity);
+      addDetail("Current Severity", currentSeverity);
+      addDetail("Classification", classification);
+      addDetail("Mechanism", mechanism);
+      addDetail("Examination", examination);
+      addDetail("Treatment Recommendations", treatmentRecommendations);
+      addDetail("Prognosis", prognosis);
+      addDetail("Additional Report Required", additionalReportRequired + (referredExpert ? ` (${referredExpert})` : ""));
+      
+      // Add space between injuries
+      yPos += 10;
+    });
+  } else {
+    // No injuries message
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(9);
+    doc.setTextColor(0, 0, 0);
+    doc.text("No specific injuries or symptoms have been recorded.", margin + 5, yPos);
+    
+    yPos += 10;
+  }
   
   // Add footer to page 3
   addFooter(3, 3);
