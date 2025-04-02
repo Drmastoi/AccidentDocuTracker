@@ -113,262 +113,49 @@ export function PreviewPanel({ caseData, onGeneratePdf }: PreviewPanelProps) {
         )}
         
         {caseData && (
-          <div className="p-6">
-            <div className="bg-[#0E7C7B] text-white p-4 rounded-t-lg">
-              <h2 className="text-2xl font-bold text-center">MedCo-Compliant Medical Report</h2>
-              <p className="text-center text-white/80 text-sm">Road Traffic Accident Assessment</p>
-            </div>
-            
-            <div className="border border-t-0 rounded-b-lg p-6 bg-white">
-              {/* Cover Page Preview */}
-              <div className="mb-8">
-                <h3 className="text-lg font-semibold text-[#0E7C7B] border-b pb-2 mb-4">Cover Page</h3>
-                
-                {/* Claimant Details */}
-                {caseData.claimantDetails && (
-                  <div className="bg-gray-50 p-4 rounded-lg mb-4">
-                    <h4 className="font-medium text-[#0E7C7B] mb-2">CLAIMANT DETAILS</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                      <p><span className="font-medium">Name:</span> {caseData.claimantDetails.fullName}</p>
-                      <p><span className="font-medium">Accident Date:</span> {formatDate(caseData.claimantDetails.accidentDate)}</p>
-                      <p><span className="font-medium">Date of Birth:</span> {formatDate(caseData.claimantDetails.dateOfBirth)}</p>
-                      <p><span className="font-medium">Report Date:</span> {formatDate(caseData.claimantDetails.dateOfReport)}</p>
-                      <p><span className="font-medium">Address:</span> {caseData.claimantDetails.address || "N/A"}</p>
-                      <p><span className="font-medium">Examination Date:</span> {formatDate(caseData.claimantDetails.dateOfExamination)}</p>
-                      <p><span className="font-medium">Post Code:</span> {caseData.claimantDetails.postCode || "N/A"}</p>
-                      <p><span className="font-medium">Place of Examination:</span> {caseData.claimantDetails.placeOfExamination || "N/A"}</p>
-                    </div>
-                  </div>
-                )}
-                
-                {/* Agency & Solicitor Information */}
-                <div className="bg-gray-50 p-4 rounded-lg mb-4">
-                  <h4 className="font-medium text-[#0E7C7B] mb-2">AGENCY & SOLICITOR INFORMATION</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                    <p><span className="font-medium">Referring Agency:</span> [Agency Name]</p>
-                    <p><span className="font-medium">Solicitor Name:</span> [Solicitor Name]</p>
-                    <p><span className="font-medium">Agency Reference:</span> [Reference Number]</p>
-                    <p><span className="font-medium">Solicitor Reference:</span> [Reference Number]</p>
-                  </div>
-                </div>
-                
-                {/* MedCo & Expert Information */}
-                <div className="bg-gray-50 p-4 rounded-lg mb-4">
-                  <h4 className="font-medium text-[#0E7C7B] mb-2">MEDCO & EXPERT INFORMATION</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                    <p><span className="font-medium">MedCo Number:</span> [MedCo Number]</p>
-                    <p><span className="font-medium">Medical Expert:</span> {caseData.expertDetails?.examiner || "[Expert Name]"}</p>
-                    <div></div>
-                    <p><span className="font-medium">Credentials:</span> {caseData.expertDetails?.credentials || "[Credentials]"}</p>
-                  </div>
-                </div>
-                
-                <p className="text-center mt-4 text-sm font-medium text-gray-600">
-                  Case Number: {caseData.caseNumber} | Report Generated: {formatDate(new Date().toISOString())}
-                </p>
-              </div>
-              
-              {/* Injury Table Preview */}
-              <div className="mb-8">
-                <h3 className="text-lg font-semibold text-[#0E7C7B] border-b pb-2 mb-4">Injury Summary Table</h3>
-                
-                {caseData.physicalInjuryDetails?.injuries && caseData.physicalInjuryDetails.injuries.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full border-collapse border-spacing-0">
-                      <thead>
-                        <tr className="bg-[#0E7C7B] text-white">
-                          <th className="px-4 py-2 text-left text-sm">Injury</th>
-                          <th className="px-4 py-2 text-left text-sm">Current Condition</th>
-                          <th className="px-4 py-2 text-left text-sm">Prognosis</th>
-                          <th className="px-4 py-2 text-left text-sm">Treatment</th>
-                          <th className="px-4 py-2 text-left text-sm">Classification</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {caseData.physicalInjuryDetails.injuries.map((injury, i) => {
-                          // Get prognosis text
-                          let prognosisText = "";
-                          if (injury.currentSeverity === "Resolved") {
-                            prognosisText = `Resolved after ${injury.resolutionDays || "unknown"} days`;
-                          } else {
-                            prognosisText = caseData.prognosis?.overallPrognosis || "Ongoing";
-                          }
-                          
-                          // Get treatment recommendation
-                          const treatmentRecommendations = caseData.prognosis?.treatmentRecommendations || [];
-                          const treatment = treatmentRecommendations.length > 0 ? 
-                            treatmentRecommendations[0] : "Standard care advised";
-                          
-                          return (
-                            <tr key={i} className={i % 2 === 0 ? "bg-gray-50" : "bg-white"}>
-                              <td className="border px-4 py-2 text-sm">{injury.type}</td>
-                              <td className="border px-4 py-2 text-sm">{injury.currentSeverity}</td>
-                              <td className="border px-4 py-2 text-sm">{prognosisText}</td>
-                              <td className="border px-4 py-2 text-sm">{treatment}</td>
-                              <td className="border px-4 py-2 text-sm">{injury.classification}</td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <p className="text-sm text-gray-500 italic">No injury data available for table.</p>
-                )}
-              </div>
-              
-              {/* Details Sections Preview */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                {/* Accident Details */}
-                <div>
-                  <h4 className="font-medium text-[#0E7C7B] border-b pb-2 mb-2">ACCIDENT DETAILS</h4>
-                  {caseData.accidentDetails ? (
-                    <div className="text-sm space-y-1">
-                      <p><span className="font-medium">Date:</span> {formatDate(caseData.accidentDetails.accidentDate)}</p>
-                      <p><span className="font-medium">Time:</span> {caseData.accidentDetails.accidentTime || "Unknown"}</p>
-                      <p><span className="font-medium">Location:</span> {caseData.accidentDetails.accidentLocation || "Unknown"}</p>
-                      {caseData.accidentDetails.accidentDescription && (
-                        <p className="mt-2 text-xs italic line-clamp-3">{caseData.accidentDetails.accidentDescription}</p>
-                      )}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-gray-500 italic">No accident details available.</p>
-                  )}
-                </div>
-                
-                {/* Injury Details */}
-                <div>
-                  <h4 className="font-medium text-[#0E7C7B] border-b pb-2 mb-2">INJURY DETAILS</h4>
-                  {caseData.physicalInjuryDetails?.physicalInjurySummary ? (
-                    <p className="text-sm text-gray-700 line-clamp-6">{caseData.physicalInjuryDetails.physicalInjurySummary}</p>
-                  ) : (
-                    <p className="text-sm text-gray-500 italic">No injury summary available.</p>
-                  )}
-                </div>
-                
-                {/* Treatment Details */}
-                <div>
-                  <h4 className="font-medium text-[#0E7C7B] border-b pb-2 mb-2">TREATMENT DETAILS</h4>
-                  {caseData.treatments ? (
-                    <div className="text-sm space-y-1">
-                      <p><span className="font-medium">Treatment at Scene:</span> {caseData.treatments.receivedTreatmentAtScene ? "Yes" : "No"}</p>
-                      <p><span className="font-medium">Hospital Attendance:</span> {caseData.treatments.wentToHospital ? "Yes" : "No"}</p>
-                      <p><span className="font-medium">GP/Walk-in Visit:</span> {caseData.treatments.wentToGPWalkIn ? "Yes" : "No"}</p>
-                      {caseData.treatments.physiotherapySessions && (
-                        <p><span className="font-medium">Physiotherapy:</span> {caseData.treatments.physiotherapySessions} sessions</p>
-                      )}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-gray-500 italic">No treatment details available.</p>
-                  )}
-                </div>
-                
-                {/* Lifestyle Impact */}
-                <div>
-                  <h4 className="font-medium text-[#0E7C7B] border-b pb-2 mb-2">IMPACT ON LIFESTYLE</h4>
-                  {caseData.lifestyleImpact ? (
-                    <div className="text-sm space-y-1">
-                      {caseData.lifestyleImpact.currentJobTitle && (
-                        <p><span className="font-medium">Job:</span> {caseData.lifestyleImpact.currentJobTitle} ({caseData.lifestyleImpact.workStatus || "Unknown"})</p>
-                      )}
-                      {caseData.lifestyleImpact.daysOffWork && (
-                        <p><span className="font-medium">Days Off Work:</span> {caseData.lifestyleImpact.daysOffWork}</p>
-                      )}
-                      {caseData.lifestyleImpact.lifestyleSummary && (
-                        <p className="text-xs italic line-clamp-3 mt-1">{caseData.lifestyleImpact.lifestyleSummary}</p>
-                      )}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-gray-500 italic">No lifestyle impact details available.</p>
-                  )}
-                </div>
-              </div>
-              
-              {/* Attached Statements Preview */}
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-[#0E7C7B] border-b pb-2 mb-4">Attached Statements</h3>
-                
-                <div className="grid grid-cols-1 gap-4">
-                  {/* Previous Medical History */}
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h4 className="font-medium text-[#0E7C7B] mb-2">PREVIOUS MEDICAL HISTORY</h4>
-                    {caseData.familyHistory ? (
-                      <div className="text-sm">
-                        <p><span className="font-medium">Previous Accident:</span> {caseData.familyHistory.hasPreviousAccident ? "Yes" : "No"}</p>
-                        <p><span className="font-medium">Pre-existing Conditions:</span> {caseData.familyHistory.hasPreviousMedicalCondition ? "Yes" : "No"}</p>
-                        {caseData.familyHistory.medicalHistorySummary && (
-                          <p className="mt-2 text-xs italic line-clamp-2">{caseData.familyHistory.medicalHistorySummary}</p>
-                        )}
-                      </div>
-                    ) : (
-                      <p className="text-sm text-gray-500 italic">No previous medical history available.</p>
-                    )}
-                  </div>
-                  
-                  {/* Prognosis & Recommendations */}
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h4 className="font-medium text-[#0E7C7B] mb-2">PROGNOSIS & RECOMMENDATIONS</h4>
-                    {caseData.prognosis ? (
-                      <div className="text-sm">
-                        <p><span className="font-medium">Overall Prognosis:</span> {caseData.prognosis.overallPrognosis || "N/A"}</p>
-                        <p><span className="font-medium">Expected Recovery:</span> {caseData.prognosis.expectedRecoveryTime || "N/A"}</p>
-                        {caseData.prognosis.treatmentRecommendations && caseData.prognosis.treatmentRecommendations.length > 0 && (
-                          <p><span className="font-medium">Recommendations:</span> {caseData.prognosis.treatmentRecommendations.join(", ")}</p>
-                        )}
-                      </div>
-                    ) : (
-                      <p className="text-sm text-gray-500 italic">No prognosis information available.</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex justify-center mt-8">
-                <Button 
-                  className="w-60 bg-[#0E7C7B] hover:bg-[#0A6463]" 
-                  onClick={(e) => { e.preventDefault(); handleGeneratePdf(); }}
-                >
-                  <FileText className="mr-2 h-4 w-4" />
-                  Generate Full PDF Report
-                </Button>
-              </div>
-              
-              <p className="text-center text-xs text-gray-500 mt-4">
-                This preview shows a simplified version of the PDF report. The generated PDF will include all details in a professionally formatted document.
+          <div className="p-6 flex flex-col items-center justify-center h-full">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-[#0E7C7B] mb-2">Case: {caseData.caseNumber}</h2>
+              <p className="text-gray-600 mb-6">
+                {(() => {
+                  const claimantDetails = caseData.claimantDetails as any; // Type assertion
+                  return claimantDetails && claimantDetails.fullName
+                    ? `Patient: ${claimantDetails.fullName}`
+                    : 'Fill claimant details to see patient name';
+                })()}
               </p>
               
-              {/* PDF Customization Options Summary */}
-              <div className="mt-6 border-t pt-4">
-                <h4 className="text-sm font-medium text-gray-700 mb-2">PDF Customization Options</h4>
-                <div className="bg-gray-50 p-3 rounded text-xs">
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                    <p><span className="font-medium">Layout:</span> {pdfOptions.pageSize} ({pdfOptions.orientation})</p>
-                    <p><span className="font-medium">Font:</span> {pdfOptions.fontFamily}</p>
-                    <p><span className="font-medium">Cover Page:</span> {pdfOptions.includeCoverPage ? 'Included' : 'Not included'}</p>
-                    <p><span className="font-medium">Table of Contents:</span> {pdfOptions.includeTableOfContents ? 'Included' : 'Not included'}</p>
-                    <p><span className="font-medium">Expert CV:</span> {pdfOptions.includeExpertCV ? 'Included' : 'Not included'}</p>
-                    <p><span className="font-medium">Declaration:</span> {pdfOptions.includeDeclaration ? 'Included' : 'Not included'}</p>
-                  </div>
-                  <button 
-                    className="w-full mt-2 text-center text-[#0E7C7B] hover:text-teal-800"
-                    onClick={() => setShowPdfOptions(true)}
-                  >
-                    Customize PDF settings
-                  </button>
+              <div className="w-20 h-20 bg-[#0E7C7B]/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <FileText className="h-10 w-10 text-[#0E7C7B]" />
+              </div>
+              
+              <Button 
+                className="w-60 bg-[#0E7C7B] hover:bg-[#0A6463] mb-3" 
+                onClick={(e) => { e.preventDefault(); handleGeneratePdf(); }}
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                Generate PDF Report
+              </Button>
+              
+              <button 
+                className="block w-full text-sm text-[#0E7C7B] hover:text-teal-800 mt-2"
+                onClick={() => setShowPdfOptions(true)}
+              >
+                Customize PDF settings
+              </button>
+              
+              <div className="mt-8 w-full">
+                <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
+                  <span>Completion Progress</span>
+                  <span className="font-medium">{completionPercentage}%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <Progress value={completionPercentage} className="h-2" />
                 </div>
               </div>
             </div>
           </div>
         )}
-        
-        {/* Remaining sections placeholder */}
-        <div className="text-center p-4">
-          <p className="text-sm text-slate-500">Complete more sections to enhance the report</p>
-          <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
-            <Progress value={completionPercentage} className="h-2" />
-          </div>
-          <p className="text-xs text-slate-400 mt-1">{completionPercentage}% complete</p>
-        </div>
       </div>
     </aside>
   );
