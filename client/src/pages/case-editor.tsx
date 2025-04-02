@@ -22,7 +22,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
-import { generatePDF, PDFCustomizationOptions } from "@/lib/pdf-generator";
+import { PDFCustomizationOptions } from "@/lib/pdf-generator";
+import { generateMedcoPDF } from "@/lib/medco-pdf-generator";
 
 export default function CaseEditor() {
   const [, setLocation] = useLocation();
@@ -112,8 +113,8 @@ export default function CaseEditor() {
     }
     
     try {
-      // Generate PDF with optional customization options
-      const pdfDataUri = generatePDF(caseData as Case, options);
+      // Generate PDF with optional customization options using the new MedCo format
+      const pdfDataUri = generateMedcoPDF(caseData as Case, options);
       
       // Open the PDF in a new window
       const newWindow = window.open();
