@@ -1,7 +1,46 @@
 import { jsPDF } from "jspdf";
 import { Case } from "@shared/schema";
 
-export const generateCustomMedcoPDF = (caseData: Case): string => {
+export const generateCustomMedcoPDF = (caseData: Case & {
+  claimantDetails?: {
+    fullName?: string;
+    dateOfBirth?: string;
+    address?: string;
+    gender?: string;
+    medcoRefNumber?: string;
+    dateOfReport?: string;
+    identificationProvided?: string;
+    accompaniedBy?: string;
+    helpWithCommunication?: boolean;
+    instructingParty?: string;
+    solicitorName?: string;
+    dateOfExamination?: string;
+    timeSpent?: string;
+    placeOfExamination?: string;
+  };
+  accidentDetails?: {
+    accidentDate?: string;
+    identificationProvided?: string;
+    accompaniedBy?: string;
+    helpWithCommunication?: string;
+  };
+  expertDetails?: {
+    examiner?: string;
+    licenseNumber?: string;
+    licensureState?: string;
+    credentials?: string;
+    dateOfReport?: string;
+    instructingParty?: string;
+    solicitorName?: string;
+    medcoRefNumber?: string;
+    dateOfExamination?: string;
+    timeSpent?: string;
+    placeOfExamination?: string;
+  };
+  physicalInjuryDetails?: {
+    injuries?: any[];
+  };
+}): string => {
   // Initialize PDF with A4 portrait format
   const doc = new jsPDF({
     orientation: 'portrait',
@@ -207,8 +246,8 @@ export const generateCustomMedcoPDF = (caseData: Case): string => {
   
   const statementText = "This report is entirely independent and is prepared for the injuries sustained in the accident. The instructing party has requested an examination to be conducted with a report to include the nature and extent of the claimant's injuries, treatment received, effects on lifestyle and whether any further treatment is appropriate.\n\nThe report is produced for the Court based on the information provided by the client and the instructing party.";
   
-  const statementLines = doc.splitTextToSize(statementText, pageWidth - (margin * 2) - 5);
-  doc.text(statementLines, margin + 5, yPos);
+  const instructionStatementLines = doc.splitTextToSize(statementText, pageWidth - (margin * 2) - 5);
+  doc.text(instructionStatementLines, margin + 5, yPos);
   
   // Add footer
   addFooter(2, 3);
@@ -368,6 +407,14 @@ export const generateCustomMedcoPDF = (caseData: Case): string => {
   doc.setFontSize(8);
   doc.setFont("helvetica", "italic");
   doc.text("Note: The injuries listed above are based on the claimant's reported symptoms and clinical examination.", margin, yPos);
+  
+  // Add additional statement
+  yPos += 15;
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  const additionalStatement = "There were no other injuries / symptoms which were stated in the instructions other than those listed in the medical report suffered by the claimant as told to me during the examination after direct questioning.";
+  const additionalStatementLines = doc.splitTextToSize(additionalStatement, pageWidth - (margin * 2));
+  doc.text(additionalStatementLines, margin, yPos);
   
   // Add footer to page 3
   addFooter(3, 3);
