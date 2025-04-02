@@ -223,6 +223,10 @@ export const lifestyleImpactSchema = z.object({
   hasDomesticImpact: z.boolean().optional(),
   domesticActivities: z.array(z.string()).optional(),
   domesticOtherDetails: z.string().optional(),
+  livesWithWho: z.enum(["Wife", "Parents", "Partner", "Alone", "Other"]).optional(),
+  livesWithOther: z.string().optional(),
+  numberOfChildren: z.enum(["0", "1", "2", "3", "4", "5", "6", "7", "Other"]).optional(),
+  numberOfChildrenOther: z.string().optional(),
   
   // Sport & leisure
   hasSportLeisureImpact: z.boolean().optional(),

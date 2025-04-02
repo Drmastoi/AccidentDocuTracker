@@ -113,6 +113,10 @@ export function LifestyleImpactForm({ caseId, initialData, onSaved }: LifestyleI
       sleepOtherDetails: "",
       
       // Domestic living
+      livesWithWho: undefined,
+      livesWithOther: "",
+      numberOfChildren: undefined,
+      numberOfChildrenOther: "",
       hasDomesticImpact: false,
       domesticActivities: [],
       domesticOtherDetails: "",
@@ -549,6 +553,108 @@ export function LifestyleImpactForm({ caseId, initialData, onSaved }: LifestyleI
           
           {/* Domestic Living */}
           <SubSection title="Domestic Living">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+              <FormField
+                control={form.control}
+                name="livesWithWho"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Who lives with you at home?</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select who you live with" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Wife">Wife</SelectItem>
+                        <SelectItem value="Parents">Parents</SelectItem>
+                        <SelectItem value="Partner">Partner</SelectItem>
+                        <SelectItem value="Alone">Alone</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              {form.watch("livesWithWho") === "Other" && (
+                <FormField
+                  control={form.control}
+                  name="livesWithOther"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Please specify who you live with</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Please specify"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+              <FormField
+                control={form.control}
+                name="numberOfChildren"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Number of children:</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select number of children" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="0">0</SelectItem>
+                        <SelectItem value="1">1</SelectItem>
+                        <SelectItem value="2">2</SelectItem>
+                        <SelectItem value="3">3</SelectItem>
+                        <SelectItem value="4">4</SelectItem>
+                        <SelectItem value="5">5</SelectItem>
+                        <SelectItem value="6">6</SelectItem>
+                        <SelectItem value="7">7</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              {form.watch("numberOfChildren") === "Other" && (
+                <FormField
+                  control={form.control}
+                  name="numberOfChildrenOther"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Please specify number of children</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Please specify"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+            </div>
+            
             <FormField
               control={form.control}
               name="hasDomesticImpact"
