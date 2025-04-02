@@ -943,9 +943,105 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   const hobbiesImpact = lifestyleImpact.hobbiesImpact;
   addImpactSubsection("Impact on Hobbies/Leisure Activities", hobbiesImpact, "No impact on hobbies reported");
   
+  // Add Section 6: Past History of Accidents or Illness
+  // Check if we need a new page based on current y position
+  if (yPos > pageHeight - 90) {
+    // Add footer to current page
+    const currentPageBeforeSection6 = doc.getNumberOfPages();
+    addFooter(currentPageBeforeSection6, currentPageBeforeSection6);
+    
+    // Add new page
+    doc.addPage();
+    yPos = margin;
+  } else {
+    yPos += 20;
+  }
+  
+  // Section title
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(tealColor[0], tealColor[1], tealColor[2]);
+  doc.text("6 - PAST HISTORY OF ACCIDENTS OR ILLNESS", margin, yPos);
+  
+  yPos += 8;
+  
+  // Past history details from the questionnaire
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(0, 0, 0);
+  
+  // Extract family history information from the case data
+  const familyHistory = caseData.familyHistory || {};
+  
+  // Function to add a past history subsection
+  const addHistorySubsection = (title: string, value: string | undefined | null, defaultText: string = "No history reported") => {
+    // Skip if at bottom of page
+    if (yPos > pageHeight - 40) {
+      // Add footer to current page
+      const currentPageInSection = doc.getNumberOfPages();
+      addFooter(currentPageInSection, currentPageInSection);
+      
+      // Add new page
+      doc.addPage();
+      yPos = margin;
+      
+      // Add continued section header
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(tealColor[0], tealColor[1], tealColor[2]);
+      doc.text("6 - PAST HISTORY OF ACCIDENTS OR ILLNESS (CONTINUED)", margin, yPos);
+      
+      yPos += 10;
+    }
+    
+    // Subsection title
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.text(title + ":", margin, yPos);
+    
+    yPos += 6;
+    
+    // Subsection content with word wrapping
+    doc.setFont("helvetica", "normal");
+    const textToUse = value || defaultText;
+    const textLines = doc.splitTextToSize(textToUse, pageWidth - (margin * 2) - 10);
+    doc.text(textLines, margin + 10, yPos);
+    
+    // Adjust y position based on text lines
+    yPos += Math.max(8, textLines.length * 5);
+  };
+  
+  // Get history summary
+  const historySummary = familyHistory.historySummary;
+  addHistorySubsection("Summary", historySummary, "No significant past history reported");
+  
+  // Add previous accidents information
+  const previousAccidents = familyHistory.previousAccidents;
+  addHistorySubsection("Previous Accidents", previousAccidents, "No previous accidents reported");
+  
+  // Add previous injuries information
+  const previousInjuries = familyHistory.previousInjuries;
+  addHistorySubsection("Previous Injuries", previousInjuries, "No previous injuries reported");
+  
+  // Add pre-existing conditions information
+  const preExistingConditions = familyHistory.preExistingConditions;
+  addHistorySubsection("Pre-existing Conditions", preExistingConditions, "No pre-existing conditions reported");
+  
+  // Add family medical history
+  const familyMedicalHistory = familyHistory.familyMedicalHistory;
+  addHistorySubsection("Family Medical History", familyMedicalHistory, "No significant family medical history reported");
+  
+  // Add general health information
+  const generalHealth = familyHistory.generalHealth;
+  addHistorySubsection("General Health Status", generalHealth, "General health status not provided");
+  
+  // Add medication history
+  const medicationHistory = familyHistory.medicationHistory;
+  addHistorySubsection("Medication History", medicationHistory, "No previous medication history reported");
+  
   // Add footer to final page
-  const currentPage = doc.getNumberOfPages();
-  addFooter(currentPage, currentPage);
+  const finalPage = doc.getNumberOfPages();
+  addFooter(finalPage, finalPage);
   
   // Return the PDF as data URL
   return doc.output('dataurlstring');
