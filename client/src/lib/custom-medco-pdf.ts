@@ -211,7 +211,166 @@ export const generateCustomMedcoPDF = (caseData: Case): string => {
   doc.text(statementLines, margin + 5, yPos);
   
   // Add footer
-  addFooter(2, 2);
+  addFooter(2, 3);
+  
+  // ======= PAGE 3: INJURY SUMMARY TABLE =======
+  doc.addPage();
+  
+  yPos = margin;
+  
+  // Add page title
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.setTextColor(tealColor[0], tealColor[1], tealColor[2]);
+  doc.text("SUMMARY OF INJURIES", pageWidth / 2, yPos, { align: "center" });
+  
+  yPos += 10;
+  
+  // Add table title
+  doc.setFontSize(11);
+  doc.text("1 - SUMMARY OF INJURIES", margin, yPos);
+  
+  yPos += 8;
+  
+  // Define column widths
+  const colWidth1 = 35; // Injury Name
+  const colWidth2 = 40; // Current Status
+  const colWidth3 = 40; // Prognosis
+  const colWidth4 = 40; // Treatment
+  const colWidth5 = 30; // Classification
+  
+  const tableWidth = colWidth1 + colWidth2 + colWidth3 + colWidth4 + colWidth5;
+  const tableX = margin;
+  const rowHeight = 10;
+  
+  // Draw table header
+  doc.setFillColor(tealColor[0], tealColor[1], tealColor[2]);
+  doc.rect(tableX, yPos, tableWidth, rowHeight, "F");
+  
+  // Add header text
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(9);
+  
+  let xPos = tableX + 3;
+  doc.text("Injury Name", xPos, yPos + 6);
+  xPos += colWidth1;
+  doc.text("Current Status", xPos, yPos + 6);
+  xPos += colWidth2;
+  doc.text("Prognosis", xPos, yPos + 6);
+  xPos += colWidth3;
+  doc.text("Treatment", xPos, yPos + 6);
+  xPos += colWidth4;
+  doc.text("Classification", xPos, yPos + 6);
+  
+  yPos += rowHeight;
+  
+  // Reset text color for data rows
+  doc.setTextColor(0, 0, 0);
+  doc.setFont("helvetica", "normal");
+  
+  // Get injuries from physical injuries if available
+  const injuries = caseData.physicalInjuryDetails?.injuries || [];
+  
+  if (injuries.length > 0) {
+    // Add data rows
+    injuries.forEach((injury: any) => {
+      // Draw row background (alternating colors for better readability)
+      doc.setFillColor(245, 245, 245);
+      doc.rect(tableX, yPos, tableWidth, rowHeight, "F");
+      
+      // Add cell borders
+      doc.setDrawColor(200, 200, 200);
+      doc.line(tableX, yPos, tableX + tableWidth, yPos); // Top line
+      
+      // Vertical lines
+      let lineX = tableX;
+      doc.line(lineX, yPos, lineX, yPos + rowHeight);
+      lineX += colWidth1;
+      doc.line(lineX, yPos, lineX, yPos + rowHeight);
+      lineX += colWidth2;
+      doc.line(lineX, yPos, lineX, yPos + rowHeight);
+      lineX += colWidth3;
+      doc.line(lineX, yPos, lineX, yPos + rowHeight);
+      lineX += colWidth4;
+      doc.line(lineX, yPos, lineX, yPos + rowHeight);
+      
+      // Right border
+      doc.line(tableX + tableWidth, yPos, tableX + tableWidth, yPos + rowHeight);
+      
+      // Bottom border
+      doc.line(tableX, yPos + rowHeight, tableX + tableWidth, yPos + rowHeight);
+      
+      // Add text to cells
+      doc.setFontSize(8);
+      
+      // Calculate text positions and account for word wrapping
+      xPos = tableX + 3;
+      const injuryName = injury.type || "Unknown";
+      doc.text(injuryName, xPos, yPos + 5);
+      
+      xPos += colWidth1;
+      const currentStatus = injury.currentCondition || "Not provided";
+      const statusLines = doc.splitTextToSize(currentStatus, colWidth2 - 6);
+      doc.text(statusLines, xPos, yPos + 5);
+      
+      xPos += colWidth2;
+      const prognosis = injury.expectedRecovery || "Unknown";
+      doc.text(prognosis, xPos, yPos + 5);
+      
+      xPos += colWidth3;
+      const treatment = "As advised";
+      doc.text(treatment, xPos, yPos + 5);
+      
+      xPos += colWidth4;
+      const classification = injury.severityGrade || "Moderate";
+      doc.text(classification, xPos, yPos + 5);
+      
+      // Move to next row
+      yPos += rowHeight;
+    });
+  } else {
+    // No injuries available - add empty row
+    doc.setFillColor(245, 245, 245);
+    doc.rect(tableX, yPos, tableWidth, rowHeight, "F");
+    
+    // Add cell borders
+    doc.setDrawColor(200, 200, 200);
+    doc.line(tableX, yPos, tableX + tableWidth, yPos); // Top line
+    
+    // Vertical lines
+    let lineX = tableX;
+    doc.line(lineX, yPos, lineX, yPos + rowHeight);
+    lineX += colWidth1;
+    doc.line(lineX, yPos, lineX, yPos + rowHeight);
+    lineX += colWidth2;
+    doc.line(lineX, yPos, lineX, yPos + rowHeight);
+    lineX += colWidth3;
+    doc.line(lineX, yPos, lineX, yPos + rowHeight);
+    lineX += colWidth4;
+    doc.line(lineX, yPos, lineX, yPos + rowHeight);
+    
+    // Right border
+    doc.line(tableX + tableWidth, yPos, tableX + tableWidth, yPos + rowHeight);
+    
+    // Bottom border
+    doc.line(tableX, yPos + rowHeight, tableX + tableWidth, yPos + rowHeight);
+    
+    // Add "No injuries recorded" text spanning all columns
+    doc.setFontSize(9);
+    doc.text("No injuries recorded", tableX + (tableWidth / 2), yPos + 5, { align: "center" });
+    
+    yPos += rowHeight;
+  }
+  
+  // Add note below table
+  yPos += 10;
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "italic");
+  doc.text("Note: The injuries listed above are based on the claimant's reported symptoms and clinical examination.", margin, yPos);
+  
+  // Add footer to page 3
+  addFooter(3, 3);
   
   // Return the PDF as data URL
   return doc.output('dataurlstring');
