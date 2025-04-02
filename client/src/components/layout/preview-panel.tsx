@@ -113,24 +113,20 @@ export function PreviewPanel({ caseData, onGeneratePdf }: PreviewPanelProps) {
         )}
         
         {caseData && (
-          <div className="p-6 flex flex-col items-center justify-center h-full">
-            <div className="text-center">
-              <h2 className="text-2xl font-bold text-[#0E7C7B] mb-2">Case: {caseData.caseNumber}</h2>
-              <p className="text-gray-600 mb-6">
-                {(() => {
-                  const claimantDetails = caseData.claimantDetails as any; // Type assertion
-                  return claimantDetails && claimantDetails.fullName
-                    ? `Patient: ${claimantDetails.fullName}`
-                    : 'Fill claimant details to see patient name';
-                })()}
-              </p>
-              
-              <div className="w-20 h-20 bg-[#0E7C7B]/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                <FileText className="h-10 w-10 text-[#0E7C7B]" />
-              </div>
-              
+          <div className="p-6">
+            <div className="mb-4 border-b pb-4">
+              <h2 className="text-lg font-semibold text-[#0E7C7B]">Case Information</h2>
+              <p className="text-gray-600 text-sm mt-1">Case Number: {caseData.caseNumber}</p>
+              {caseData.claimantDetails && (caseData.claimantDetails as any).fullName && (
+                <p className="text-gray-600 text-sm">
+                  Patient: {(caseData.claimantDetails as any).fullName}
+                </p>
+              )}
+            </div>
+            
+            <div className="mb-4">
               <Button 
-                className="w-60 bg-[#0E7C7B] hover:bg-[#0A6463] mb-3" 
+                className="w-full bg-[#0E7C7B] hover:bg-[#0A6463] mb-2" 
                 onClick={(e) => { e.preventDefault(); handleGeneratePdf(); }}
               >
                 <FileText className="mr-2 h-4 w-4" />
@@ -138,20 +134,20 @@ export function PreviewPanel({ caseData, onGeneratePdf }: PreviewPanelProps) {
               </Button>
               
               <button 
-                className="block w-full text-sm text-[#0E7C7B] hover:text-teal-800 mt-2"
+                className="w-full text-sm text-[#0E7C7B] hover:text-teal-800 p-2 border border-[#0E7C7B]/20 rounded-md"
                 onClick={() => setShowPdfOptions(true)}
               >
-                Customize PDF settings
+                Customize PDF Settings
               </button>
-              
-              <div className="mt-8 w-full">
-                <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
-                  <span>Completion Progress</span>
-                  <span className="font-medium">{completionPercentage}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <Progress value={completionPercentage} className="h-2" />
-                </div>
+            </div>
+            
+            <div className="mt-4">
+              <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
+                <span>Completion Progress</span>
+                <span className="font-medium">{completionPercentage}%</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <Progress value={completionPercentage} className="h-2" />
               </div>
             </div>
           </div>
