@@ -23,6 +23,13 @@ export const generateCustomMedcoPDF = (caseData: Case & {
     identificationProvided?: string;
     accompaniedBy?: string;
     helpWithCommunication?: string;
+    vehiclePosition?: string;
+    impactType?: string;
+    wasMoving?: boolean;
+    damageSeverity?: string;
+    wearingSeatbelt?: boolean;
+    hadHeadrest?: boolean;
+    airbagDeployed?: boolean;
   };
   expertDetails?: {
     examiner?: string;
@@ -415,6 +422,59 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   const additionalStatement = "There were no other injuries / symptoms which were stated in the instructions other than those listed in the medical report suffered by the claimant as told to me during the examination after direct questioning.";
   const additionalStatementLines = doc.splitTextToSize(additionalStatement, pageWidth - (margin * 2));
   doc.text(additionalStatementLines, margin, yPos);
+  
+  // Add Accident/Incident Details section
+  yPos += 30;
+  
+  // Section title
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(tealColor[0], tealColor[1], tealColor[2]);
+  doc.text("2 - ACCIDENT/INCIDENT DETAILS", margin, yPos);
+  
+  yPos += 10;
+  
+  // Generate accident summary text
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(0, 0, 0);
+  
+  let accidentDate = "the reported date";
+  if (caseData.accidentDetails?.accidentDate) {
+    try {
+      accidentDate = formatDate(caseData.accidentDetails.accidentDate);
+    } catch (e) {
+      // Use default text if date formatting fails
+    }
+  }
+  
+  // Determine vehicle position
+  const vehiclePosition = caseData.accidentDetails?.vehiclePosition || "driver";
+  
+  // Determine impact type
+  const impactType = caseData.accidentDetails?.impactType || "rear-end";
+  
+  // Determine motion
+  const wasMoving = caseData.accidentDetails?.wasMoving !== false;
+  
+  // Determine jolt direction based on impact type
+  let joltDirection = "forward/backward";
+  if (impactType === "rear-end") joltDirection = "forward";
+  else if (impactType === "front-end") joltDirection = "backward";
+  
+  // Determine damage severity
+  const damageSeverity = caseData.accidentDetails?.damageSeverity || "mild";
+  
+  // Determine safety equipment
+  const wearingSeatbelt = caseData.accidentDetails?.wearingSeatbelt !== false;
+  const hadHeadrest = caseData.accidentDetails?.hadHeadrest !== false;
+  const airbagDeployed = caseData.accidentDetails?.airbagDeployed === true;
+  
+  // Construct accident summary
+  const accidentSummary = `On ${accidentDate}, claimant was ${vehiclePosition} of the car when an other car hit claimant's car in the ${impactType} when it was ${wasMoving ? "moving" : "stationary"}, as a result of this claimant was jolted ${joltDirection}. Due to the accident claimant's vehicle was ${damageSeverity}ly damaged. Claimant was ${wearingSeatbelt ? "wearing" : "not wearing"} seat belt, head rest were ${hadHeadrest ? "fitted" : "not fitted"}, air bags ${airbagDeployed ? "did" : "did not"} deploy.`;
+  
+  const accidentLines = doc.splitTextToSize(accidentSummary, pageWidth - (margin * 2));
+  doc.text(accidentLines, margin, yPos);
   
   // Add footer to page 3
   addFooter(3, 3);
