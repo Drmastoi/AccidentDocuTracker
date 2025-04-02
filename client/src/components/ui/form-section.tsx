@@ -19,21 +19,21 @@ export function FormSection({
   className,
 }: FormSectionProps) {
   return (
-    <section className={cn("mb-8", className)}>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold text-[#4A5568]">{title}</h2>
+    <section className={cn("mb-3", className)}>
+      <div className="flex items-center justify-between mb-1.5">
+        <h2 className="text-sm font-semibold text-[#4A5568]">{title}</h2>
         <div className="flex items-center">
           {isComplete ? (
             <>
-              <span className="text-sm text-[#48BB78] mr-2">All fields complete</span>
-              <CheckCircle className="h-5 w-5 text-[#48BB78]" />
+              <span className="text-xs text-[#48BB78] mr-1">All fields complete</span>
+              <CheckCircle className="h-3 w-3 text-[#48BB78]" />
             </>
           ) : (
             <>
-              <span className="text-sm text-yellow-600 mr-2">
+              <span className="text-xs text-yellow-600 mr-1">
                 {missingFields ? `${missingFields} fields missing` : "Section incomplete"}
               </span>
-              <AlertTriangle className="h-5 w-5 text-yellow-600" />
+              <AlertTriangle className="h-3 w-3 text-yellow-600" />
             </>
           )}
         </div>
@@ -51,13 +51,13 @@ interface SubSectionProps {
 
 export function SubSection({ title, children, className }: SubSectionProps) {
   return (
-    <Card className={cn("mb-6", className)}>
+    <Card className={cn("mb-3 shadow-sm", className)}>
       {title && (
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg font-medium text-[#4A5568]">{title}</CardTitle>
+        <CardHeader className="pb-1 pt-2 px-3 card-header">
+          <CardTitle className="text-sm font-medium text-[#4A5568] card-title">{title}</CardTitle>
         </CardHeader>
       )}
-      <CardContent className={!title ? "pt-6" : undefined}>{children}</CardContent>
+      <CardContent className={cn(!title ? "pt-3" : undefined, "py-2 px-3 card-content")}>{children}</CardContent>
     </Card>
   );
 }

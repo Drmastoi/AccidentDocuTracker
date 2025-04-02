@@ -209,7 +209,7 @@ export default function CaseEditor() {
           onSectionChange={setActiveSection}
         />
         
-        <main className="flex-1 overflow-y-auto content-scroll p-6 bg-[#F7FAFC]">
+        <main className="flex-1 overflow-y-auto content-scroll p-6 bg-[#F7FAFC] compact-form">
           {/* PDF Generation Options */}
           {caseData && (
             <div className="flex justify-end mb-4">
@@ -223,15 +223,7 @@ export default function CaseEditor() {
             </div>
           )}
           
-          {/* AI Suggestions Panel */}
-          {caseData && (
-            <div className="mb-6">
-              <SuggestionPanel 
-                caseData={caseData as Case} 
-                onSectionNavigate={setActiveSection}
-              />
-            </div>
-          )}
+          {/* AI Suggestions Panel removed as requested */}
           
           {activeSection === "claimant" && (
             <ClaimantDetailsForm
