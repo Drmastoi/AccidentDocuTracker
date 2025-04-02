@@ -131,10 +131,10 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-// Create an instance of the database storage
+// Create an instance of the database storage - now using PostgreSQL
 export const storage = new DatabaseStorage();
 
-// Memory storage implementation for fallback or testing
+// Memory storage implementation kept for reference only
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private cases: Map<number, Case>;
@@ -169,7 +169,11 @@ export class MemStorage implements IStorage {
   
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.userCurrentId++;
-    const user: User = { ...insertUser, id };
+    const user: User = { 
+      ...insertUser, 
+      id,
+      role: insertUser.role || 'user'  // Ensure role is never undefined
+    };
     this.users.set(id, user);
     return user;
   }
@@ -201,6 +205,18 @@ export class MemStorage implements IStorage {
       id,
       createdAt: now,
       updatedAt: now,
+      status: caseData.status || 'in_progress',
+      claimantDetails: caseData.claimantDetails || {},
+      accidentDetails: caseData.accidentDetails || {},
+      physicalInjuryDetails: caseData.physicalInjuryDetails || {},
+      psychologicalInjuries: caseData.psychologicalInjuries || {},
+      treatments: caseData.treatments || {},
+      lifestyleImpact: caseData.lifestyleImpact || {},
+      familyHistory: caseData.familyHistory || {},
+      workHistory: caseData.workHistory || {},
+      prognosis: caseData.prognosis || {},
+      expertDetails: caseData.expertDetails || {},
+      completionPercentage: caseData.completionPercentage || 0
     };
     
     this.cases.set(id, newCase);
