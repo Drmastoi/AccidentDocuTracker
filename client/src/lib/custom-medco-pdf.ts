@@ -356,20 +356,72 @@ export const generateCustomMedcoPDF = (caseData: Case & {
       doc.text(injuryName, xPos, yPos + 5);
       
       xPos += colWidth1;
-      const currentStatus = injury.currentCondition || "Not provided";
+      
+      // Get current status based on currentSeverity field
+      const currentSeverity = injury.currentSeverity || injury.severityGrade || "Mild";
+      let currentStatus = "";
+      if (currentSeverity.toLowerCase() === "resolved") {
+        currentStatus = "Resolved";
+      } else {
+        currentStatus = `${currentSeverity} symptoms currently present`;
+      }
       const statusLines = doc.splitTextToSize(currentStatus, colWidth2 - 6);
       doc.text(statusLines, xPos, yPos + 5);
       
       xPos += colWidth2;
-      const prognosis = injury.expectedRecovery || "Unknown";
+      
+      // Determine prognosis based on severity
+      let prognosis = "";
+      const needsSpecialistReferral = injury.needsSpecialistReferral === true;
+      
+      if (currentSeverity.toLowerCase() === "resolved") {
+        prognosis = "Resolved";
+      } else if (needsSpecialistReferral) {
+        prognosis = "Per specialist report";
+      } else if (currentSeverity.toLowerCase() === "mild") {
+        prognosis = "3 months";
+      } else if (currentSeverity.toLowerCase() === "moderate") {
+        prognosis = "6 months";
+      } else if (currentSeverity.toLowerCase() === "severe") {
+        prognosis = "9 months";
+      } else {
+        prognosis = "To be determined";
+      }
       doc.text(prognosis, xPos, yPos + 5);
       
       xPos += colWidth3;
-      const treatment = "As advised";
+      
+      // Determine treatment
+      const wantsPhysiotherapy = injury.wantsPhysiotherapy !== false;
+      let treatment = "";
+      
+      if (currentSeverity.toLowerCase() === "resolved") {
+        treatment = "None needed";
+      } else if (wantsPhysiotherapy) {
+        treatment = "Physiotherapy";
+      } else {
+        treatment = "Pain medication";
+      }
       doc.text(treatment, xPos, yPos + 5);
       
       xPos += colWidth4;
-      const classification = injury.severityGrade || "Moderate";
+      
+      // Determine classification
+      let classification = "Non-whiplash";
+      if (injuryName.toLowerCase().includes("neck") || 
+          injuryName.toLowerCase().includes("shoulder") || 
+          injuryName.toLowerCase().includes("back")) {
+        classification = "Whiplash";
+      } else if (injuryName.toLowerCase().includes("headache")) {
+        classification = "Whiplash Associated";
+      } else if (injuryName.toLowerCase().includes("bruising")) {
+        classification = "Non-whiplash";
+      } else if (injuryName.toLowerCase().includes("anxiety") || 
+                 injuryName.toLowerCase().includes("stress") || 
+                 injuryName.toLowerCase().includes("depression") ||
+                 injuryName.toLowerCase().includes("trauma")) {
+        classification = "Psychological";
+      }
       doc.text(classification, xPos, yPos + 5);
       
       // Move to next row
