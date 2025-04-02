@@ -190,6 +190,16 @@ export const treatmentsSchema = z.object({
   
   // Summary
   treatmentSummary: z.string().optional(),
+  
+  // Extended treatment fields for PDF
+  emergencyTreatment: z.string().optional(),
+  gpVisits: z.string().optional(),
+  gpTreatmentDetails: z.string().optional(),
+  hospitalTreatment: z.string().optional(),
+  physiotherapy: z.string().optional(),
+  physiotherapyDetails: z.string().optional(),
+  otherTreatments: z.string().optional(),
+  currentMedication: z.string().optional(),
 });
 
 export const lifestyleImpactSchema = z.object({
@@ -226,6 +236,15 @@ export const lifestyleImpactSchema = z.object({
   
   // Summary
   lifestyleSummary: z.string().optional(),
+  
+  // Extended lifestyle impact fields for PDF
+  impactSummary: z.string().optional(),
+  domesticImpact: z.string().optional(),
+  workImpact: z.string().optional(),
+  socialImpact: z.string().optional(),
+  sleepImpact: z.string().optional(),
+  relationshipImpact: z.string().optional(),
+  hobbiesImpact: z.string().optional(),
 });
 
 export const familyHistorySchema = z.object({
@@ -240,6 +259,7 @@ export const familyHistorySchema = z.object({
   
   // Exceptional severity claim
   hasExceptionalSeverity: z.boolean().optional(),
+  hasExceptionalCircumstances: z.boolean().optional(),
   
   // Physiotherapy preference
   physiotherapyPreference: z.enum(["Yes", "No", "Already ongoing", "Already recovered"]).optional(),
@@ -249,6 +269,15 @@ export const familyHistorySchema = z.object({
   
   // Summary
   medicalHistorySummary: z.string().optional(),
+  
+  // Extended family history fields
+  historySummary: z.string().optional(),
+  previousAccidents: z.string().optional(),
+  previousInjuries: z.string().optional(),
+  preExistingConditions: z.string().optional(),
+  familyMedicalHistory: z.string().optional(),
+  generalHealth: z.string().optional(),
+  medicationHistory: z.string().optional(),
 });
 
 export const workHistorySchema = z.object({

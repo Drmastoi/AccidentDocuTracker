@@ -256,6 +256,34 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   const instructionStatementLines = doc.splitTextToSize(statementText, pageWidth - (margin * 2) - 5);
   doc.text(instructionStatementLines, margin + 5, yPos);
   
+  // Calculate new Y position based on the lines
+  yPos += instructionStatementLines.length * 5 + 10;
+  
+  // Add Exceptional Circumstances section
+  yPos = addSectionHeader("6. EXCEPTIONAL CIRCUMSTANCES", yPos);
+  
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(0, 0, 0);
+  
+  // Get the value from the family history data
+  const familyHistoryData = caseData.familyHistory || {};
+  // Check both properties for backward compatibility
+  const hasExceptionalCircumstances = 
+    familyHistoryData.hasExceptionalCircumstances === true || 
+    familyHistoryData.hasExceptionalSeverity === true;
+  
+  // Set the appropriate text based on the answer
+  let exceptionalCircumstancesText = "";
+  if (hasExceptionalCircumstances) {
+    exceptionalCircumstancesText = "Claimant has claimed for exceptional physical and exceptional psychological circumstances. I would agree considering history symptoms and examination.";
+  } else {
+    exceptionalCircumstancesText = "Claimant has not claimed for exceptional physical or exceptional psychological circumstances. I would agree considering history symptoms and examination.";
+  }
+  
+  const exceptionalLines = doc.splitTextToSize(exceptionalCircumstancesText, pageWidth - (margin * 2) - 5);
+  doc.text(exceptionalLines, margin + 5, yPos);
+  
   // Add footer
   addFooter(2, 3);
   
