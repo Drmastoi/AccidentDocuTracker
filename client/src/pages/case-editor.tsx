@@ -200,7 +200,6 @@ export default function CaseEditor() {
       <Header 
         caseNumber={caseData?.caseNumber}
         onSave={handleSave}
-        onGeneratePdf={handleGeneratePdf}
       />
       
       <div className="flex flex-1 overflow-hidden">

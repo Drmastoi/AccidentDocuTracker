@@ -4,15 +4,13 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useParams } from "wouter";
-import { PDFCustomizationOptions } from "@/lib/pdf-generator";
 
 interface HeaderProps {
   caseNumber?: string;
   onSave: () => Promise<void>;
-  onGeneratePdf: (options?: PDFCustomizationOptions) => void;
 }
 
-export function Header({ caseNumber, onSave, onGeneratePdf }: HeaderProps) {
+export function Header({ caseNumber, onSave }: HeaderProps) {
   const { toast } = useToast();
   const [saving, setSaving] = React.useState(false);
   
@@ -51,13 +49,6 @@ export function Header({ caseNumber, onSave, onGeneratePdf }: HeaderProps) {
         >
           <Save className="h-4 w-4 mr-1" />
           Save Case
-        </Button>
-        <Button onClick={(e: React.MouseEvent) => {
-            e.preventDefault();
-            onGeneratePdf();
-          }}>
-          <FileText className="h-4 w-4 mr-1" />
-          Generate PDF
         </Button>
         <div className="relative">
           <div className="flex items-center text-slate-750 hover:text-teal-850 focus:outline-none">
