@@ -971,6 +971,18 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   const hobbiesImpact = lifestyleImpact.hobbiesImpact;
   addImpactSubsection("Impact on Hobbies/Leisure Activities", hobbiesImpact, "No impact on hobbies reported");
   
+  // Add job market prospects statement
+  yPos += 10;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.setTextColor(0, 0, 0);
+  doc.text("PROSPECTS ON THE OPEN JOB MARKET:", margin, yPos);
+  
+  yPos += 5;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.text("Employment prospects in the open job market would be unaffected because of the injuries", margin, yPos);
+  
   // Add Section 6: Past History of Accidents or Illness
   // Check if we need a new page based on current y position
   if (yPos > pageHeight - 90) {
