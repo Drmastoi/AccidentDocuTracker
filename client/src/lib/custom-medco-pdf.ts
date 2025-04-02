@@ -196,6 +196,20 @@ export const generateCustomMedcoPDF = (caseData: Case): string => {
   yPos = addField("4.2 Time spent:", caseData.claimantDetails?.timeSpent || "15 min", margin, yPos);
   yPos = addField("4.3 Place of Examination:", caseData.claimantDetails?.placeOfExamination || "Medical Examination Center", margin, yPos);
   
+  // Add Statement or Instruction section
+  yPos += 10;
+  
+  yPos = addSectionHeader("5. STATEMENT OF INSTRUCTION", yPos);
+  
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(0, 0, 0);
+  
+  const statementText = "This report is entirely independent and is prepared for the injuries sustained in the accident. The instructing party has requested an examination to be conducted with a report to include the nature and extent of the claimant's injuries, treatment received, effects on lifestyle and whether any further treatment is appropriate.\n\nThe report is produced for the Court based on the information provided by the client and the instructing party.";
+  
+  const statementLines = doc.splitTextToSize(statementText, pageWidth - (margin * 2) - 5);
+  doc.text(statementLines, margin + 5, yPos);
+  
   // Add footer
   addFooter(2, 2);
   
