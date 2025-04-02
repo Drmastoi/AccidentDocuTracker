@@ -5,6 +5,7 @@ import { Case } from "@shared/schema";
 import { Header } from "@/components/layout/header";
 import { Sidebar } from "@/components/layout/sidebar";
 import { PreviewPanel } from "@/components/layout/preview-panel";
+import { SuggestionPanel } from "@/components/suggestions/suggestion-panel";
 import { ClaimantDetailsForm } from "@/components/case-forms/claimant-details";
 import { AccidentDetailsForm } from "@/components/case-forms/accident-details";
 import { PhysicalInjuryForm } from "@/components/case-forms/physical-injury";
@@ -221,6 +222,16 @@ export default function CaseEditor() {
         />
         
         <main className="flex-1 overflow-y-auto content-scroll p-6 bg-[#F7FAFC]">
+          {/* AI Suggestions Panel */}
+          {caseData && (
+            <div className="mb-6">
+              <SuggestionPanel 
+                caseData={caseData as Case} 
+                onSectionNavigate={setActiveSection}
+              />
+            </div>
+          )}
+          
           {activeSection === "claimant" && (
             <ClaimantDetailsForm
               caseId={caseData?.id ?? 0}
