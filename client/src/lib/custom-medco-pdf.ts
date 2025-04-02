@@ -476,7 +476,7 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   doc.text(additionalStatementLines, margin, yPos);
   
   // Add Accident/Incident Details section
-  yPos += 30;
+  yPos += 20;
   
   // Section title
   doc.setFont("helvetica", "bold");
@@ -484,7 +484,7 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   doc.setTextColor(tealColor[0], tealColor[1], tealColor[2]);
   doc.text("2 - ACCIDENT/INCIDENT DETAILS", margin, yPos);
   
-  yPos += 10;
+  yPos += 8;
   
   // Generate accident summary text
   doc.setFont("helvetica", "normal");
@@ -529,7 +529,7 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   doc.text(accidentLines, margin, yPos);
   
   // Add detailed Injuries/Symptoms section
-  yPos += 30;
+  yPos += 20;
   
   // Section title
   doc.setFont("helvetica", "bold");
@@ -537,7 +537,7 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   doc.setTextColor(tealColor[0], tealColor[1], tealColor[2]);
   doc.text("3 - INJURIES / SYMPTOMS", margin, yPos);
   
-  yPos += 10;
+  yPos += 8;
   
   // Get injuries from physical injuries if available
   const detailedInjuries = caseData.physicalInjuryDetails?.injuries || [];
@@ -563,11 +563,13 @@ export const generateCustomMedcoPDF = (caseData: Case & {
         yPos += 10;
       }
       
-      // Injury number
+      // Injury name as header
       doc.setFont("helvetica", "bold");
       doc.setFontSize(10);
       doc.setTextColor(tealColor[0], tealColor[1], tealColor[2]);
-      doc.text(`Injury ${index + 1}:`, margin, yPos);
+      // Get the injury name for the header
+      const injuryHeader = injury.type || `Injury ${index + 1}`;
+      doc.text(injuryHeader + ":", margin, yPos);
       
       yPos += 6;
       
@@ -722,7 +724,7 @@ export const generateCustomMedcoPDF = (caseData: Case & {
       
       // Add all the details
       addDetail("Injury Name", injuryName);
-      addDetail("Onset", onset);
+      addDetail("When did this injury start", onset);
       addDetail("Initial Severity", initialSeverity);
       addDetail("Current Severity", currentSeverity);
       addDetail("Classification", classification);
