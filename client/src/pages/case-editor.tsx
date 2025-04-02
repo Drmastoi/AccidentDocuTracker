@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
 import { PDFCustomizationOptions } from "@/lib/pdf-generator";
 import { generateMedcoPDF } from "@/lib/medco-pdf-generator";
+import { generateCustomMedcoPDF } from "@/lib/custom-medco-pdf";
 
 export default function CaseEditor() {
   const [, setLocation] = useLocation();
@@ -112,8 +113,8 @@ export default function CaseEditor() {
     }
     
     try {
-      // Generate PDF with optional customization options using the new MedCo format
-      const pdfDataUri = generateMedcoPDF(caseData as Case, options);
+      // Generate PDF using our custom teal green themed format
+      const pdfDataUri = generateCustomMedcoPDF(caseData as Case);
       
       // Open the PDF in a new window
       const newWindow = window.open();
