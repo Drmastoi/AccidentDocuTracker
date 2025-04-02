@@ -50,12 +50,6 @@ export function Header({ caseNumber, onSave }: HeaderProps) {
           <Save className="h-4 w-4 mr-1" />
           Save Case
         </Button>
-        <div className="relative">
-          <div className="flex items-center text-slate-750 hover:text-teal-850 focus:outline-none">
-            <span className="mr-2 text-sm font-medium">Dr. Sarah Johnson</span>
-            <div className="h-8 w-8 rounded-full bg-[#0E7C7B] text-white flex items-center justify-center text-sm font-medium">SJ</div>
-          </div>
-        </div>
       </div>
     </header>
   );
