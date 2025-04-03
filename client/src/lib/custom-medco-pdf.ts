@@ -270,8 +270,8 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   const familyHistoryData = caseData.familyHistory || {};
   // Check both properties for backward compatibility
   const hasExceptionalCircumstances = 
-    familyHistoryData.hasExceptionalCircumstances === true || 
-    familyHistoryData.hasExceptionalSeverity === true;
+    (familyHistoryData as any)?.hasExceptionalCircumstances === true || 
+    (familyHistoryData as any)?.hasExceptionalSeverity === true;
   
   // Set the appropriate text based on the answer
   let exceptionalCircumstancesText = "";
@@ -842,37 +842,37 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   };
   
   // Get treatment summary
-  const treatmentSummary = treatmentDetails.treatmentSummary;
+  const treatmentSummary = (treatmentDetails as any)?.treatmentSummary;
   
   // Add treatment summary section
   addTreatmentSubsection("Treatment Summary", treatmentSummary, "No treatment summary provided");
   
   // Add emergency treatment details
-  const emergencyTreatment = treatmentDetails.emergencyTreatment;
+  const emergencyTreatment = (treatmentDetails as any)?.emergencyTreatment;
   addTreatmentSubsection("Emergency Treatment", emergencyTreatment, "No emergency treatment was received");
   
   // Add GP visits details
-  const gpVisits = treatmentDetails.gpVisits 
-    ? `Number of visits: ${treatmentDetails.gpVisits}. ${treatmentDetails.gpTreatmentDetails || ''}`
+  const gpVisits = (treatmentDetails as any)?.gpVisits 
+    ? `Number of visits: ${(treatmentDetails as any)?.gpVisits}. ${(treatmentDetails as any)?.gpTreatmentDetails || ''}`
     : "No GP visits reported";
   addTreatmentSubsection("GP Visits", gpVisits);
   
   // Add hospital treatment details
-  const hospitalTreatment = treatmentDetails.hospitalTreatment;
+  const hospitalTreatment = (treatmentDetails as any)?.hospitalTreatment;
   addTreatmentSubsection("Hospital Treatment", hospitalTreatment, "No hospital treatment was received");
   
   // Add physiotherapy details
-  const physiotherapy = treatmentDetails.physiotherapy 
-    ? `Number of sessions: ${treatmentDetails.physiotherapySessions || 'Unknown'}. ${treatmentDetails.physiotherapyDetails || ''}`
+  const physiotherapy = (treatmentDetails as any)?.physiotherapy 
+    ? `Number of sessions: ${(treatmentDetails as any)?.physiotherapySessions || 'Unknown'}. ${(treatmentDetails as any)?.physiotherapyDetails || ''}`
     : "No physiotherapy was received";
   addTreatmentSubsection("Physiotherapy", physiotherapy);
   
   // Add other treatment details
-  const otherTreatments = treatmentDetails.otherTreatments;
+  const otherTreatments = (treatmentDetails as any)?.otherTreatments;
   addTreatmentSubsection("Other Treatments", otherTreatments, "No other treatments were received");
   
   // Add current medication details
-  const currentMedication = treatmentDetails.currentMedication;
+  const currentMedication = (treatmentDetails as any)?.currentMedication;
   addTreatmentSubsection("Current Medication", currentMedication, "No current medications reported");
   
   // Add Section 5: Impact on Daily Life
@@ -944,7 +944,7 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   };
   
   // Only show the overall impact summary
-  const impactSummary = lifestyleImpact.impactSummary || lifestyleImpact.lifestyleSummary || "No impact summary provided";
+  const impactSummary = (lifestyleImpact as any)?.impactSummary || (lifestyleImpact as any)?.lifestyleSummary || "No impact summary provided";
   addImpactSubsection("Impact Summary", impactSummary, "No impact summary provided");
   
   // Add job market prospects statement
@@ -1028,31 +1028,31 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   };
   
   // Get history summary
-  const historySummary = familyHistory.historySummary;
+  const historySummary = (familyHistory as any)?.historySummary;
   addHistorySubsection("Summary", historySummary, "No significant past history reported");
   
   // Add previous accidents information
-  const previousAccidents = familyHistory.previousAccidents;
+  const previousAccidents = (familyHistory as any)?.previousAccidents;
   addHistorySubsection("Previous Accidents", previousAccidents, "No previous accidents reported");
   
   // Add previous injuries information
-  const previousInjuries = familyHistory.previousInjuries;
+  const previousInjuries = (familyHistory as any)?.previousInjuries;
   addHistorySubsection("Previous Injuries", previousInjuries, "No previous injuries reported");
   
   // Add pre-existing conditions information
-  const preExistingConditions = familyHistory.preExistingConditions;
+  const preExistingConditions = (familyHistory as any)?.preExistingConditions;
   addHistorySubsection("Pre-existing Conditions", preExistingConditions, "No pre-existing conditions reported");
   
   // Add family medical history
-  const familyMedicalHistory = familyHistory.familyMedicalHistory;
+  const familyMedicalHistory = (familyHistory as any)?.familyMedicalHistory;
   addHistorySubsection("Family Medical History", familyMedicalHistory, "No significant family medical history reported");
   
   // Add general health information
-  const generalHealth = familyHistory.generalHealth;
+  const generalHealth = (familyHistory as any)?.generalHealth;
   addHistorySubsection("General Health Status", generalHealth, "General health status not provided");
   
   // Add medication history
-  const medicationHistory = familyHistory.medicationHistory;
+  const medicationHistory = (familyHistory as any)?.medicationHistory;
   addHistorySubsection("Medication History", medicationHistory, "No previous medication history reported");
   
   // Add Section 7: Case Classification and Declaration
@@ -1166,6 +1166,49 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   yPos += truthStatementLines.length * 5 + 15;
   
   // Signature for Statement of Truth
+  doc.setDrawColor(0);
+  doc.line(margin, yPos, margin + 200, yPos);
+  
+  yPos += 5;
+  doc.setFont("helvetica", "italic");
+  doc.setFontSize(8);
+  doc.text("Dr. Awais Iqbal, MB BS, FRCEM", margin, yPos);
+
+  // Add Section 9: Medical Expert's CV
+  // Check if we need a new page based on current y position
+  if (yPos > pageHeight - 120) {
+    // Add footer to current page
+    const currentPageBeforeSection9 = doc.getNumberOfPages();
+    addFooter(currentPageBeforeSection9, currentPageBeforeSection9);
+    
+    // Add new page
+    doc.addPage();
+    yPos = margin;
+  } else {
+    yPos += 25;
+  }
+  
+  // Section title
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(tealColor[0], tealColor[1], tealColor[2]);
+  doc.text("9 - MEDICAL EXPERT'S CURRICULUM VITAE", margin, yPos);
+  
+  yPos += 10;
+  
+  // CV content
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(0, 0, 0);
+  
+  const cvText = "Dr. Awais Iqbal MBBS, Pgc OccuMed, PgC Cvd & Diabetes\n\nI fully appreciate the time pressures associated with civil litigation, the limitations of expertise, and the imperative for independent, balanced consideration when instructing solicitors. I am fully registered with the General Medical Council. My professional affiliation is with the British Medical Association. In addition, I am a member of the Medical Protection Society.\n\nMedical Expert's Curriculum Vitae:\n\nProfessional Registration Details:\nGMC: 6138189\nICO registration: ZA526555\nMedco Reg: DME 8094\nMember Society of occupational Medicine, MDDUS, BMA Member.\n\nQualification:\nMBBS, Pgc OccuMed, PgC Cvd & Diabetes\n\nExperience:\nWith 20 years of clinical experience in orthopedics, medicine, surgery, emergency medicine, general practice, and occupational medicine. I completed medical-legal reports on time for over 1000 clients in the last 3 years. My experience includes whiplash injuries from road traffic accidents, injuries due to occupational hazards, fitness to work assessments.";
+  
+  const cvLines = doc.splitTextToSize(cvText, pageWidth - (margin * 2));
+  doc.text(cvLines, margin, yPos);
+  
+  yPos += cvLines.length * 5 + 15;
+  
+  // Signature for CV
   doc.setDrawColor(0);
   doc.line(margin, yPos, margin + 200, yPos);
   
