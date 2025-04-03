@@ -1027,33 +1027,19 @@ export const generateCustomMedcoPDF = (caseData: Case & {
     yPos += Math.max(8, textLines.length * 5);
   };
   
-  // Get history summary
-  const historySummary = (familyHistory as any)?.historySummary;
-  addHistorySubsection("Summary", historySummary, "No significant past history reported");
+  // Only add a single summary paragraph
+  const historySummary = (familyHistory as any)?.historySummary || "No significant past medical history reported by the claimant. The claimant denies any previous accidents, injuries, or pre-existing medical conditions relevant to the current claim. Overall general health was reported as good prior to the accident.";
   
-  // Add previous accidents information
-  const previousAccidents = (familyHistory as any)?.previousAccidents;
-  addHistorySubsection("Previous Accidents", previousAccidents, "No previous accidents reported");
+  // Set font and text 
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
   
-  // Add previous injuries information
-  const previousInjuries = (familyHistory as any)?.previousInjuries;
-  addHistorySubsection("Previous Injuries", previousInjuries, "No previous injuries reported");
+  // Format summary text with word wrapping
+  const summaryLines = doc.splitTextToSize(historySummary, pageWidth - (margin * 2));
+  doc.text(summaryLines, margin, yPos);
   
-  // Add pre-existing conditions information
-  const preExistingConditions = (familyHistory as any)?.preExistingConditions;
-  addHistorySubsection("Pre-existing Conditions", preExistingConditions, "No pre-existing conditions reported");
-  
-  // Add family medical history
-  const familyMedicalHistory = (familyHistory as any)?.familyMedicalHistory;
-  addHistorySubsection("Family Medical History", familyMedicalHistory, "No significant family medical history reported");
-  
-  // Add general health information
-  const generalHealth = (familyHistory as any)?.generalHealth;
-  addHistorySubsection("General Health Status", generalHealth, "General health status not provided");
-  
-  // Add medication history
-  const medicationHistory = (familyHistory as any)?.medicationHistory;
-  addHistorySubsection("Medication History", medicationHistory, "No previous medication history reported");
+  // Adjust y position based on text lines
+  yPos += Math.max(10, summaryLines.length * 5);
   
   // Add Section 7: Case Classification and Declaration
   // Check if we need a new page based on current y position
