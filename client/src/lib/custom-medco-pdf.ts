@@ -89,8 +89,8 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   
   let yPos = 60; // Starting Y position
 
-  // Set teal color for title elements
-  doc.setTextColor(tealColor[0], tealColor[1], tealColor[2]);
+  // Set black color for title elements
+  doc.setTextColor(0, 0, 0);
   
   // Top header - Report type
   doc.setFont("helvetica", "bold");
@@ -125,7 +125,7 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   
   yPos += 10;
   doc.setFontSize(12);
-  doc.text(caseData.expertDetails?.credentials || "MBBS, MRCGP", pageWidth / 2, yPos, { align: "center" });
+  doc.text(caseData.expertDetails?.credentials || "MBBS, Direct Medical Expert", pageWidth / 2, yPos, { align: "center" });
   
   // Add date at bottom
   yPos = pageHeight - 40;
@@ -1097,7 +1097,7 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   yPos += 5;
   doc.setFont("helvetica", "italic");
   doc.setFontSize(8);
-  doc.text("Dr. Awais Iqbal, MB BS, FRCEM", margin, yPos);
+  doc.text("Dr. Awais Iqbal, MBBS, Direct Medical Expert", margin, yPos);
   
   // Add Section 8: Statement of Truth
   // Check if we need a new page based on current y position
@@ -1135,7 +1135,7 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   yPos += 5;
   doc.setFont("helvetica", "italic");
   doc.setFontSize(8);
-  doc.text("Dr. Awais Iqbal, MB BS, FRCEM", margin, yPos);
+  doc.text("Dr. Awais Iqbal, MBBS, Direct Medical Expert", margin, yPos);
 
   // Add Section 9: Medical Expert's CV
   // Check if we need a new page based on current y position
@@ -1159,7 +1159,7 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   doc.setFontSize(9);
   doc.setTextColor(0, 0, 0);
   
-  const cvText = "Dr. Awais Iqbal MBBS, Pgc OccuMed, PgC Cvd & Diabetes\n\nI fully appreciate the time pressures associated with civil litigation, the limitations of expertise, and the imperative for independent, balanced consideration when instructing solicitors. I am fully registered with the General Medical Council. My professional affiliation is with the British Medical Association. In addition, I am a member of the Medical Protection Society.\n\nMedical Expert's Curriculum Vitae:\n\nProfessional Registration Details:\nGMC: 6138189\nICO registration: ZA526555\nMedco Reg: DME 8094\nMember Society of occupational Medicine, MDDUS, BMA Member.\n\nQualification:\nMBBS, Pgc OccuMed, PgC Cvd & Diabetes\n\nExperience:\nWith 20 years of clinical experience in orthopedics, medicine, surgery, emergency medicine, general practice, and occupational medicine. I completed medical-legal reports on time for over 1000 clients in the last 3 years. My experience includes whiplash injuries from road traffic accidents, injuries due to occupational hazards, fitness to work assessments.";
+  const cvText = "Dr. Awais Iqbal MBBS, Direct Medical Expert\n\nI fully appreciate the time pressures associated with civil litigation, the limitations of expertise, and the imperative for independent, balanced consideration when instructing solicitors. I am fully registered with the General Medical Council. My professional affiliation is with the British Medical Association. In addition, I am a member of the Medical Protection Society.\n\nMedical Expert's Curriculum Vitae:\n\nProfessional Registration Details:\nGMC: 6138189\nICO registration: ZA526555\nMedco Reg: DME 8094\nMember Society of occupational Medicine, MDDUS, BMA Member.\n\nQualification:\nMBBS, Direct Medical Expert\n\nExperience:\nWith 20 years of clinical experience in orthopedics, medicine, surgery, emergency medicine, general practice, and occupational medicine. I completed medical-legal reports on time for over 1000 clients in the last 3 years. My experience includes whiplash injuries from road traffic accidents, injuries due to occupational hazards, fitness to work assessments.";
   
   const cvLines = doc.splitTextToSize(cvText, pageWidth - (margin * 2));
   doc.text(cvLines, margin, yPos);
@@ -1173,7 +1173,7 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   yPos += 5;
   doc.setFont("helvetica", "italic");
   doc.setFontSize(8);
-  doc.text("Dr. Awais Iqbal, MB BS, FRCEM", margin, yPos);
+  doc.text("Dr. Awais Iqbal, MBBS, Direct Medical Expert", margin, yPos);
   
   // Add footer to final page
   const finalPage = doc.getNumberOfPages();
