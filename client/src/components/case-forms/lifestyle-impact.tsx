@@ -239,6 +239,9 @@ export function LifestyleImpactForm({ caseId, initialData, onSaved }: LifestyleI
     }
     
     form.setValue("lifestyleSummary", summary);
+    
+    // Also set the impact summary for the PDF report
+    form.setValue("impactSummary", summary);
   }, [
     form.watch("daysOffWork"),
     form.watch("daysLightDuties"),

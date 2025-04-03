@@ -943,33 +943,9 @@ export const generateCustomMedcoPDF = (caseData: Case & {
     yPos += Math.max(8, textLines.length * 5);
   };
   
-  // Get overall impact summary
-  const impactSummary = lifestyleImpact.impactSummary;
+  // Only show the overall impact summary
+  const impactSummary = lifestyleImpact.impactSummary || lifestyleImpact.lifestyleSummary || "No impact summary provided";
   addImpactSubsection("Impact Summary", impactSummary, "No impact summary provided");
-  
-  // Add impact on domestic activities
-  const domesticImpact = lifestyleImpact.domesticImpact;
-  addImpactSubsection("Impact on Domestic Activities", domesticImpact, "No impact on domestic activities reported");
-  
-  // Add impact on work/studies
-  const workImpact = lifestyleImpact.workImpact;
-  addImpactSubsection("Impact on Work/Studies", workImpact, "No impact on work or studies reported");
-  
-  // Add impact on social activities
-  const socialImpact = lifestyleImpact.socialImpact;
-  addImpactSubsection("Impact on Social Activities", socialImpact, "No impact on social activities reported");
-  
-  // Add impact on sleep
-  const sleepImpact = lifestyleImpact.sleepImpact;
-  addImpactSubsection("Impact on Sleep", sleepImpact, "No impact on sleep reported");
-  
-  // Add impact on relationships
-  const relationshipImpact = lifestyleImpact.relationshipImpact;
-  addImpactSubsection("Impact on Relationships", relationshipImpact, "No impact on relationships reported");
-  
-  // Add impact on hobbies
-  const hobbiesImpact = lifestyleImpact.hobbiesImpact;
-  addImpactSubsection("Impact on Hobbies/Leisure Activities", hobbiesImpact, "No impact on hobbies reported");
   
   // Add job market prospects statement
   yPos += 10;
