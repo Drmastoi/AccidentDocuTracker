@@ -841,39 +841,65 @@ export const generateCustomMedcoPDF = (caseData: Case & {
     yPos += Math.max(8, textLines.length * 5);
   };
   
-  // Get treatment summary
-  const treatmentSummary = (treatmentDetails as any)?.treatmentSummary;
+  // Only add a single comprehensive treatment summary paragraph
+  let treatmentSummary = (treatmentDetails as any)?.treatmentSummary;
   
-  // Add treatment summary section
-  addTreatmentSubsection("Treatment Summary", treatmentSummary, "No treatment summary provided");
+  // If no summary is provided, generate a default one based on presence of other treatment info
+  if (!treatmentSummary) {
+    const hasEmergencyTreatment = (treatmentDetails as any)?.emergencyTreatment;
+    const hasGpVisits = (treatmentDetails as any)?.gpVisits;
+    const hasHospitalTreatment = (treatmentDetails as any)?.hospitalTreatment;
+    const hasPhysiotherapy = (treatmentDetails as any)?.physiotherapy;
+    const hasOtherTreatments = (treatmentDetails as any)?.otherTreatments;
+    const hasCurrentMedication = (treatmentDetails as any)?.currentMedication;
+    
+    treatmentSummary = "The claimant reports the following treatment history: ";
+    
+    if (hasEmergencyTreatment) {
+      treatmentSummary += "Emergency treatment was received following the accident. ";
+    } else {
+      treatmentSummary += "No emergency treatment was required at the time of the accident. ";
+    }
+    
+    if (hasGpVisits) {
+      treatmentSummary += `GP visits: ${(treatmentDetails as any)?.gpVisits} visits. ${(treatmentDetails as any)?.gpTreatmentDetails || ''} `;
+    } else {
+      treatmentSummary += "No GP visits were required. ";
+    }
+    
+    if (hasHospitalTreatment) {
+      treatmentSummary += `Hospital treatment: ${(treatmentDetails as any)?.hospitalTreatment}. `;
+    } else {
+      treatmentSummary += "No hospital treatment was required. ";
+    }
+    
+    if (hasPhysiotherapy) {
+      treatmentSummary += `Physiotherapy: ${(treatmentDetails as any)?.physiotherapySessions || 'Unknown'} sessions. ${(treatmentDetails as any)?.physiotherapyDetails || ''} `;
+    } else {
+      treatmentSummary += "No physiotherapy was received. ";
+    }
+    
+    if (hasOtherTreatments) {
+      treatmentSummary += `Other treatments: ${(treatmentDetails as any)?.otherTreatments}. `;
+    }
+    
+    if (hasCurrentMedication) {
+      treatmentSummary += `Current medications: ${(treatmentDetails as any)?.currentMedication}.`;
+    } else {
+      treatmentSummary += "No current medications reported.";
+    }
+  }
   
-  // Add emergency treatment details
-  const emergencyTreatment = (treatmentDetails as any)?.emergencyTreatment;
-  addTreatmentSubsection("Emergency Treatment", emergencyTreatment, "No emergency treatment was received");
+  // Set font and text styling
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
   
-  // Add GP visits details
-  const gpVisits = (treatmentDetails as any)?.gpVisits 
-    ? `Number of visits: ${(treatmentDetails as any)?.gpVisits}. ${(treatmentDetails as any)?.gpTreatmentDetails || ''}`
-    : "No GP visits reported";
-  addTreatmentSubsection("GP Visits", gpVisits);
+  // Format treatment summary text with word wrapping
+  const summaryLines = doc.splitTextToSize(treatmentSummary, pageWidth - (margin * 2));
+  doc.text(summaryLines, margin, yPos);
   
-  // Add hospital treatment details
-  const hospitalTreatment = (treatmentDetails as any)?.hospitalTreatment;
-  addTreatmentSubsection("Hospital Treatment", hospitalTreatment, "No hospital treatment was received");
-  
-  // Add physiotherapy details
-  const physiotherapy = (treatmentDetails as any)?.physiotherapy 
-    ? `Number of sessions: ${(treatmentDetails as any)?.physiotherapySessions || 'Unknown'}. ${(treatmentDetails as any)?.physiotherapyDetails || ''}`
-    : "No physiotherapy was received";
-  addTreatmentSubsection("Physiotherapy", physiotherapy);
-  
-  // Add other treatment details
-  const otherTreatments = (treatmentDetails as any)?.otherTreatments;
-  addTreatmentSubsection("Other Treatments", otherTreatments, "No other treatments were received");
-  
-  // Add current medication details
-  const currentMedication = (treatmentDetails as any)?.currentMedication;
-  addTreatmentSubsection("Current Medication", currentMedication, "No current medications reported");
+  // Adjust y position based on text lines
+  yPos += Math.max(10, summaryLines.length * 5);
   
   // Add Section 5: Impact on Daily Life
   // Check if we need a new page based on current y position
@@ -1035,11 +1061,11 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   doc.setFontSize(9);
   
   // Format summary text with word wrapping
-  const summaryLines = doc.splitTextToSize(historySummary, pageWidth - (margin * 2));
-  doc.text(summaryLines, margin, yPos);
+  const historyLines = doc.splitTextToSize(historySummary, pageWidth - (margin * 2));
+  doc.text(historyLines, margin, yPos);
   
   // Adjust y position based on text lines
-  yPos += Math.max(10, summaryLines.length * 5);
+  yPos += Math.max(10, historyLines.length * 5);
   
   // Add Section 7: Case Classification and Declaration
   // Check if we need a new page based on current y position
