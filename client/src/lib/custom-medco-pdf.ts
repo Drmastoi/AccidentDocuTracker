@@ -554,6 +554,14 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   // Section 3: Injuries / Symptoms
   yPos = addSectionHeader("3 - INJURIES / SYMPTOMS", yPos);
   
+  // Add statement about injury sources
+  doc.setFont("helvetica", "italic");
+  doc.setFontSize(9);
+  doc.setTextColor(0, 0, 0);
+  doc.text("Note: The injuries listed below are based on the claimant's reported symptoms and clinical examination.", margin, yPos);
+  
+  yPos += 10;
+  
   // Get injuries from physical injuries if available
   const detailedInjuries = caseData.physicalInjuryDetails?.injuries || [];
   
@@ -910,13 +918,8 @@ export const generateCustomMedcoPDF = (caseData: Case & {
       doc.addPage();
       yPos = margin;
       
-      // Add continued section header
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(11);
-      doc.setTextColor(tealColor[0], tealColor[1], tealColor[2]);
-      doc.text("5 - IMPACT ON DAILY LIFE (CONTINUED)", margin, yPos);
-      
-      yPos += 10;
+      // Add continued section header using the same helper function
+      yPos = addSectionHeader("5 - IMPACT ON DAILY LIFE (CONTINUED)", yPos);
     }
     
     // Subsection title
@@ -989,13 +992,8 @@ export const generateCustomMedcoPDF = (caseData: Case & {
       doc.addPage();
       yPos = margin;
       
-      // Add continued section header
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(11);
-      doc.setTextColor(tealColor[0], tealColor[1], tealColor[2]);
-      doc.text("6 - PAST HISTORY OF ACCIDENTS OR ILLNESS (CONTINUED)", margin, yPos);
-      
-      yPos += 10;
+      // Add continued section header using the same helper function
+      yPos = addSectionHeader("6 - PAST HISTORY OF ACCIDENTS OR ILLNESS (CONTINUED)", yPos);
     }
     
     // Subsection title
