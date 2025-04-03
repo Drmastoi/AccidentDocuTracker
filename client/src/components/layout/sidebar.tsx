@@ -18,7 +18,9 @@ export function Sidebar({ caseData, activeSection, onSectionChange }: SidebarPro
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-medium text-[#4A5568]">
-            {caseData?.caseNumber || "New Case"}
+            {caseData?.claimantDetails?.fullName 
+              ? `${caseData.claimantDetails.fullName.split(' ').pop()} - ${caseData.claimantDetails?.medcoRefNumber || "No Ref"}`
+              : (caseData?.caseNumber || "New Case")}
           </h2>
           <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
             In Progress
