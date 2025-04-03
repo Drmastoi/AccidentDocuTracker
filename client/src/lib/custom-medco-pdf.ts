@@ -99,28 +99,34 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   
   yPos += 30;
   
-  // Claimant name in large font
+  // Claimant name in large font - teal labels, black values
   doc.setFontSize(24);
+  // Use teal color for the actual name
+  doc.setTextColor(tealColor[0], tealColor[1], tealColor[2]);
   doc.text(caseData.claimantDetails?.fullName || "CLAIMANT NAME", pageWidth / 2, yPos, { align: "center" });
   
   yPos += 20;
   
-  // MedCo reference 
+  // MedCo reference with teal label
   doc.setFontSize(14);
+  doc.setTextColor(tealColor[0], tealColor[1], tealColor[2]);
   doc.text("MedCo Reference:", pageWidth / 2, yPos, { align: "center" });
   
   yPos += 10;
   doc.setFontSize(18);
+  doc.setTextColor(0, 0, 0); // Black for the value
   doc.text(caseData.claimantDetails?.medcoRefNumber || "[REFERENCE NUMBER]", pageWidth / 2, yPos, { align: "center" });
   
   yPos += 40;
   
   // Medical expert details
   doc.setFontSize(14);
+  doc.setTextColor(tealColor[0], tealColor[1], tealColor[2]); // Teal for label
   doc.text("Medical Expert:", pageWidth / 2, yPos, { align: "center" });
   
   yPos += 10;
   doc.setFontSize(20);
+  doc.setTextColor(0, 0, 0); // Black for the value
   doc.text(caseData.expertDetails?.examiner || "Dr. Awais Iqbal", pageWidth / 2, yPos, { align: "center" });
   
   yPos += 10;
@@ -130,9 +136,11 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   // Add date at bottom
   yPos = pageHeight - 40;
   doc.setFontSize(12);
+  doc.setTextColor(tealColor[0], tealColor[1], tealColor[2]); // Teal for label
   doc.text("Report Date:", pageWidth / 2, yPos, { align: "center" });
   
   yPos += 8;
+  doc.setTextColor(0, 0, 0); // Black for the value
   doc.text(formatDate(caseData.claimantDetails?.dateOfReport || new Date().toISOString()), pageWidth / 2, yPos, { align: "center" });
   
   // Add footer
