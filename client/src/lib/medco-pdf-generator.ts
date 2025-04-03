@@ -153,14 +153,14 @@ export const generateMedcoPDF = (caseData: Case, options?: PDFCustomizationOptio
     }
   };
   
-  // Helper function to add a section header with black background
+  // Helper function to add a section header with dark teal green background
   const addSectionHeader = (title: string, yPos: number) => {
     const pageWidth = doc.internal.pageSize.width;
     const margin = 10;
     const headerWidth = pageWidth - (margin * 2);
     
-    // Black header bar
-    doc.setFillColor(0, 0, 0);
+    // Dark teal green header bar - #0E7C7B RGB(14,124,123)
+    doc.setFillColor(14, 124, 123);
     doc.rect(margin, yPos, headerWidth, 7, "F");
     
     // White header text
