@@ -1055,6 +1055,82 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   const medicationHistory = familyHistory.medicationHistory;
   addHistorySubsection("Medication History", medicationHistory, "No previous medication history reported");
   
+  // Add Section 7: Case Classification and Declaration
+  // Check if we need a new page based on current y position
+  if (yPos > pageHeight - 120) {
+    // Add footer to current page
+    const currentPageBeforeSection7 = doc.getNumberOfPages();
+    addFooter(currentPageBeforeSection7, currentPageBeforeSection7);
+    
+    // Add new page
+    doc.addPage();
+    yPos = margin;
+  } else {
+    yPos += 20;
+  }
+  
+  // Section title
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(tealColor[0], tealColor[1], tealColor[2]);
+  doc.text("7 - CASE CLASSIFICATION AND DECLARATION", margin, yPos);
+  
+  yPos += 10;
+  
+  // Case Classification
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.setTextColor(0, 0, 0);
+  doc.text("Case Classification:", margin, yPos);
+  
+  yPos += 6;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.text("Seatbelts: Was the claimant wearing a seat belt? Yes", margin + 10, yPos);
+  
+  yPos += 5;
+  doc.text("Soft-tissue Injury Claim: Yes", margin + 10, yPos);
+  
+  yPos += 5;
+  doc.text("Was the Claimant an occupant of a motor vehicle? Yes", margin + 10, yPos);
+  
+  yPos += 5;
+  doc.text("Is the client's most significant injury a soft-tissue injury? Yes", margin + 10, yPos);
+  
+  yPos += 5;
+  doc.text("Is this the first report in relation to the client's injuries from the index accident? Yes", margin + 10, yPos);
+  
+  yPos += 10;
+  
+  // Declaration
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.text("Declaration:", margin, yPos);
+  
+  yPos += 6;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  
+  const declarationText = "I was able to obtain a good history. Claimant's injuries and recovery period were entirely consistent with the account of the accident. The treatment provided for the claimant has been appropriate. The problems reported in home life are consistent and reasonable. In my opinion, the time taken off work by the claimant is reasonable. Claimant is currently fit working. Declaration: I have not provided treatment to the claimant. I am not associated with any person who has provided treatment. I have not recommended any treatment provider.";
+  
+  const declarationLines = doc.splitTextToSize(declarationText, pageWidth - (margin * 2));
+  doc.text(declarationLines, margin, yPos);
+  
+  yPos += declarationLines.length * 5 + 10;
+  
+  doc.text("Agreement of Report: I confirm that I have verified with the claimant the facts as referred to in this report", margin, yPos);
+  
+  yPos += 15;
+  
+  // Examiner signature line
+  doc.setDrawColor(0);
+  doc.line(margin, yPos, margin + 200, yPos);
+  
+  yPos += 5;
+  doc.setFont("helvetica", "italic");
+  doc.setFontSize(8);
+  doc.text("Dr. Awais Iqbal, MB BS, FRCEM", margin, yPos);
+  
   // Add footer to final page
   const finalPage = doc.getNumberOfPages();
   addFooter(finalPage, finalPage);
