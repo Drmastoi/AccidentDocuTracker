@@ -251,9 +251,9 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   doc.setFontSize(9);
   doc.setTextColor(0, 0, 0);
   
-  const statementText = "This report is entirely independent and is prepared for the injuries sustained in the accident. The instructing party has requested an examination to be conducted with a report to include the nature and extent of the claimant's injuries, treatment received, effects on lifestyle and whether any further treatment is appropriate.\n\nThe report is produced for the Court based on the information provided by the client and the instructing party.";
+  const instructionText = "This report is entirely independent and is prepared for the injuries sustained in the accident. The instructing party has requested an examination to be conducted with a report to include the nature and extent of the claimant's injuries, treatment received, effects on lifestyle and whether any further treatment is appropriate.\n\nThe report is produced for the Court based on the information provided by the client and the instructing party.";
   
-  const instructionStatementLines = doc.splitTextToSize(statementText, pageWidth - (margin * 2) - 5);
+  const instructionStatementLines = doc.splitTextToSize(instructionText, pageWidth - (margin * 2) - 5);
   doc.text(instructionStatementLines, margin + 5, yPos);
   
   // Calculate new Y position based on the lines
@@ -1123,6 +1123,49 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   yPos += 15;
   
   // Examiner signature line
+  doc.setDrawColor(0);
+  doc.line(margin, yPos, margin + 200, yPos);
+  
+  yPos += 5;
+  doc.setFont("helvetica", "italic");
+  doc.setFontSize(8);
+  doc.text("Dr. Awais Iqbal, MB BS, FRCEM", margin, yPos);
+  
+  // Add Section 8: Statement of Truth
+  // Check if we need a new page based on current y position
+  if (yPos > pageHeight - 80) {
+    // Add footer to current page
+    const currentPageBeforeSection8 = doc.getNumberOfPages();
+    addFooter(currentPageBeforeSection8, currentPageBeforeSection8);
+    
+    // Add new page
+    doc.addPage();
+    yPos = margin;
+  } else {
+    yPos += 25;
+  }
+  
+  // Section title
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(tealColor[0], tealColor[1], tealColor[2]);
+  doc.text("8 - STATEMENT OF TRUTH", margin, yPos);
+  
+  yPos += 10;
+  
+  // Statement of Truth text
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(0, 0, 0);
+  
+  const truthStatementText = "Statement of Truth: I understand that my overriding duty is to the court, both in preparing reports and in giving oral evidence. I have complied and will continue to comply with that duty. I am aware of the requirements of Part 35 and practice direction 35, the protocol for instructing experts to give evidence in civil claims and the practice direction on pre-action conduct. I have set out in my report that I understand from those instructing me to be the questions in respect of which my opinion as an expert is required. I have done my best, in preparing this report, to be accurate and complete. I have mentioned all matters which I regard as relevant to the opinions I have expressed. I consider that all the matters on which I have expressed an opinion lie within my field of expertise. I have drawn to the attention of the court all matters, of which I am aware, which might adversely affect my opinion.";
+  
+  const truthStatementLines = doc.splitTextToSize(truthStatementText, pageWidth - (margin * 2));
+  doc.text(truthStatementLines, margin, yPos);
+  
+  yPos += truthStatementLines.length * 5 + 15;
+  
+  // Signature for Statement of Truth
   doc.setDrawColor(0);
   doc.line(margin, yPos, margin + 200, yPos);
   
