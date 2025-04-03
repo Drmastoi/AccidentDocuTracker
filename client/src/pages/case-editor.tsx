@@ -25,6 +25,7 @@ import { FileText } from "lucide-react";
 import { PDFCustomizationOptions } from "@/lib/pdf-generator";
 import { generateMedcoPDF } from "@/lib/medco-pdf-generator";
 import { generateCustomMedcoPDF } from "@/lib/custom-medco-pdf";
+import { ProgressTracker } from "@/components/ui/progress-tracker";
 
 export default function CaseEditor() {
   const [, setLocation] = useLocation();
@@ -39,7 +40,7 @@ export default function CaseEditor() {
   const caseId = isNewCase ? 0 : parseInt(params.id, 10);
   
   // Fetch case data if editing an existing case
-  const { data: caseData, isLoading: isLoadingCase, error: caseError } = useQuery({
+  const { data: caseData, isLoading: isLoadingCase, error: caseError } = useQuery<Case>({
     queryKey: [isNewCase ? null : `/api/cases/${caseId}`],
     enabled: !isNewCase,
   });
@@ -114,7 +115,7 @@ export default function CaseEditor() {
     
     try {
       // Generate PDF using our custom teal green themed format
-      const pdfDataUri = generateCustomMedcoPDF(caseData as Case);
+      const pdfDataUri = generateCustomMedcoPDF(caseData);
       
       // Open the PDF in a new window
       const newWindow = window.open();
@@ -213,14 +214,24 @@ export default function CaseEditor() {
         <main className="flex-1 overflow-y-auto content-scroll p-6 bg-[#F7FAFC] compact-form">
           {/* PDF Generation Options */}
           {caseData && (
-            <div className="flex justify-end mb-4">
-              <Button 
-                className="bg-[#0E7C7B] hover:bg-[#0A6463] mr-2" 
-                onClick={() => handleGeneratePdf()}
-              >
-                <FileText className="mr-2 h-4 w-4" />
-                Generate PDF Report
-              </Button>
+            <div className="flex flex-col space-y-4 mb-4">
+              {/* Progress Tracker */}
+              <ProgressTracker 
+                caseData={caseData as Case} 
+                activeSection={activeSection}
+                onSectionClick={setActiveSection}
+                className="mb-4 shadow-sm bg-white border border-gray-100"
+              />
+              
+              <div className="flex justify-end">
+                <Button 
+                  className="bg-[#0E7C7B] hover:bg-[#0A6463] mr-2" 
+                  onClick={() => handleGeneratePdf()}
+                >
+                  <FileText className="mr-2 h-4 w-4" />
+                  Generate PDF Report
+                </Button>
+              </div>
             </div>
           )}
           

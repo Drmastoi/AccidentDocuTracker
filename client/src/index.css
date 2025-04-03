@@ -5,6 +5,10 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --primary-rgb: 14, 124, 123; /* #0E7C7B in RGB format */
+  }
+  
   * {
     @apply border-border;
   }
