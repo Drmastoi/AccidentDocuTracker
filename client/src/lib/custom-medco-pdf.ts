@@ -1082,12 +1082,8 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   }
   
   // Section title
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.setTextColor(tealColor[0], tealColor[1], tealColor[2]);
-  doc.text("7 - CASE CLASSIFICATION AND DECLARATION", margin, yPos);
-  
-  yPos += 10;
+  // Section 7: Case Classification and Declaration
+  yPos = addSectionHeader("7 - CASE CLASSIFICATION AND DECLARATION", yPos);
   
   // Case Classification
   doc.setFont("helvetica", "bold");
@@ -1157,13 +1153,8 @@ export const generateCustomMedcoPDF = (caseData: Case & {
     yPos += 25;
   }
   
-  // Section title
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.setTextColor(tealColor[0], tealColor[1], tealColor[2]);
-  doc.text("8 - STATEMENT OF TRUTH", margin, yPos);
-  
-  yPos += 10;
+  // Section 8: Statement of Truth
+  yPos = addSectionHeader("8 - STATEMENT OF TRUTH", yPos);
   
   // Statement of Truth text
   doc.setFont("helvetica", "normal");
@@ -1200,13 +1191,8 @@ export const generateCustomMedcoPDF = (caseData: Case & {
     yPos += 25;
   }
   
-  // Section title
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.setTextColor(tealColor[0], tealColor[1], tealColor[2]);
-  doc.text("9 - MEDICAL EXPERT'S CURRICULUM VITAE", margin, yPos);
-  
-  yPos += 10;
+  // Section 9: Medical Expert's CV
+  yPos = addSectionHeader("9 - MEDICAL EXPERT'S CURRICULUM VITAE", yPos);
   
   // CV content
   doc.setFont("helvetica", "normal");
