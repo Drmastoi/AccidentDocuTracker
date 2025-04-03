@@ -46,86 +46,50 @@ export function ProgressTracker({
   if (!caseData) return null;
 
   return (
-    <Card className={cn("p-5 shadow-md", className)}>
-      <div className="flex flex-col gap-5">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-semibold text-gray-800">Case Completion</h3>
-            <p className="text-sm text-muted-foreground mt-1">Track your documentation progress</p>
-          </div>
+    <Card className={cn("p-2 shadow-sm border border-gray-100", className)}>
+      <div className="flex items-center justify-between mb-1.5">
+        <div className="flex items-center gap-2">
           <motion.div 
-            className="flex items-center justify-center h-14 w-14 rounded-full bg-primary/10 border-2 border-primary relative"
-            initial={{ scale: 0.9, opacity: 0.5 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: "spring", stiffness: 300 }}
+            className="relative h-6 w-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
           >
-            <span className="text-primary font-bold text-lg">{progress}%</span>
-            <svg className="absolute inset-0" width="56" height="56" viewBox="0 0 56 56">
-              <motion.circle
-                cx="28"
-                cy="28"
-                r="25"
+            <svg className="absolute inset-0" width="24" height="24" viewBox="0 0 24 24">
+              <circle
+                cx="12"
+                cy="12"
+                r="10"
                 fill="none"
-                stroke="rgba(14, 124, 123, 0.15)"
-                strokeWidth="3"
+                stroke="#f1f5f9"
+                strokeWidth="2"
               />
               <motion.circle
-                cx="28"
-                cy="28"
-                r="25"
+                cx="12"
+                cy="12"
+                r="10"
                 fill="none"
                 stroke="#0E7C7B"
-                strokeWidth="3"
-                strokeDasharray="157"  // 2 * PI * r
-                initial={{ strokeDashoffset: 157 }}
-                animate={{ strokeDashoffset: 157 - (157 * progress / 100) }}
+                strokeWidth="2"
+                strokeDasharray="62.8"  // 2 * PI * r
+                initial={{ strokeDashoffset: 62.8 }}
+                animate={{ strokeDashoffset: 62.8 - (62.8 * progress / 100) }}
                 strokeLinecap="round"
-                transform="rotate(-90 28 28)"
-                transition={{ duration: 1, ease: "easeOut" }}
+                transform="rotate(-90 12 12)"
+                transition={{ duration: 0.8, ease: "easeOut" }}
               />
             </svg>
           </motion.div>
+          <span className="text-xs font-medium text-gray-800">{progress}%</span>
         </div>
         
-        {/* Animated progress bar */}
-        <div className="relative h-2 overflow-hidden rounded-full bg-gray-100">
-          <motion.div 
-            className="h-full bg-primary"
-            initial="initial"
-            animate="animate"
-            custom={progress}
-            variants={progressVariants}
-          />
-        </div>
+        {/* Horizontal line */}
+        <div className="h-px flex-grow mx-2 bg-gray-100"></div>
         
-        {/* Next section indicator */}
-        {progress < 100 && (
-          <motion.div 
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="flex items-center py-2 px-3 bg-primary/5 rounded-md border border-primary/20 text-sm"
-          >
-            <span className="text-muted-foreground">Next: </span>
-            <div className="flex items-center ml-2 text-primary font-semibold">
-              {(() => {
-                const currentIndex = sections.findIndex(s => s.id === activeSection);
-                const nextSection = sections[currentIndex + 1] || sections[0];
-                return (
-                  <>
-                    {nextSection.name}
-                    <ArrowRight className="h-4 w-4 ml-2" />
-                  </>
-                );
-              })()}
-            </div>
-          </motion.div>
-        )}
-        
-        {/* Section completion indicators */}
+        {/* Compact section indicators */}
         <motion.div 
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mt-2"
-          variants={staggerChildren(0.05)}
+          className="flex gap-1"
+          variants={staggerChildren(0.03)}
           initial="hidden"
           animate="visible"
         >
@@ -133,76 +97,43 @@ export function ProgressTracker({
             const isComplete = section.getCompletionStatus(caseData);
             const isActive = section.id === activeSection;
             
+            // Get the first letter of each word in section name
+            const acronym = section.name
+              .split(/\s+/)
+              .map(word => word[0])
+              .join('')
+              .toUpperCase();
+            
             return (
               <motion.div
                 key={section.id}
                 variants={scaleInVariants}
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 className={cn(
-                  "flex flex-col gap-2 p-3 rounded-lg cursor-pointer shadow-sm transition-all duration-200",
-                  isActive 
-                    ? "bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30" 
-                    : "bg-white hover:bg-gray-50 border border-gray-100",
-                  isComplete ? "ring-1 ring-primary/30" : ""
+                  "relative flex items-center justify-center h-6 w-6 rounded-full cursor-pointer transition-all duration-200",
+                  isComplete 
+                    ? "bg-primary text-white" 
+                    : isActive
+                      ? "bg-primary/10 text-primary border border-primary/30"
+                      : "bg-gray-50 text-gray-500 hover:bg-gray-100 border border-gray-200",
                 )}
+                title={section.name}
                 onClick={() => onSectionClick?.(section.id)}
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className={cn(
-                      "flex items-center justify-center h-6 w-6 rounded-full text-xs font-medium",
-                      isComplete 
-                        ? "bg-primary text-white" 
-                        : isActive
-                          ? "bg-primary/20 text-primary"
-                          : "bg-gray-100 text-gray-500"
-                    )}>
-                      {index + 1}
-                    </span>
-                    <span className={cn(
-                      "font-medium", 
-                      isComplete ? "text-primary" : isActive ? "text-gray-800" : "text-gray-600"
-                    )}>
-                      {section.name}
-                    </span>
-                  </div>
-                  
-                  <AnimatePresence mode="wait">
-                    {isComplete ? (
-                      <motion.div
-                        key="check"
-                        initial="initial"
-                        animate="animate"
-                        exit={{ scale: 0, opacity: 0 }}
-                        variants={checkVariants}
-                      >
-                        <CheckCircle2 className="h-5 w-5 text-primary" />
-                      </motion.div>
-                    ) : isActive ? (
-                      <motion.div 
-                        key="pulse"
-                        className="h-3 w-3 rounded-full bg-primary"
-                        animate={{ scale: [1, 1.3, 1], opacity: [0.7, 1, 0.7] }}
-                        transition={{ repeat: Infinity, duration: 2 }}
-                      />
-                    ) : null}
-                  </AnimatePresence>
-                </div>
+                {isComplete ? (
+                  <CheckCircle2 className="h-3.5 w-3.5 text-white" />
+                ) : (
+                  <span className="text-xs font-medium">{acronym}</span>
+                )}
                 
-                <div className={cn(
-                  "h-1 w-full rounded-full overflow-hidden bg-gray-100",
-                  isActive && !isComplete ? "bg-primary/20" : ""
-                )}>
-                  {isComplete && (
-                    <motion.div 
-                      className="h-full bg-primary" 
-                      initial={{ width: 0 }}
-                      animate={{ width: "100%" }}
-                      transition={{ duration: 0.5, delay: 0.1 }}
-                    />
-                  )}
-                </div>
+                {isActive && !isComplete && (
+                  <motion.div 
+                    className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-primary"
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ repeat: Infinity, duration: 1.5 }}
+                  />
+                )}
               </motion.div>
             );
           })}
