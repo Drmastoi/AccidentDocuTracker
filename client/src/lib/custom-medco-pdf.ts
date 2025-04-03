@@ -74,11 +74,12 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   
   // Add footer function
   const addFooter = (pageNum: number, totalPages: number) => {
+    const claimantName = caseData.claimantDetails?.fullName || "Claimant";
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
     doc.setTextColor(100, 100, 100);
     doc.text(
-      `Page ${pageNum} of ${totalPages} | ${caseData.caseNumber || "Medico-Legal Report"}`, 
+      `Page ${pageNum} of ${totalPages} | ${claimantName} | ${caseData.caseNumber || "Medico-Legal Report"}`, 
       pageWidth / 2, 
       pageHeight - 10, 
       { align: "center" }
@@ -143,8 +144,8 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   doc.setTextColor(0, 0, 0); // Black for the value
   doc.text(formatDate(caseData.claimantDetails?.dateOfReport || new Date().toISOString()), pageWidth / 2, yPos, { align: "center" });
   
-  // Add footer
-  addFooter(1, 2);
+  // Add temporary footer (will be updated with correct total page count at the end)
+  addFooter(1, 1);
   
   // ======= PAGE 2: DETAILS PAGE =======
   doc.addPage();
@@ -1183,9 +1184,30 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   doc.setFontSize(8);
   doc.text("Dr. Awais Iqbal, MBBS, Direct Medical Expert", margin, yPos);
   
-  // Add footer to final page
-  const finalPage = doc.getNumberOfPages();
-  addFooter(finalPage, finalPage);
+  // Add footer to final page and fix all page numbers
+  const totalPages = doc.getNumberOfPages();
+  
+  // Now go through and update all page footers with correct total
+  for (let i = 1; i <= totalPages; i++) {
+    // Set page as active
+    doc.setPage(i);
+    
+    // Clear old footer (draw white rectangle at bottom)
+    doc.setFillColor(255, 255, 255);
+    doc.rect(0, pageHeight - 15, pageWidth, 15, "F");
+    
+    // Add correct footer
+    const claimantName = caseData.claimantDetails?.fullName || "Claimant";
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(100, 100, 100);
+    doc.text(
+      `Page ${i} of ${totalPages} | ${claimantName} | ${caseData.caseNumber || "Medico-Legal Report"}`, 
+      pageWidth / 2, 
+      pageHeight - 10, 
+      { align: "center" }
+    );
+  }
   
   // Return the PDF as data URL
   return doc.output('dataurlstring');
