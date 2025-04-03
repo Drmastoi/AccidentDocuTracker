@@ -300,11 +300,8 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   
   yPos += 10;
   
-  // Add table title
-  doc.setFontSize(11);
-  doc.text("1 - SUMMARY OF INJURIES", margin, yPos);
-  
-  yPos += 8;
+  // Section 1: Summary of Injuries
+  yPos = addSectionHeader("1 - SUMMARY OF INJURIES", yPos);
   
   // Define column widths
   const colWidth1 = 35; // Injury Name
@@ -506,13 +503,8 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   // Add Accident/Incident Details section
   yPos += 20;
   
-  // Section title
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.setTextColor(tealColor[0], tealColor[1], tealColor[2]);
-  doc.text("2 - ACCIDENT/INCIDENT DETAILS", margin, yPos);
-  
-  yPos += 8;
+  // Section 2: Accident/Incident Details
+  yPos = addSectionHeader("2 - ACCIDENT/INCIDENT DETAILS", yPos);
   
   // Generate accident summary text
   doc.setFont("helvetica", "normal");
@@ -559,13 +551,8 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   // Add detailed Injuries/Symptoms section
   yPos += 20;
   
-  // Section title
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.setTextColor(tealColor[0], tealColor[1], tealColor[2]);
-  doc.text("3 - INJURIES / SYMPTOMS", margin, yPos);
-  
-  yPos += 8;
+  // Section 3: Injuries / Symptoms
+  yPos = addSectionHeader("3 - INJURIES / SYMPTOMS", yPos);
   
   // Get injuries from physical injuries if available
   const detailedInjuries = caseData.physicalInjuryDetails?.injuries || [];
@@ -612,13 +599,8 @@ export const generateCustomMedcoPDF = (caseData: Case & {
           doc.addPage();
           yPos = margin;
           
-          // Add continued section header
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(11);
-          doc.setTextColor(tealColor[0], tealColor[1], tealColor[2]);
-          doc.text("3 - INJURIES / SYMPTOMS (CONTINUED)", margin, yPos);
-          
-          yPos += 10;
+          // Add continued section header using the same helper function
+          yPos = addSectionHeader("3 - INJURIES / SYMPTOMS (CONTINUED)", yPos);
         }
         
         // Label
@@ -788,13 +770,8 @@ export const generateCustomMedcoPDF = (caseData: Case & {
     yPos += 20;
   }
   
-  // Section title
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.setTextColor(tealColor[0], tealColor[1], tealColor[2]);
-  doc.text("4 - TREATMENTS", margin, yPos);
-  
-  yPos += 8;
+  // Section 4: Treatments
+  yPos = addSectionHeader("4 - TREATMENTS", yPos);
   
   // Treatment details from the questionnaire
   doc.setFont("helvetica", "normal");
@@ -815,13 +792,8 @@ export const generateCustomMedcoPDF = (caseData: Case & {
       doc.addPage();
       yPos = margin;
       
-      // Add continued section header
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(11);
-      doc.setTextColor(tealColor[0], tealColor[1], tealColor[2]);
-      doc.text("4 - TREATMENTS (CONTINUED)", margin, yPos);
-      
-      yPos += 10;
+      // Add continued section header using the same helper function
+      yPos = addSectionHeader("4 - TREATMENTS (CONTINUED)", yPos);
     }
     
     // Subsection title
@@ -915,13 +887,8 @@ export const generateCustomMedcoPDF = (caseData: Case & {
     yPos += 20;
   }
   
-  // Section title
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.setTextColor(tealColor[0], tealColor[1], tealColor[2]);
-  doc.text("5 - IMPACT ON DAILY LIFE", margin, yPos);
-  
-  yPos += 8;
+  // Section 5: Impact on Daily Life
+  yPos = addSectionHeader("5 - IMPACT ON DAILY LIFE", yPos);
   
   // Impact details from the questionnaire
   doc.setFont("helvetica", "normal");
@@ -999,13 +966,8 @@ export const generateCustomMedcoPDF = (caseData: Case & {
     yPos += 20;
   }
   
-  // Section title
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.setTextColor(tealColor[0], tealColor[1], tealColor[2]);
-  doc.text("6 - PAST HISTORY OF ACCIDENTS OR ILLNESS", margin, yPos);
-  
-  yPos += 8;
+  // Section 6: Past History of Accidents or Illness
+  yPos = addSectionHeader("6 - PAST HISTORY OF ACCIDENTS OR ILLNESS", yPos);
   
   // Past history details from the questionnaire
   doc.setFont("helvetica", "normal");
