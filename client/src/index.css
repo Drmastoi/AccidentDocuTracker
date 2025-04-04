@@ -6,7 +6,7 @@
 
 @layer base {
   :root {
-    --primary-rgb: 14, 124, 123; /* #0E7C7B in RGB format */
+    --primary-rgb: 12, 99, 157;
   }
   
   * {
@@ -14,6 +14,16 @@
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    @apply font-sans antialiased bg-background text-foreground tracking-tight;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-medium tracking-tight;
+  }
+}
+
+@layer utilities {
+  .content-auto {
+    content-visibility: auto;
   }
 }
