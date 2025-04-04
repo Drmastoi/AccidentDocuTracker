@@ -221,7 +221,27 @@ export const generateCustomMedcoPDF = (caseData: Case & {
     }
   }
   
-  yPos = addField("1.5 Age (At the time of the Incident):", age, margin, yPos);
+  // Use a smaller font for the "At the time of the Incident" part
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.setTextColor(tealColor[0], tealColor[1], tealColor[2]);
+  doc.text("1.5 Age ", margin, yPos);
+  
+  // Calculate the width of "1.5 Age " text
+  const labelWidth = doc.getTextWidth("1.5 Age ");
+  
+  // Add the smaller text
+  doc.setFontSize(8); // 20% smaller than the normal 10pt font
+  doc.text("(At the time of the Incident)", margin + labelWidth, yPos);
+  
+  // Reset for the actual value
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.setTextColor(0, 0, 0);
+  doc.text(age || "Not provided", margin + 60, yPos);
+  
+  // Move to next line
+  yPos += 5;
   yPos = addField("1.6 Date of Accident:", formatDate(caseData.accidentDetails?.accidentDate), margin, yPos);
   yPos = addField("1.7 Identification:", (caseData.claimantDetails as any)?.identification?.type || "Not specified", margin, yPos);
   yPos = addField("1.8 Accompanied by:", caseData.claimantDetails?.accompaniedBy || "None", margin, yPos);
