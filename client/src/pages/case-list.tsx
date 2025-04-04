@@ -1,8 +1,9 @@
+
 import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Case } from "@shared/schema";
-import { FileText, Plus, Pencil, Trash, ArrowLeft, Search } from "lucide-react";
+import { FileText, Plus, Pencil, Trash, ArrowLeft, Search, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,10 +30,27 @@ export default function CaseList() {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [caseToDelete, setCaseToDelete] = useState<Case | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [password, setPassword] = useState("");
+  const CORRECT_PASSWORD = "9118";
   
-  // Fetch cases
+  const handlePasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password === CORRECT_PASSWORD) {
+      setIsAuthenticated(true);
+    } else {
+      toast({
+        title: "Incorrect Password",
+        description: "Please try again",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Fetch cases only if authenticated
   const { data: cases, isLoading, error } = useQuery({
     queryKey: ["/api/cases"],
+    enabled: isAuthenticated,
   });
   
   // Delete case mutation
@@ -79,6 +97,34 @@ export default function CaseList() {
     const date = new Date(dateString);
     return date.toLocaleDateString();
   };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-[#F7FAFC] flex items-center justify-center">
+        <Card className="w-[400px]">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Lock className="h-5 w-5 text-[#0E7C7B]" />
+              Password Protected
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handlePasswordSubmit} className="space-y-4">
+              <Input
+                type="password"
+                placeholder="Enter password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <Button type="submit" className="w-full">
+                Access Cases
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
   
   return (
     <div className="min-h-screen bg-[#F7FAFC]">
