@@ -1,5 +1,6 @@
 import { jsPDF } from "jspdf";
 import { Case } from "@shared/schema";
+import signatureImage from '@/assets/SIGN2.jpeg';
 
 export const generateCustomMedcoPDF = (caseData: Case & {
   claimantDetails?: {
@@ -1200,6 +1201,34 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   doc.setFont("helvetica", "italic");
   doc.setFontSize(8);
   doc.text("Dr. Awais Iqbal, MBBS, Direct Medical Expert", margin, yPos);
+  
+  // Section 10: Signature with uploaded image
+  yPos += 20;
+  yPos = addSectionHeader("10 - SIGNATURE", yPos);
+  
+  // Add signature date
+  const signatureDate = formatDate(caseData.expertDetails?.dateOfReport || new Date().toISOString().split('T')[0]);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.setTextColor(0, 0, 0);
+  doc.text(`Date: ${signatureDate}`, margin, yPos + 5);
+  
+  // Add signature image
+  try {
+    // Add the signature image
+    doc.addImage(signatureImage, 'JPEG', margin + 50, yPos, 40, 20);
+  } catch (e) {
+    console.error('Error adding signature image:', e);
+    // Fallback if image fails
+    doc.setFont("helvetica", "italic");
+    doc.text("Signature on file", margin + 60, yPos + 10);
+  }
+  
+  // Add expert name below signature
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.text(caseData.expertDetails?.examiner || "Dr. Awais Iqbal", margin + 50, yPos + 30);
+  doc.text(caseData.expertDetails?.credentials || "MBBS, Direct Medical Expert", margin + 50, yPos + 36);
   
   // Add footer to final page and fix all page numbers
   const totalPages = doc.getNumberOfPages();
