@@ -49,7 +49,6 @@ export function ClaimantDetailsForm({ caseId, initialData, onSaved }: ClaimantDe
       age: undefined,
       gender: "Not specified",
       address: "",
-      postCode: "",
       identification: {
         type: "Passport",
       },
@@ -217,20 +216,7 @@ export function ClaimantDetailsForm({ caseId, initialData, onSaved }: ClaimantDe
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-              <FormField
-                control={form.control}
-                name="postCode"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Post Code</FormLabel>
-                    <FormControl>
-                      <Input placeholder="PR3 5JE" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
+
               <FormField
                 control={form.control}
                 name="phone"

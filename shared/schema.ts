@@ -82,7 +82,6 @@ export const claimantDetailsSchema = z.object({
   age: z.number().optional(),
   gender: z.enum(["Male", "Female", "Not specified"]).default("Not specified"),
   address: z.string().optional(),
-  postCode: z.string().optional(),
   identification: z.object({
     type: z.enum(["Passport", "Driving Licence", "Other"]).default("Passport"),
   }).optional(),
@@ -110,9 +109,7 @@ export const claimantDetailsSchema = z.object({
 
 export const accidentDetailsSchema = z.object({
   accidentDate: z.string().min(1, "Accident date is required"),
-  accidentTime: z.string().optional(),
   timeOfDay: z.enum(["Morning", "Afternoon", "Evening", "Night"]).optional(),
-  accidentLocation: z.string().min(1, "Accident location is required"),
   vehicleLocation: z.enum(["Main Road", "Minor Road", "Motorway", "Roundabout", "Other"]).optional(),
   weatherConditions: z.string().optional(),
   accidentType: z.string().min(1, "Accident type is required"),
@@ -126,7 +123,7 @@ export const accidentDetailsSchema = z.object({
   seatBeltWorn: z.boolean().default(true),
   headRestFitted: z.boolean().default(true),
   airBagDeployed: z.boolean().default(false),
-  collisionImpact: z.enum(["Forward/Backward", "Sideways", "Multiple Directions", "None"]).optional(),
+  collisionImpact: z.enum(["Forward/Backward", "Backward/Forward", "Sideways", "Multiple Directions", "None"]).optional(),
   accidentDescription: z.string().optional(),
 });
 

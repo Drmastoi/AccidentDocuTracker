@@ -50,9 +50,7 @@ export function AccidentDetailsForm({ caseId, initialData, onSaved }: AccidentDe
     resolver: zodResolver(accidentDetailsSchema),
     defaultValues: initialData || {
       accidentDate: "",
-      accidentTime: "",
       timeOfDay: "Morning",
-      accidentLocation: "",
       vehicleLocation: "Main Road",
       weatherConditions: "clear",
       accidentType: "vehicleCollision",
@@ -72,16 +70,15 @@ export function AccidentDetailsForm({ caseId, initialData, onSaved }: AccidentDe
   });
   
   // Check if required fields are filled
-  const isComplete = !!form.watch("accidentDate") && 
-                    !!form.watch("accidentLocation") && 
-                    !!form.watch("accidentType");
+  const accidentDate = form.watch("accidentDate");
+  const accidentType = form.watch("accidentType");
+  const isComplete = !!accidentDate && !!accidentType;
   
   // Count missing required fields
   const getMissingFieldsCount = () => {
     let count = 0;
-    if (!form.watch("accidentDate")) count++;
-    if (!form.watch("accidentLocation")) count++;
-    if (!form.watch("accidentType")) count++;
+    if (!accidentDate) count++;
+    if (!accidentType) count++;
     return count;
   };
   
@@ -137,19 +134,7 @@ export function AccidentDetailsForm({ caseId, initialData, onSaved }: AccidentDe
                 )}
               />
               
-              <FormField
-                control={form.control}
-                name="accidentTime"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Time of Accident</FormLabel>
-                    <FormControl>
-                      <Input type="time" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+
               
               <FormField
                 control={form.control}
@@ -178,19 +163,7 @@ export function AccidentDetailsForm({ caseId, initialData, onSaved }: AccidentDe
                 )}
               />
               
-              <FormField
-                control={form.control}
-                name="accidentLocation"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Accident Location</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Intersection of Main St & Park Ave" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+
               
               <FormField
                 control={form.control}
@@ -496,6 +469,7 @@ export function AccidentDetailsForm({ caseId, initialData, onSaved }: AccidentDe
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="Forward/Backward">Forward/Backward (Rear Collision)</SelectItem>
+                        <SelectItem value="Backward/Forward">Backward/Forward (Front Collision)</SelectItem>
                         <SelectItem value="Sideways">Sideways (Side Collision)</SelectItem>
                         <SelectItem value="Multiple Directions">Multiple Directions</SelectItem>
                         <SelectItem value="None">None</SelectItem>
