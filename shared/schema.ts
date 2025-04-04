@@ -92,6 +92,8 @@ export const claimantDetailsSchema = z.object({
   dateOfExamination: z.string().optional(),
   timeSpent: z.string().default("15 min"),
   helpWithCommunication: z.boolean().default(false),
+  interpreterName: z.string().optional(),
+  interpreterRelationship: z.string().optional(),
   placeOfExamination: z.enum([
     "Face to Face at Meeting Room, North, Ibis, Garstang Rd, Preston PR3 5JE",
     "Regus Office, Centenary Way, Salford M50 1RF"

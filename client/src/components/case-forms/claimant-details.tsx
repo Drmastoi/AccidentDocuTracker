@@ -459,6 +459,38 @@ export function ClaimantDetailsForm({ caseId, initialData, onSaved }: ClaimantDe
                 )}
               />
               
+              {form.watch("helpWithCommunication") && (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="interpreterName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Interpreter Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Name of interpreter" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="interpreterRelationship"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Relationship to Claimant</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., Family member, Professional interpreter" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </>
+              )}
+              
               <FormField
                 control={form.control}
                 name="placeOfExamination"

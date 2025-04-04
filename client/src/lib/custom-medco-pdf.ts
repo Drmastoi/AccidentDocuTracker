@@ -224,7 +224,19 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   yPos = addField("1.6 Date of Accident:", formatDate(caseData.accidentDetails?.accidentDate), margin, yPos);
   yPos = addField("1.7 Identification:", (caseData.claimantDetails as any)?.identification?.type || "Not specified", margin, yPos);
   yPos = addField("1.8 Accompanied by:", caseData.claimantDetails?.accompaniedBy || "None", margin, yPos);
-  yPos = addField("1.9 Interpreter:", caseData.claimantDetails?.helpWithCommunication ? "Yes" : "No", margin, yPos);
+  
+  // Generate help with communication details for section 1.9
+  let communicationHelp = "No";
+  if (caseData.claimantDetails?.helpWithCommunication) {
+    if ((caseData.claimantDetails as any)?.interpreterName && (caseData.claimantDetails as any)?.interpreterRelationship) {
+      communicationHelp = `Yes - ${(caseData.claimantDetails as any).interpreterName} (${(caseData.claimantDetails as any).interpreterRelationship})`;
+    } else if ((caseData.claimantDetails as any)?.interpreterName) {
+      communicationHelp = `Yes - ${(caseData.claimantDetails as any).interpreterName}`;
+    } else {
+      communicationHelp = "Yes";
+    }
+  }
+  yPos = addField("1.9 Help with Communication:", communicationHelp, margin, yPos);
   
   yPos += 5;
   
@@ -241,9 +253,9 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   yPos = addSectionHeader("3. INSTRUCTION DETAILS", yPos);
   
   yPos = addField("3.1 Agency Name:", caseData.claimantDetails?.instructingParty || "Not provided", margin, yPos);
-  yPos = addField("3.2 Agency Reference Number:", caseData.claimantDetails?.instructingPartyRef || "Not provided", margin, yPos);
+  yPos = addField("3.2 Agency Reference Number:", (caseData.claimantDetails as any)?.instructingPartyRef || "Not provided", margin, yPos);
   yPos = addField("3.3 Solicitor Name:", caseData.claimantDetails?.solicitorName || "Not provided", margin, yPos);
-  yPos = addField("3.4 Solicitor Reference Number:", caseData.claimantDetails?.referenceNumber || "Not provided", margin, yPos);
+  yPos = addField("3.4 Solicitor Reference Number:", (caseData.claimantDetails as any)?.referenceNumber || "Not provided", margin, yPos);
   yPos = addField("3.5 Medco Reference:", caseData.claimantDetails?.medcoRefNumber || "Not provided", margin, yPos);
   yPos = addField("3.6 Review of Records:", "No medical records were provided for review", margin, yPos);
   
