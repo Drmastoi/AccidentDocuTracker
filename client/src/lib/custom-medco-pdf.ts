@@ -241,9 +241,11 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   yPos = addSectionHeader("3. INSTRUCTION DETAILS", yPos);
   
   yPos = addField("3.1 Agency Name:", caseData.claimantDetails?.instructingParty || "Not provided", margin, yPos);
-  yPos = addField("3.2 Solicitor Name:", caseData.claimantDetails?.solicitorName || "Not provided", margin, yPos);
-  yPos = addField("3.3 Medco Reference:", caseData.claimantDetails?.medcoRefNumber || "Not provided", margin, yPos);
-  yPos = addField("3.4 Review of Records:", "No medical records were provided for review", margin, yPos);
+  yPos = addField("3.2 Agency Reference Number:", caseData.claimantDetails?.instructingPartyRef || "Not provided", margin, yPos);
+  yPos = addField("3.3 Solicitor Name:", caseData.claimantDetails?.solicitorName || "Not provided", margin, yPos);
+  yPos = addField("3.4 Solicitor Reference Number:", caseData.claimantDetails?.referenceNumber || "Not provided", margin, yPos);
+  yPos = addField("3.5 Medco Reference:", caseData.claimantDetails?.medcoRefNumber || "Not provided", margin, yPos);
+  yPos = addField("3.6 Review of Records:", "No medical records were provided for review", margin, yPos);
   
   yPos += 5;
   
