@@ -8,9 +8,11 @@ import { useParams } from "wouter";
 interface HeaderProps {
   caseNumber?: string;
   onSave: () => Promise<void>;
+  onGeneratePdf?: () => void;
+  canGeneratePdf?: boolean;
 }
 
-export function Header({ caseNumber, onSave }: HeaderProps) {
+export function Header({ caseNumber, onSave, onGeneratePdf, canGeneratePdf = false }: HeaderProps) {
   const { toast } = useToast();
   const [saving, setSaving] = React.useState(false);
   
@@ -50,6 +52,16 @@ export function Header({ caseNumber, onSave }: HeaderProps) {
           <Save className="h-4 w-4 mr-1" />
           Save Case
         </Button>
+        
+        {canGeneratePdf && onGeneratePdf && (
+          <Button 
+            className="bg-[#0E7C7B] hover:bg-[#0A6463]" 
+            onClick={onGeneratePdf}
+          >
+            <FileText className="h-4 w-4 mr-1" />
+            Generate PDF Report
+          </Button>
+        )}
       </div>
     </header>
   );

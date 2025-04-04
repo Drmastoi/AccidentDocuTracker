@@ -202,6 +202,8 @@ export default function CaseEditor() {
       <Header 
         caseNumber={caseData?.caseNumber}
         onSave={handleSave}
+        onGeneratePdf={() => handleGeneratePdf()}
+        canGeneratePdf={!!caseData}
       />
       
       <div className="flex flex-1 overflow-hidden">
@@ -222,16 +224,6 @@ export default function CaseEditor() {
                 onSectionClick={setActiveSection}
                 className="mb-4 shadow-sm bg-white border border-gray-100"
               />
-              
-              <div className="flex justify-end">
-                <Button 
-                  className="bg-[#0E7C7B] hover:bg-[#0A6463] mr-2" 
-                  onClick={() => handleGeneratePdf()}
-                >
-                  <FileText className="mr-2 h-4 w-4" />
-                  Generate PDF Report
-                </Button>
-              </div>
             </div>
           )}
           
