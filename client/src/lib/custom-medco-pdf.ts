@@ -1233,22 +1233,22 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   doc.setTextColor(0, 0, 0);
   doc.text(`Date: ${signatureDate}`, margin, yPos + 5);
   
-  // Add signature image
+  // Add signature image - positioned on the left side
   try {
     // Add the signature image
-    doc.addImage(signatureImage, 'JPEG', margin + 50, yPos, 40, 20);
+    doc.addImage(signatureImage, 'JPEG', margin, yPos, 40, 20);
   } catch (e) {
     console.error('Error adding signature image:', e);
     // Fallback if image fails
     doc.setFont("helvetica", "italic");
-    doc.text("Signature on file", margin + 60, yPos + 10);
+    doc.text("Signature on file", margin, yPos + 10);
   }
   
-  // Add expert name below signature
+  // Add expert name below signature - also aligned to the left
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
-  doc.text(caseData.expertDetails?.examiner || "Dr. Awais Iqbal", margin + 50, yPos + 30);
-  doc.text(caseData.expertDetails?.credentials || "MBBS, Direct Medical Expert", margin + 50, yPos + 36);
+  doc.text(caseData.expertDetails?.examiner || "Dr. Awais Iqbal", margin, yPos + 30);
+  doc.text(caseData.expertDetails?.credentials || "MBBS, Direct Medical Expert", margin, yPos + 36);
   
   // Add footer to final page and fix all page numbers
   const totalPages = doc.getNumberOfPages();
