@@ -178,9 +178,9 @@ export function ExpertDetailsForm({ caseId, initialData, onSaved }: ExpertDetail
                 name="licenseNumber"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>License Number</FormLabel>
+                    <FormLabel>GMC Number</FormLabel>
                     <FormControl>
-                      <Input placeholder="MA12345" {...field} />
+                      <Input placeholder="GMC 123456" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

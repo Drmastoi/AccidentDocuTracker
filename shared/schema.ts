@@ -80,6 +80,7 @@ export const claimantDetailsSchema = z.object({
   fullName: z.string().min(1, "Name is required"),
   dateOfBirth: z.string().min(1, "Date of birth is required"),
   age: z.number().optional(),
+  gender: z.enum(["Male", "Female", "Not specified"]).default("Not specified"),
   address: z.string().optional(),
   postCode: z.string().optional(),
   identification: z.object({

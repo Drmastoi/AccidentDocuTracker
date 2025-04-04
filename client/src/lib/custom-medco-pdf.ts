@@ -204,14 +204,17 @@ export const generateCustomMedcoPDF = (caseData: Case & {
     try {
       const dob = new Date(caseData.claimantDetails.dateOfBirth);
       const accidentDate = new Date(caseData.accidentDetails.accidentDate);
-      const ageAtAccident = accidentDate.getFullYear() - dob.getFullYear();
-      // Adjust age if birthday hasn't occurred yet in the accident year
-      const m = accidentDate.getMonth() - dob.getMonth();
-      if (m < 0 || (m === 0 && accidentDate.getDate() < dob.getDate())) {
-        age = (ageAtAccident - 1).toString();
-      } else {
-        age = ageAtAccident.toString();
+      
+      // Safer calculation that handles leap years and month/day differences correctly
+      let ageAtAccident = accidentDate.getFullYear() - dob.getFullYear();
+      
+      // Handle month and day differences
+      if (accidentDate.getMonth() < dob.getMonth() || 
+          (accidentDate.getMonth() === dob.getMonth() && accidentDate.getDate() < dob.getDate())) {
+        ageAtAccident--;
       }
+      
+      age = ageAtAccident.toString();
     } catch (e) {
       age = "Error calculating";
     }
@@ -219,7 +222,7 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   
   yPos = addField("1.5 Age (At the time of the Incident):", age, margin, yPos);
   yPos = addField("1.6 Date of Accident:", formatDate(caseData.accidentDetails?.accidentDate), margin, yPos);
-  yPos = addField("1.7 Identification:", caseData.claimantDetails?.identificationProvided || "Not specified", margin, yPos);
+  yPos = addField("1.7 Identification:", (caseData.claimantDetails as any)?.identification?.type || "Not specified", margin, yPos);
   yPos = addField("1.8 Accompanied by:", caseData.claimantDetails?.accompaniedBy || "None", margin, yPos);
   yPos = addField("1.9 Interpreter:", caseData.claimantDetails?.helpWithCommunication ? "Yes" : "No", margin, yPos);
   
@@ -229,7 +232,7 @@ export const generateCustomMedcoPDF = (caseData: Case & {
   yPos = addSectionHeader("2. EXPERT DETAILS", yPos);
   
   yPos = addField("2.1 Medical Expert Name:", caseData.expertDetails?.examiner || "Dr. Awais Iqbal", margin, yPos);
-  yPos = addField("2.2 Regulatory:", caseData.expertDetails?.licenseNumber || "GMC 6138189", margin, yPos);
+  yPos = addField("2.2 GMC Number:", caseData.expertDetails?.licenseNumber || "GMC 6138189", margin, yPos);
   yPos = addField("2.3 Medco Registration:", caseData.expertDetails?.licensureState || "8094", margin, yPos);
   
   yPos += 5;

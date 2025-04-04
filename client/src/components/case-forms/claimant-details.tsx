@@ -47,6 +47,7 @@ export function ClaimantDetailsForm({ caseId, initialData, onSaved }: ClaimantDe
       fullName: "",
       dateOfBirth: "",
       age: undefined,
+      gender: "Not specified",
       address: "",
       postCode: "",
       identification: {
@@ -146,6 +147,32 @@ export function ClaimantDetailsForm({ caseId, initialData, onSaved }: ClaimantDe
                 )}
               />
               
+              <FormField
+                control={form.control}
+                name="gender"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Gender</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select gender" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Male">Male</SelectItem>
+                        <SelectItem value="Female">Female</SelectItem>
+                        <SelectItem value="Not specified">Not specified</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <FormField
                 control={form.control}
                 name="age"
