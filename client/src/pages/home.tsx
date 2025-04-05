@@ -34,13 +34,16 @@ export default function Home() {
       <main className="max-w-7xl mx-auto px-4 py-12 md:px-6 lg:px-8">
         <section className="text-center mb-12">
           <h2 className="text-4xl font-bold text-[#1A202C] mb-4">Professional Medical-Legal Reports</h2>
-          <p className="text-xl text-[#4A5568] max-w-3xl mx-auto">
+          <p className="text-xl text-[#4A5568] max-w-3xl mx-auto mb-4">
             Generate comprehensive road traffic accident case documentation and reports with our AI-powered system.
+          </p>
+          <p className="text-lg text-[#4A5568] max-w-3xl mx-auto">
+            In your new report, you'll be guided through entering detailed accident information, injuries, treatments, and impact assessments. Our AI system will analyze this data to create a professionally structured report for you and your medical expert.
           </p>
           <div className="mt-8 flex justify-center gap-4">
             <Link href="/cases/new">
               <Button size="lg" className="flex items-center gap-2">
-                <Plus className="h-4 w-4" />
+                <FileText className="h-4 w-4" />
                 Start New Report
               </Button>
             </Link>
